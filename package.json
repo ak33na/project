@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "esbuild": "^0.17.15"
+  },
+  "dependencies": {
+    "kekule": "^1.0.0"
+  }
+}
