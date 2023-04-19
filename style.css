@@ -1,13 +1,20 @@
 /* CSS */ 
 
-.mySidebar {
-    position: fixed;
-    top: 0;
-    right: 0;
-}
+body {
+    background-color: whitesmoke;
+  }
+  h1 {
+    color: black;
+  }
+  p {
+    color: red;
+  }
 
-.mySidebar div {
-    padding: 8px;
-    font-size: 2px;
-    display: block;
-    }
+  .header {
+    overflow:hidden;
+    padding-left: 1%;
+    text-align: left;
+    background: pink;
+    color: pink;
+    font-size: 15px;
+  }
