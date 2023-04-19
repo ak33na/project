@@ -1,0 +1,13 @@
+/* CSS */ 
+
+.mySidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+.mySidebar div {
+    padding: 8px;
+    font-size: 2px;
+    display: block;
+    }
