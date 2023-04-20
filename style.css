@@ -18,3 +18,28 @@ body {
     color: pink;
     font-size: 15px;
   }
+
+  /* Builder div */
+  .builder {
+    height: 50%;
+    width: 50%;
+    position: fixed;
+    z-index: 1;
+    top: 15%;
+    overflow-x: hidden;
+    padding: 1%;
+    background: pink;
+  }
+
+  /* Bank div */
+  .bank {
+    height: 50%;
+    width: 44%;
+    position: absolute;
+    right: 0;
+    top: 15%;
+    overflow: hidden;
+    padding: 1%;
+    background: pink;
+    z-index: 1;
+  }
