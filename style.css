@@ -3,12 +3,6 @@
 body {
     background-color: whitesmoke;
   }
-  h1 {
-    color: black;
-  }
-  p {
-    color: red;
-  }
 
   .header {
     overflow:hidden;
@@ -21,7 +15,7 @@ body {
 
   /* Builder div */
   .builder {
-    height: 50%;
+    height: 45%;
     width: 50%;
     position: fixed;
     z-index: 1;
@@ -33,13 +27,38 @@ body {
 
   /* Bank div */
   .bank {
-    height: 50%;
-    width: 44%;
+    height: 13%;
+    width: 45%;
     position: absolute;
     right: 0;
     top: 15%;
     overflow: hidden;
+    padding-left: 1%;
+    background: pink;
+    z-index: 1;
+  }
+
+  /* Info div */
+  .info {
+    height: 30%;
+    width: 44%;
+    position: absolute;
+    right: 0;
+    top: 30%;
+    overflow: hidden;
     padding: 1%;
     background: pink;
     z-index: 1;
+  }
+
+  /* Reactions div */
+  .reactions {
+    height: 25%;
+    width: 50%;
+    position: fixed;
+    z-index: 1;
+    top: 68%;
+    overflow-x: hidden;
+    padding: 1%;
+    background: pink;
   }
