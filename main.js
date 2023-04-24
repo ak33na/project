@@ -23,5 +23,8 @@ console.log('SMILES: ', smiles);
 
 // Output MOL2k
 var mol2k = Kekule.IO.saveFormatData(mol, 'mol');
-console.log('MOL 2000: \n', mol2k);
+console.log('MOL 1: \n', mol2k);
+
+// Print mol2k to builder div
+document.getElementById("mol built").innerHTML = mol2k;
 
