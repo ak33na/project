@@ -28205,4 +28205,8867 @@ oimo.dynamics.constraint.joint.UniversalJoint = class oimo_dynamics_constraint_j
 		__tmp__01 = rot100 * rot201 + rot110 * rot211 + rot120 * rot221;
 		__tmp__02 = rot100 * rot202 + rot110 * rot212 + rot120 * rot222;
 		__tmp__11 = rot101 * rot201 + rot111 * rot211 + rot121 * rot221;
-		__tmp__12 = rot101 * rot202 + rot111 * rot212 + r
+		__tmp__12 = rot101 * rot202 + rot111 * rot212 + rot121 * rot222;
+		__tmp__21 = rot102 * rot201 + rot112 * rot211 + rot122 * rot221;
+		__tmp__22 = rot102 * rot202 + rot112 * rot212 + rot122 * rot222;
+		relRot00 = __tmp__00;
+		relRot01 = __tmp__01;
+		relRot02 = __tmp__02;
+		relRot11 = __tmp__11;
+		relRot12 = __tmp__12;
+		relRot21 = __tmp__21;
+		relRot22 = __tmp__22;
+		let anglesX;
+		let anglesY;
+		let anglesZ;
+		let sy = relRot02;
+		if(sy <= -1) {
+			let xSubZ = Math.atan2(relRot21,relRot11);
+			anglesX = xSubZ * 0.5;
+			anglesY = -1.570796326794895;
+			anglesZ = -xSubZ * 0.5;
+		} else if(sy >= 1) {
+			let xAddZ = Math.atan2(relRot21,relRot11);
+			anglesX = xAddZ * 0.5;
+			anglesY = 1.570796326794895;
+			anglesZ = xAddZ * 0.5;
+		} else {
+			anglesX = Math.atan2(-relRot12,relRot22);
+			anglesY = Math.asin(sy);
+			anglesZ = Math.atan2(-relRot01,relRot00);
+		}
+		this._angleX = anglesX;
+		this._angleY = anglesY;
+		this._angleZ = anglesZ;
+		this.linearErrorX = this._anchor2X - this._anchor1X;
+		this.linearErrorY = this._anchor2Y - this._anchor1Y;
+		this.linearErrorZ = this._anchor2Z - this._anchor1Z;
+	}
+	_getVelocitySolverInfo(timeStep,info) {
+		super._getVelocitySolverInfo(timeStep,info);
+		this.getInfo(info,timeStep,false);
+	}
+	_getPositionSolverInfo(info) {
+		super._getPositionSolverInfo(info);
+		this.getInfo(info,null,true);
+	}
+	getAxis1() {
+		let v = new oimo.common.Vec3();
+		v.x = this._basisX1X;
+		v.y = this._basisX1Y;
+		v.z = this._basisX1Z;
+		return v;
+	}
+	getAxis2() {
+		let v = new oimo.common.Vec3();
+		v.x = this._basisZ2X;
+		v.y = this._basisZ2Y;
+		v.z = this._basisZ2Z;
+		return v;
+	}
+	getAxis1To(axis) {
+		axis.x = this._basisX1X;
+		axis.y = this._basisX1Y;
+		axis.z = this._basisX1Z;
+	}
+	getAxis2To(axis) {
+		axis.x = this._basisZ2X;
+		axis.y = this._basisZ2Y;
+		axis.z = this._basisZ2Z;
+	}
+	getLocalAxis1() {
+		let v = new oimo.common.Vec3();
+		v.x = this._localBasisX1X;
+		v.y = this._localBasisX1Y;
+		v.z = this._localBasisX1Z;
+		return v;
+	}
+	getLocalAxis2() {
+		let v = new oimo.common.Vec3();
+		v.x = this._localBasisZ2X;
+		v.y = this._localBasisZ2Y;
+		v.z = this._localBasisZ2Z;
+		return v;
+	}
+	getLocalAxis1To(axis) {
+		axis.x = this._localBasisX1X;
+		axis.y = this._localBasisX1Y;
+		axis.z = this._localBasisX1Z;
+	}
+	getLocalAxis2To(axis) {
+		axis.x = this._localBasisZ2X;
+		axis.y = this._localBasisZ2Y;
+		axis.z = this._localBasisZ2Z;
+	}
+	getSpringDamper1() {
+		return this._sd1;
+	}
+	getSpringDamper2() {
+		return this._sd2;
+	}
+	getLimitMotor1() {
+		return this._lm1;
+	}
+	getLimitMotor2() {
+		return this._lm2;
+	}
+	getAngle1() {
+		return this._angleX;
+	}
+	getAngle2() {
+		return this._angleZ;
+	}
+}
+oimo.dynamics.constraint.joint.UniversalJointConfig = class oimo_dynamics_constraint_joint_UniversalJointConfig extends oimo.dynamics.constraint.joint.JointConfig {
+	constructor() {
+		super();
+		this.localAxis1 = new oimo.common.Vec3(1,0,0);
+		this.localAxis2 = new oimo.common.Vec3(1,0,0);
+		this.springDamper1 = new oimo.dynamics.constraint.joint.SpringDamper();
+		this.springDamper2 = new oimo.dynamics.constraint.joint.SpringDamper();
+		this.limitMotor1 = new oimo.dynamics.constraint.joint.RotationalLimitMotor();
+		this.limitMotor2 = new oimo.dynamics.constraint.joint.RotationalLimitMotor();
+	}
+	init(rigidBody1,rigidBody2,worldAnchor,worldAxis1,worldAxis2) {
+		this._init(rigidBody1,rigidBody2,worldAnchor);
+		let localVector = this.localAxis1;
+		let vX;
+		let vY;
+		let vZ;
+		vX = worldAxis1.x;
+		vY = worldAxis1.y;
+		vZ = worldAxis1.z;
+		let __tmp__X;
+		let __tmp__Y;
+		let __tmp__Z;
+		__tmp__X = rigidBody1._transform._rotation00 * vX + rigidBody1._transform._rotation10 * vY + rigidBody1._transform._rotation20 * vZ;
+		__tmp__Y = rigidBody1._transform._rotation01 * vX + rigidBody1._transform._rotation11 * vY + rigidBody1._transform._rotation21 * vZ;
+		__tmp__Z = rigidBody1._transform._rotation02 * vX + rigidBody1._transform._rotation12 * vY + rigidBody1._transform._rotation22 * vZ;
+		vX = __tmp__X;
+		vY = __tmp__Y;
+		vZ = __tmp__Z;
+		localVector.x = vX;
+		localVector.y = vY;
+		localVector.z = vZ;
+		let localVector1 = this.localAxis2;
+		let vX1;
+		let vY1;
+		let vZ1;
+		vX1 = worldAxis2.x;
+		vY1 = worldAxis2.y;
+		vZ1 = worldAxis2.z;
+		let __tmp__X1;
+		let __tmp__Y1;
+		let __tmp__Z1;
+		__tmp__X1 = rigidBody2._transform._rotation00 * vX1 + rigidBody2._transform._rotation10 * vY1 + rigidBody2._transform._rotation20 * vZ1;
+		__tmp__Y1 = rigidBody2._transform._rotation01 * vX1 + rigidBody2._transform._rotation11 * vY1 + rigidBody2._transform._rotation21 * vZ1;
+		__tmp__Z1 = rigidBody2._transform._rotation02 * vX1 + rigidBody2._transform._rotation12 * vY1 + rigidBody2._transform._rotation22 * vZ1;
+		vX1 = __tmp__X1;
+		vY1 = __tmp__Y1;
+		vZ1 = __tmp__Z1;
+		localVector1.x = vX1;
+		localVector1.y = vY1;
+		localVector1.z = vZ1;
+		return this;
+	}
+}
+if(!oimo.dynamics.constraint.solver) oimo.dynamics.constraint.solver = {};
+oimo.dynamics.constraint.solver.ConstraintSolverType = class oimo_dynamics_constraint_solver_ConstraintSolverType {
+}
+if(!oimo.dynamics.constraint.solver.common) oimo.dynamics.constraint.solver.common = {};
+oimo.dynamics.constraint.solver.common.ContactSolverMassDataRow = class oimo_dynamics_constraint_solver_common_ContactSolverMassDataRow {
+	constructor() {
+		this.invMLinN1X = 0;
+		this.invMLinN1Y = 0;
+		this.invMLinN1Z = 0;
+		this.invMLinN2X = 0;
+		this.invMLinN2Y = 0;
+		this.invMLinN2Z = 0;
+		this.invMAngN1X = 0;
+		this.invMAngN1Y = 0;
+		this.invMAngN1Z = 0;
+		this.invMAngN2X = 0;
+		this.invMAngN2Y = 0;
+		this.invMAngN2Z = 0;
+		this.invMLinT1X = 0;
+		this.invMLinT1Y = 0;
+		this.invMLinT1Z = 0;
+		this.invMLinT2X = 0;
+		this.invMLinT2Y = 0;
+		this.invMLinT2Z = 0;
+		this.invMAngT1X = 0;
+		this.invMAngT1Y = 0;
+		this.invMAngT1Z = 0;
+		this.invMAngT2X = 0;
+		this.invMAngT2Y = 0;
+		this.invMAngT2Z = 0;
+		this.invMLinB1X = 0;
+		this.invMLinB1Y = 0;
+		this.invMLinB1Z = 0;
+		this.invMLinB2X = 0;
+		this.invMLinB2Y = 0;
+		this.invMLinB2Z = 0;
+		this.invMAngB1X = 0;
+		this.invMAngB1Y = 0;
+		this.invMAngB1Z = 0;
+		this.invMAngB2X = 0;
+		this.invMAngB2Y = 0;
+		this.invMAngB2Z = 0;
+		this.massN = 0;
+		this.massTB00 = 0;
+		this.massTB01 = 0;
+		this.massTB10 = 0;
+		this.massTB11 = 0;
+	}
+}
+oimo.dynamics.constraint.solver.common.JointSolverMassDataRow = class oimo_dynamics_constraint_solver_common_JointSolverMassDataRow {
+	constructor() {
+		this.invMLin1X = 0;
+		this.invMLin1Y = 0;
+		this.invMLin1Z = 0;
+		this.invMLin2X = 0;
+		this.invMLin2Y = 0;
+		this.invMLin2Z = 0;
+		this.invMAng1X = 0;
+		this.invMAng1Y = 0;
+		this.invMAng1Z = 0;
+		this.invMAng2X = 0;
+		this.invMAng2Y = 0;
+		this.invMAng2Z = 0;
+		this.mass = 0;
+		this.massWithoutCfm = 0;
+	}
+}
+if(!oimo.dynamics.constraint.solver.direct) oimo.dynamics.constraint.solver.direct = {};
+oimo.dynamics.constraint.solver.direct.Boundary = class oimo_dynamics_constraint_solver_direct_Boundary {
+	constructor(maxRows) {
+		this.iBounded = new Array(maxRows);
+		this.iUnbounded = new Array(maxRows);
+		this.signs = new Array(maxRows);
+		this.b = new Array(maxRows);
+		this.numBounded = 0;
+		this.numUnbounded = 0;
+		this.matrixId = 0;
+	}
+	init(buildInfo) {
+		this.numBounded = buildInfo.numBounded;
+		let _g = 0;
+		let _g1 = this.numBounded;
+		while(_g < _g1) {
+			let i = _g++;
+			this.iBounded[i] = buildInfo.iBounded[i];
+			this.signs[i] = buildInfo.signs[i];
+		}
+		this.numUnbounded = buildInfo.numUnbounded;
+		this.matrixId = 0;
+		let _g2 = 0;
+		let _g3 = this.numUnbounded;
+		while(_g2 < _g3) {
+			let i = _g2++;
+			let idx = buildInfo.iUnbounded[i];
+			this.iUnbounded[i] = idx;
+			this.matrixId |= 1 << idx;
+		}
+	}
+	computeImpulses(info,mass,relVels,impulses,dImpulses,impulseFactor,noCheck) {
+		let _g = 0;
+		let _g1 = this.numUnbounded;
+		while(_g < _g1) {
+			let idx = this.iUnbounded[_g++];
+			let row = info.rows[idx];
+			this.b[idx] = row.rhs * impulseFactor - relVels[idx] - row.cfm * impulses[idx];
+		}
+		let invMassWithoutCfm = mass._invMassWithoutCfm;
+		let _g2 = 0;
+		let _g3 = this.numBounded;
+		while(_g2 < _g3) {
+			let i = _g2++;
+			let idx = this.iBounded[i];
+			let sign = this.signs[i];
+			let row = info.rows[idx];
+			let dImpulse = (sign < 0 ? row.minImpulse : sign > 0 ? row.maxImpulse : 0) - impulses[idx];
+			dImpulses[idx] = dImpulse;
+			if(dImpulse != 0) {
+				let _g = 0;
+				let _g1 = this.numUnbounded;
+				while(_g < _g1) {
+					let idx2 = this.iUnbounded[_g++];
+					this.b[idx2] -= invMassWithoutCfm[idx][idx2] * dImpulse;
+				}
+			}
+		}
+		let indices = this.iUnbounded;
+		let n = this.numUnbounded;
+		let id = 0;
+		let _g4 = 0;
+		while(_g4 < n) id |= 1 << indices[_g4++];
+		let massMatrix;
+		if(mass._cacheComputed[id]) {
+			massMatrix = mass._cachedSubmatrices[id];
+		} else {
+			mass.computeSubmatrix(id,indices,n);
+			mass._cacheComputed[id] = true;
+			massMatrix = mass._cachedSubmatrices[id];
+		}
+		let ok = true;
+		let _g5 = 0;
+		let _g6 = this.numUnbounded;
+		while(_g5 < _g6) {
+			let i = _g5++;
+			let idx = this.iUnbounded[i];
+			let row = info.rows[idx];
+			let oldImpulse = impulses[idx];
+			let impulse = oldImpulse;
+			let _g = 0;
+			let _g1 = this.numUnbounded;
+			while(_g < _g1) {
+				let j = _g++;
+				impulse += this.b[this.iUnbounded[j]] * massMatrix[i][j];
+			}
+			if(impulse < row.minImpulse - oimo.common.Setting.directMlcpSolverEps || impulse > row.maxImpulse + oimo.common.Setting.directMlcpSolverEps) {
+				ok = false;
+				break;
+			}
+			dImpulses[idx] = impulse - oldImpulse;
+		}
+		if(noCheck) {
+			return true;
+		}
+		if(!ok) {
+			return false;
+		}
+		let _g7 = 0;
+		let _g8 = this.numBounded;
+		while(_g7 < _g8) {
+			let i = _g7++;
+			let idx = this.iBounded[i];
+			let row = info.rows[idx];
+			let sign = this.signs[i];
+			let error = 0;
+			let newImpulse = impulses[idx] + dImpulses[idx];
+			let relVel = relVels[idx];
+			let _g = 0;
+			let _g1 = info.numRows;
+			while(_g < _g1) {
+				let j = _g++;
+				relVel += invMassWithoutCfm[idx][j] * dImpulses[j];
+			}
+			error = row.rhs * impulseFactor - relVel - row.cfm * newImpulse;
+			if(sign < 0 && error > oimo.common.Setting.directMlcpSolverEps || sign > 0 && error < -oimo.common.Setting.directMlcpSolverEps) {
+				ok = false;
+				break;
+			}
+		}
+		return ok;
+	}
+}
+oimo.dynamics.constraint.solver.direct.BoundaryBuildInfo = class oimo_dynamics_constraint_solver_direct_BoundaryBuildInfo {
+	constructor(size) {
+		this.size = size;
+		this.numBounded = 0;
+		this.iBounded = new Array(size);
+		this.signs = new Array(size);
+		this.numUnbounded = 0;
+		this.iUnbounded = new Array(size);
+	}
+}
+oimo.dynamics.constraint.solver.direct.BoundaryBuilder = class oimo_dynamics_constraint_solver_direct_BoundaryBuilder {
+	constructor(maxRows) {
+		this.maxRows = maxRows;
+		this.numBoundaries = 0;
+		this.boundaries = new Array(1 << maxRows);
+		this.bbInfo = new oimo.dynamics.constraint.solver.direct.BoundaryBuildInfo(maxRows);
+	}
+	buildBoundariesRecursive(info,i) {
+		if(i == info.numRows) {
+			if(this.boundaries[this.numBoundaries] == null) {
+				this.boundaries[this.numBoundaries] = new oimo.dynamics.constraint.solver.direct.Boundary(this.maxRows);
+			}
+			this.boundaries[this.numBoundaries++].init(this.bbInfo);
+			return;
+		}
+		let row = info.rows[i];
+		let lowerLimitEnabled = row.minImpulse > -1e65536;
+		let upperLimitEnabled = row.maxImpulse < 1e65536;
+		if(row.minImpulse == 0 && row.maxImpulse == 0) {
+			let _this = this.bbInfo;
+			_this.iBounded[_this.numBounded] = i;
+			_this.signs[_this.numBounded] = 0;
+			_this.numBounded++;
+			this.buildBoundariesRecursive(info,i + 1);
+			this.bbInfo.numBounded--;
+			return;
+		}
+		let _this = this.bbInfo;
+		_this.iUnbounded[_this.numUnbounded] = i;
+		_this.numUnbounded++;
+		this.buildBoundariesRecursive(info,i + 1);
+		this.bbInfo.numUnbounded--;
+		if(lowerLimitEnabled) {
+			let _this = this.bbInfo;
+			_this.iBounded[_this.numBounded] = i;
+			_this.signs[_this.numBounded] = -1;
+			_this.numBounded++;
+			this.buildBoundariesRecursive(info,i + 1);
+			this.bbInfo.numBounded--;
+		}
+		if(upperLimitEnabled) {
+			let _this = this.bbInfo;
+			_this.iBounded[_this.numBounded] = i;
+			_this.signs[_this.numBounded] = 1;
+			_this.numBounded++;
+			this.buildBoundariesRecursive(info,i + 1);
+			this.bbInfo.numBounded--;
+		}
+	}
+	buildBoundaries(info) {
+		this.numBoundaries = 0;
+		let _this = this.bbInfo;
+		_this.numBounded = 0;
+		_this.numUnbounded = 0;
+		this.buildBoundariesRecursive(info,0);
+	}
+}
+oimo.dynamics.constraint.solver.direct.BoundarySelector = class oimo_dynamics_constraint_solver_direct_BoundarySelector {
+	constructor(n) {
+		this.n = n;
+		this.indices = new Array(n);
+		this.tmpIndices = new Array(n);
+		let _g = 0;
+		while(_g < n) {
+			let i = _g++;
+			this.indices[i] = i;
+		}
+	}
+	getIndex(i) {
+		return this.indices[i];
+	}
+	select(index) {
+		let i = 0;
+		while(this.indices[i] != index) ++i;
+		while(i > 0) {
+			let tmp = this.indices[i];
+			this.indices[i] = this.indices[i - 1];
+			this.indices[i - 1] = tmp;
+			--i;
+		}
+	}
+	setSize(size) {
+		let numSmaller = 0;
+		let numGreater = 0;
+		let _g = 0;
+		let _g1 = this.n;
+		while(_g < _g1) {
+			let idx = this.indices[_g++];
+			if(idx < size) {
+				this.tmpIndices[numSmaller] = idx;
+				++numSmaller;
+			} else {
+				this.tmpIndices[size + numGreater] = idx;
+				++numGreater;
+			}
+		}
+		let tmp = this.indices;
+		this.indices = this.tmpIndices;
+		this.tmpIndices = tmp;
+	}
+}
+oimo.dynamics.constraint.solver.direct.DirectJointConstraintSolver = class oimo_dynamics_constraint_solver_direct_DirectJointConstraintSolver extends oimo.dynamics.constraint.ConstraintSolver {
+	constructor(joint) {
+		super();
+		this.joint = joint;
+		this.info = new oimo.dynamics.constraint.info.joint.JointSolverInfo();
+		let maxRows = oimo.common.Setting.maxJacobianRows;
+		this.massMatrix = new oimo.dynamics.constraint.solver.direct.MassMatrix(maxRows);
+		this.boundaryBuilder = new oimo.dynamics.constraint.solver.direct.BoundaryBuilder(maxRows);
+		this.massData = new Array(maxRows);
+		let _g = 0;
+		let _g1 = this.massData.length;
+		while(_g < _g1) this.massData[_g++] = new oimo.dynamics.constraint.solver.common.JointSolverMassDataRow();
+		let numMaxBoundaries = this.boundaryBuilder.boundaries.length;
+		this.velBoundarySelector = new oimo.dynamics.constraint.solver.direct.BoundarySelector(numMaxBoundaries);
+		this.posBoundarySelector = new oimo.dynamics.constraint.solver.direct.BoundarySelector(numMaxBoundaries);
+		this.relVels = new Array(maxRows);
+		this.impulses = new Array(maxRows);
+		this.dImpulses = new Array(maxRows);
+		this.dTotalImpulses = new Array(maxRows);
+		let _g2 = 0;
+		while(_g2 < maxRows) {
+			let i = _g2++;
+			this.relVels[i] = 0;
+			this.impulses[i] = 0;
+			this.dImpulses[i] = 0;
+			this.dTotalImpulses[i] = 0;
+		}
+	}
+	preSolveVelocity(timeStep) {
+		this.joint._syncAnchors();
+		this.joint._getVelocitySolverInfo(timeStep,this.info);
+		this._b1 = this.info.b1;
+		this._b2 = this.info.b2;
+		this.massMatrix.computeInvMass(this.info,this.massData);
+		let _this = this.boundaryBuilder;
+		_this.numBoundaries = 0;
+		let _this1 = _this.bbInfo;
+		_this1.numBounded = 0;
+		_this1.numUnbounded = 0;
+		_this.buildBoundariesRecursive(this.info,0);
+		let _this2 = this.velBoundarySelector;
+		let size = this.boundaryBuilder.numBoundaries;
+		let numSmaller = 0;
+		let numGreater = 0;
+		let _g = 0;
+		let _g1 = _this2.n;
+		while(_g < _g1) {
+			let idx = _this2.indices[_g++];
+			if(idx < size) {
+				_this2.tmpIndices[numSmaller] = idx;
+				++numSmaller;
+			} else {
+				_this2.tmpIndices[size + numGreater] = idx;
+				++numGreater;
+			}
+		}
+		let tmp = _this2.indices;
+		_this2.indices = _this2.tmpIndices;
+		_this2.tmpIndices = tmp;
+	}
+	warmStart(timeStep) {
+		let factor = this.joint._positionCorrectionAlgorithm == oimo.dynamics.constraint.PositionCorrectionAlgorithm.BAUMGARTE ? oimo.common.Setting.jointWarmStartingFactorForBaungarte : oimo.common.Setting.jointWarmStartingFactor;
+		factor *= timeStep.dtRatio;
+		if(factor <= 0) {
+			let _g = 0;
+			let _g1 = this.info.numRows;
+			while(_g < _g1) {
+				let _this = this.info.rows[_g++].impulse;
+				_this.impulse = 0;
+				_this.impulseM = 0;
+				_this.impulseP = 0;
+			}
+			return;
+		}
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let row = this.info.rows[i];
+			let imp = row.impulse;
+			let impulse = imp.impulse * factor;
+			if(impulse < row.minImpulse) {
+				impulse = row.minImpulse;
+			} else if(impulse > row.maxImpulse) {
+				impulse = row.maxImpulse;
+			}
+			imp.impulse = impulse;
+			if(row.motorMaxImpulse > 0) {
+				let impulseM = imp.impulseM * factor;
+				let max = row.motorMaxImpulse;
+				if(impulseM < -max) {
+					impulseM = -max;
+				} else if(impulseM > max) {
+					impulseM = max;
+				}
+				imp.impulseM = impulseM;
+			} else {
+				imp.impulseM = 0;
+			}
+			this.dImpulses[i] = imp.impulse + imp.impulseM;
+		}
+		let impulses = this.dImpulses;
+		let linearSet = false;
+		let angularSet = false;
+		let lv1X;
+		let lv1Y;
+		let lv1Z;
+		let lv2X;
+		let lv2Y;
+		let lv2Z;
+		let av1X;
+		let av1Y;
+		let av1Z;
+		let av2X;
+		let av2Y;
+		let av2Z;
+		lv1X = this._b1._velX;
+		lv1Y = this._b1._velY;
+		lv1Z = this._b1._velZ;
+		lv2X = this._b2._velX;
+		lv2Y = this._b2._velY;
+		lv2Z = this._b2._velZ;
+		av1X = this._b1._angVelX;
+		av1Y = this._b1._angVelY;
+		av1Z = this._b1._angVelZ;
+		av2X = this._b2._angVelX;
+		av2Y = this._b2._angVelY;
+		av2Z = this._b2._angVelZ;
+		let _g2 = 0;
+		let _g3 = this.info.numRows;
+		while(_g2 < _g3) {
+			let i = _g2++;
+			let j = this.info.rows[i].jacobian;
+			let md = this.massData[i];
+			let imp = impulses[i];
+			if((j.flag & 1) != 0) {
+				lv1X += md.invMLin1X * imp;
+				lv1Y += md.invMLin1Y * imp;
+				lv1Z += md.invMLin1Z * imp;
+				lv2X += md.invMLin2X * -imp;
+				lv2Y += md.invMLin2Y * -imp;
+				lv2Z += md.invMLin2Z * -imp;
+				linearSet = true;
+			}
+			if((j.flag & 2) != 0) {
+				av1X += md.invMAng1X * imp;
+				av1Y += md.invMAng1Y * imp;
+				av1Z += md.invMAng1Z * imp;
+				av2X += md.invMAng2X * -imp;
+				av2Y += md.invMAng2Y * -imp;
+				av2Z += md.invMAng2Z * -imp;
+				angularSet = true;
+			}
+		}
+		if(linearSet) {
+			this._b1._velX = lv1X;
+			this._b1._velY = lv1Y;
+			this._b1._velZ = lv1Z;
+			this._b2._velX = lv2X;
+			this._b2._velY = lv2Y;
+			this._b2._velZ = lv2Z;
+		}
+		if(angularSet) {
+			this._b1._angVelX = av1X;
+			this._b1._angVelY = av1Y;
+			this._b1._angVelZ = av1Z;
+			this._b2._angVelX = av2X;
+			this._b2._angVelY = av2Y;
+			this._b2._angVelZ = av2Z;
+		}
+	}
+	solveVelocity() {
+		let numRows = this.info.numRows;
+		let lv1X;
+		let lv1Y;
+		let lv1Z;
+		let lv2X;
+		let lv2Y;
+		let lv2Z;
+		let av1X;
+		let av1Y;
+		let av1Z;
+		let av2X;
+		let av2Y;
+		let av2Z;
+		lv1X = this._b1._velX;
+		lv1Y = this._b1._velY;
+		lv1Z = this._b1._velZ;
+		lv2X = this._b2._velX;
+		lv2Y = this._b2._velY;
+		lv2Z = this._b2._velZ;
+		av1X = this._b1._angVelX;
+		av1Y = this._b1._angVelY;
+		av1Z = this._b1._angVelZ;
+		av2X = this._b2._angVelX;
+		av2Y = this._b2._angVelY;
+		av2Z = this._b2._angVelZ;
+		let _g = 0;
+		while(_g < numRows) {
+			let i = _g++;
+			let row = this.info.rows[i];
+			let j = row.jacobian;
+			let relVel = 0;
+			relVel += lv1X * j.lin1X + lv1Y * j.lin1Y + lv1Z * j.lin1Z;
+			relVel -= lv2X * j.lin2X + lv2Y * j.lin2Y + lv2Z * j.lin2Z;
+			relVel += av1X * j.ang1X + av1Y * j.ang1Y + av1Z * j.ang1Z;
+			relVel -= av2X * j.ang2X + av2Y * j.ang2Y + av2Z * j.ang2Z;
+			this.relVels[i] = relVel;
+			this.impulses[i] = row.impulse.impulse;
+			this.dTotalImpulses[i] = 0;
+		}
+		let invMass = this.massMatrix._invMassWithoutCfm;
+		let _g1 = 0;
+		while(_g1 < numRows) {
+			let i = _g1++;
+			let row = this.info.rows[i];
+			let imp = row.impulse;
+			if(row.motorMaxImpulse > 0) {
+				let oldImpulseM = imp.impulseM;
+				let impulseM = oldImpulseM + this.massData[i].massWithoutCfm * (-row.motorSpeed - this.relVels[i]);
+				let maxImpulseM = row.motorMaxImpulse;
+				if(impulseM < -maxImpulseM) {
+					impulseM = -maxImpulseM;
+				} else if(impulseM > maxImpulseM) {
+					impulseM = maxImpulseM;
+				}
+				imp.impulseM = impulseM;
+				let dImpulseM = impulseM - oldImpulseM;
+				this.dTotalImpulses[i] = dImpulseM;
+				let _g = 0;
+				while(_g < numRows) {
+					let j = _g++;
+					this.relVels[j] += dImpulseM * invMass[i][j];
+				}
+			}
+		}
+		let solved = false;
+		let _g2 = 0;
+		let _g3 = this.boundaryBuilder.numBoundaries;
+		while(_g2 < _g3) {
+			let idx = this.velBoundarySelector.indices[_g2++];
+			if(this.boundaryBuilder.boundaries[idx].computeImpulses(this.info,this.massMatrix,this.relVels,this.impulses,this.dImpulses,1,false)) {
+				let _g = 0;
+				while(_g < numRows) {
+					let j = _g++;
+					let dimp = this.dImpulses[j];
+					this.info.rows[j].impulse.impulse += dimp;
+					this.dTotalImpulses[j] += dimp;
+				}
+				let impulses = this.dTotalImpulses;
+				let linearSet = false;
+				let angularSet = false;
+				let lv1X;
+				let lv1Y;
+				let lv1Z;
+				let lv2X;
+				let lv2Y;
+				let lv2Z;
+				let av1X;
+				let av1Y;
+				let av1Z;
+				let av2X;
+				let av2Y;
+				let av2Z;
+				lv1X = this._b1._velX;
+				lv1Y = this._b1._velY;
+				lv1Z = this._b1._velZ;
+				lv2X = this._b2._velX;
+				lv2Y = this._b2._velY;
+				lv2Z = this._b2._velZ;
+				av1X = this._b1._angVelX;
+				av1Y = this._b1._angVelY;
+				av1Z = this._b1._angVelZ;
+				av2X = this._b2._angVelX;
+				av2Y = this._b2._angVelY;
+				av2Z = this._b2._angVelZ;
+				let _g1 = 0;
+				let _g2 = this.info.numRows;
+				while(_g1 < _g2) {
+					let i = _g1++;
+					let j = this.info.rows[i].jacobian;
+					let md = this.massData[i];
+					let imp = impulses[i];
+					if((j.flag & 1) != 0) {
+						lv1X += md.invMLin1X * imp;
+						lv1Y += md.invMLin1Y * imp;
+						lv1Z += md.invMLin1Z * imp;
+						lv2X += md.invMLin2X * -imp;
+						lv2Y += md.invMLin2Y * -imp;
+						lv2Z += md.invMLin2Z * -imp;
+						linearSet = true;
+					}
+					if((j.flag & 2) != 0) {
+						av1X += md.invMAng1X * imp;
+						av1Y += md.invMAng1Y * imp;
+						av1Z += md.invMAng1Z * imp;
+						av2X += md.invMAng2X * -imp;
+						av2Y += md.invMAng2Y * -imp;
+						av2Z += md.invMAng2Z * -imp;
+						angularSet = true;
+					}
+				}
+				if(linearSet) {
+					this._b1._velX = lv1X;
+					this._b1._velY = lv1Y;
+					this._b1._velZ = lv1Z;
+					this._b2._velX = lv2X;
+					this._b2._velY = lv2Y;
+					this._b2._velZ = lv2Z;
+				}
+				if(angularSet) {
+					this._b1._angVelX = av1X;
+					this._b1._angVelY = av1Y;
+					this._b1._angVelZ = av1Z;
+					this._b2._angVelX = av2X;
+					this._b2._angVelY = av2Y;
+					this._b2._angVelZ = av2Z;
+				}
+				let _this = this.velBoundarySelector;
+				let i = 0;
+				while(_this.indices[i] != idx) ++i;
+				while(i > 0) {
+					let tmp = _this.indices[i];
+					_this.indices[i] = _this.indices[i - 1];
+					_this.indices[i - 1] = tmp;
+					--i;
+				}
+				solved = true;
+				break;
+			}
+		}
+		if(!solved) {
+			console.log("src/oimo/dynamics/constraint/solver/direct/DirectJointConstraintSolver.hx:335:","could not find solution. (velocity)");
+			return;
+		}
+	}
+	postSolveVelocity(timeStep) {
+		let linX;
+		let linY;
+		let linZ;
+		let angX;
+		let angY;
+		let angZ;
+		linX = 0;
+		linY = 0;
+		linZ = 0;
+		angX = 0;
+		angY = 0;
+		angZ = 0;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let row = this.info.rows[_g++];
+			let imp = row.impulse;
+			let j = row.jacobian;
+			if((j.flag & 1) != 0) {
+				linX += j.lin1X * imp.impulse;
+				linY += j.lin1Y * imp.impulse;
+				linZ += j.lin1Z * imp.impulse;
+			} else if((j.flag & 2) != 0) {
+				angX += j.ang1X * imp.impulse;
+				angY += j.ang1Y * imp.impulse;
+				angZ += j.ang1Z * imp.impulse;
+			}
+		}
+		this.joint._appliedForceX = linX * timeStep.invDt;
+		this.joint._appliedForceY = linY * timeStep.invDt;
+		this.joint._appliedForceZ = linZ * timeStep.invDt;
+		this.joint._appliedTorqueX = angX * timeStep.invDt;
+		this.joint._appliedTorqueY = angY * timeStep.invDt;
+		this.joint._appliedTorqueZ = angZ * timeStep.invDt;
+	}
+	preSolvePosition(timeStep) {
+		this.joint._syncAnchors();
+		this.joint._getPositionSolverInfo(this.info);
+		this._b1 = this.info.b1;
+		this._b2 = this.info.b2;
+		this.massMatrix.computeInvMass(this.info,this.massData);
+		let _this = this.boundaryBuilder;
+		_this.numBoundaries = 0;
+		let _this1 = _this.bbInfo;
+		_this1.numBounded = 0;
+		_this1.numUnbounded = 0;
+		_this.buildBoundariesRecursive(this.info,0);
+		let _this2 = this.posBoundarySelector;
+		let size = this.boundaryBuilder.numBoundaries;
+		let numSmaller = 0;
+		let numGreater = 0;
+		let _g = 0;
+		let _g1 = _this2.n;
+		while(_g < _g1) {
+			let idx = _this2.indices[_g++];
+			if(idx < size) {
+				_this2.tmpIndices[numSmaller] = idx;
+				++numSmaller;
+			} else {
+				_this2.tmpIndices[size + numGreater] = idx;
+				++numGreater;
+			}
+		}
+		let tmp = _this2.indices;
+		_this2.indices = _this2.tmpIndices;
+		_this2.tmpIndices = tmp;
+		let _g2 = 0;
+		let _g3 = this.info.numRows;
+		while(_g2 < _g3) this.info.rows[_g2++].impulse.impulseP = 0;
+	}
+	solvePositionSplitImpulse() {
+		let numRows = this.info.numRows;
+		let lv1X;
+		let lv1Y;
+		let lv1Z;
+		let lv2X;
+		let lv2Y;
+		let lv2Z;
+		let av1X;
+		let av1Y;
+		let av1Z;
+		let av2X;
+		let av2Y;
+		let av2Z;
+		lv1X = this._b1._pseudoVelX;
+		lv1Y = this._b1._pseudoVelY;
+		lv1Z = this._b1._pseudoVelZ;
+		lv2X = this._b2._pseudoVelX;
+		lv2Y = this._b2._pseudoVelY;
+		lv2Z = this._b2._pseudoVelZ;
+		av1X = this._b1._angPseudoVelX;
+		av1Y = this._b1._angPseudoVelY;
+		av1Z = this._b1._angPseudoVelZ;
+		av2X = this._b2._angPseudoVelX;
+		av2Y = this._b2._angPseudoVelY;
+		av2Z = this._b2._angPseudoVelZ;
+		let _g = 0;
+		while(_g < numRows) {
+			let i = _g++;
+			let row = this.info.rows[i];
+			let j = row.jacobian;
+			let relVel = 0;
+			relVel += lv1X * j.lin1X + lv1Y * j.lin1Y + lv1Z * j.lin1Z;
+			relVel -= lv2X * j.lin2X + lv2Y * j.lin2Y + lv2Z * j.lin2Z;
+			relVel += av1X * j.ang1X + av1Y * j.ang1Y + av1Z * j.ang1Z;
+			relVel -= av2X * j.ang2X + av2Y * j.ang2Y + av2Z * j.ang2Z;
+			this.relVels[i] = relVel;
+			this.impulses[i] = row.impulse.impulseP;
+		}
+		let solved = false;
+		let _g1 = 0;
+		let _g2 = this.boundaryBuilder.numBoundaries;
+		while(_g1 < _g2) {
+			let idx = this.posBoundarySelector.indices[_g1++];
+			if(this.boundaryBuilder.boundaries[idx].computeImpulses(this.info,this.massMatrix,this.relVels,this.impulses,this.dImpulses,oimo.common.Setting.positionSplitImpulseBaumgarte,false)) {
+				let _g = 0;
+				while(_g < numRows) {
+					let j = _g++;
+					this.info.rows[j].impulse.impulseP += this.dImpulses[j];
+				}
+				let impulses = this.dImpulses;
+				let linearSet = false;
+				let angularSet = false;
+				let lv1X;
+				let lv1Y;
+				let lv1Z;
+				let lv2X;
+				let lv2Y;
+				let lv2Z;
+				let av1X;
+				let av1Y;
+				let av1Z;
+				let av2X;
+				let av2Y;
+				let av2Z;
+				lv1X = this._b1._pseudoVelX;
+				lv1Y = this._b1._pseudoVelY;
+				lv1Z = this._b1._pseudoVelZ;
+				lv2X = this._b2._pseudoVelX;
+				lv2Y = this._b2._pseudoVelY;
+				lv2Z = this._b2._pseudoVelZ;
+				av1X = this._b1._angPseudoVelX;
+				av1Y = this._b1._angPseudoVelY;
+				av1Z = this._b1._angPseudoVelZ;
+				av2X = this._b2._angPseudoVelX;
+				av2Y = this._b2._angPseudoVelY;
+				av2Z = this._b2._angPseudoVelZ;
+				let _g1 = 0;
+				let _g2 = this.info.numRows;
+				while(_g1 < _g2) {
+					let i = _g1++;
+					let j = this.info.rows[i].jacobian;
+					let md = this.massData[i];
+					let imp = impulses[i];
+					if((j.flag & 1) != 0) {
+						lv1X += md.invMLin1X * imp;
+						lv1Y += md.invMLin1Y * imp;
+						lv1Z += md.invMLin1Z * imp;
+						lv2X += md.invMLin2X * -imp;
+						lv2Y += md.invMLin2Y * -imp;
+						lv2Z += md.invMLin2Z * -imp;
+						linearSet = true;
+					}
+					if((j.flag & 2) != 0) {
+						av1X += md.invMAng1X * imp;
+						av1Y += md.invMAng1Y * imp;
+						av1Z += md.invMAng1Z * imp;
+						av2X += md.invMAng2X * -imp;
+						av2Y += md.invMAng2Y * -imp;
+						av2Z += md.invMAng2Z * -imp;
+						angularSet = true;
+					}
+				}
+				if(linearSet) {
+					this._b1._pseudoVelX = lv1X;
+					this._b1._pseudoVelY = lv1Y;
+					this._b1._pseudoVelZ = lv1Z;
+					this._b2._pseudoVelX = lv2X;
+					this._b2._pseudoVelY = lv2Y;
+					this._b2._pseudoVelZ = lv2Z;
+				}
+				if(angularSet) {
+					this._b1._angPseudoVelX = av1X;
+					this._b1._angPseudoVelY = av1Y;
+					this._b1._angPseudoVelZ = av1Z;
+					this._b2._angPseudoVelX = av2X;
+					this._b2._angPseudoVelY = av2Y;
+					this._b2._angPseudoVelZ = av2Z;
+				}
+				let _this = this.posBoundarySelector;
+				let i = 0;
+				while(_this.indices[i] != idx) ++i;
+				while(i > 0) {
+					let tmp = _this.indices[i];
+					_this.indices[i] = _this.indices[i - 1];
+					_this.indices[i - 1] = tmp;
+					--i;
+				}
+				solved = true;
+				break;
+			}
+		}
+		if(!solved) {
+			console.log("src/oimo/dynamics/constraint/solver/direct/DirectJointConstraintSolver.hx:450:","could not find solution. (split impulse)");
+			return;
+		}
+	}
+	solvePositionNgs(timeStep) {
+		this.joint._syncAnchors();
+		this.joint._getPositionSolverInfo(this.info);
+		this._b1 = this.info.b1;
+		this._b2 = this.info.b2;
+		this.massMatrix.computeInvMass(this.info,this.massData);
+		let _this = this.boundaryBuilder;
+		_this.numBoundaries = 0;
+		let _this1 = _this.bbInfo;
+		_this1.numBounded = 0;
+		_this1.numUnbounded = 0;
+		_this.buildBoundariesRecursive(this.info,0);
+		let _this2 = this.posBoundarySelector;
+		let size = this.boundaryBuilder.numBoundaries;
+		let numSmaller = 0;
+		let numGreater = 0;
+		let _g = 0;
+		let _g1 = _this2.n;
+		while(_g < _g1) {
+			let idx = _this2.indices[_g++];
+			if(idx < size) {
+				_this2.tmpIndices[numSmaller] = idx;
+				++numSmaller;
+			} else {
+				_this2.tmpIndices[size + numGreater] = idx;
+				++numGreater;
+			}
+		}
+		let tmp = _this2.indices;
+		_this2.indices = _this2.tmpIndices;
+		_this2.tmpIndices = tmp;
+		let numRows = this.info.numRows;
+		let _g2 = 0;
+		while(_g2 < numRows) {
+			let i = _g2++;
+			let imp = this.info.rows[i].impulse;
+			this.relVels[i] = 0;
+			this.impulses[i] = imp.impulseP;
+		}
+		let solved = false;
+		let _g3 = 0;
+		let _g4 = this.boundaryBuilder.numBoundaries;
+		while(_g3 < _g4) {
+			let idx = this.posBoundarySelector.indices[_g3++];
+			if(this.boundaryBuilder.boundaries[idx].computeImpulses(this.info,this.massMatrix,this.relVels,this.impulses,this.dImpulses,oimo.common.Setting.positionNgsBaumgarte,false)) {
+				let _g = 0;
+				while(_g < numRows) {
+					let j = _g++;
+					this.info.rows[j].impulse.impulseP += this.dImpulses[j];
+				}
+				let impulses = this.dImpulses;
+				let linearSet = false;
+				let angularSet = false;
+				let lv1X;
+				let lv1Y;
+				let lv1Z;
+				let lv2X;
+				let lv2Y;
+				let lv2Z;
+				let av1X;
+				let av1Y;
+				let av1Z;
+				let av2X;
+				let av2Y;
+				let av2Z;
+				lv1X = 0;
+				lv1Y = 0;
+				lv1Z = 0;
+				lv2X = 0;
+				lv2Y = 0;
+				lv2Z = 0;
+				av1X = 0;
+				av1Y = 0;
+				av1Z = 0;
+				av2X = 0;
+				av2Y = 0;
+				av2Z = 0;
+				let _g1 = 0;
+				let _g2 = this.info.numRows;
+				while(_g1 < _g2) {
+					let i = _g1++;
+					let j = this.info.rows[i].jacobian;
+					let md = this.massData[i];
+					let imp = impulses[i];
+					if((j.flag & 1) != 0) {
+						lv1X += md.invMLin1X * imp;
+						lv1Y += md.invMLin1Y * imp;
+						lv1Z += md.invMLin1Z * imp;
+						lv2X += md.invMLin2X * -imp;
+						lv2Y += md.invMLin2Y * -imp;
+						lv2Z += md.invMLin2Z * -imp;
+						linearSet = true;
+					}
+					if((j.flag & 2) != 0) {
+						av1X += md.invMAng1X * imp;
+						av1Y += md.invMAng1Y * imp;
+						av1Z += md.invMAng1Z * imp;
+						av2X += md.invMAng2X * -imp;
+						av2Y += md.invMAng2Y * -imp;
+						av2Z += md.invMAng2Z * -imp;
+						angularSet = true;
+					}
+				}
+				if(linearSet) {
+					let _this = this._b1;
+					_this._transform._positionX += lv1X;
+					_this._transform._positionY += lv1Y;
+					_this._transform._positionZ += lv1Z;
+					let _this1 = this._b2;
+					_this1._transform._positionX += lv2X;
+					_this1._transform._positionY += lv2Y;
+					_this1._transform._positionZ += lv2Z;
+				}
+				if(angularSet) {
+					let _this = this._b1;
+					let theta = Math.sqrt(av1X * av1X + av1Y * av1Y + av1Z * av1Z);
+					let halfTheta = theta * 0.5;
+					let rotationToSinAxisFactor;
+					let cosHalfTheta;
+					if(halfTheta < 0.5) {
+						let ht2 = halfTheta * halfTheta;
+						rotationToSinAxisFactor = 0.5 * (1 - ht2 * 0.16666666666666666 + ht2 * ht2 * 0.0083333333333333332);
+						cosHalfTheta = 1 - ht2 * 0.5 + ht2 * ht2 * 0.041666666666666664;
+					} else {
+						rotationToSinAxisFactor = Math.sin(halfTheta) / theta;
+						cosHalfTheta = Math.cos(halfTheta);
+					}
+					let sinAxisX;
+					let sinAxisY;
+					let sinAxisZ;
+					sinAxisX = av1X * rotationToSinAxisFactor;
+					sinAxisY = av1Y * rotationToSinAxisFactor;
+					sinAxisZ = av1Z * rotationToSinAxisFactor;
+					let dqX;
+					let dqY;
+					let dqZ;
+					let dqW;
+					dqX = sinAxisX;
+					dqY = sinAxisY;
+					dqZ = sinAxisZ;
+					dqW = cosHalfTheta;
+					let qX;
+					let qY;
+					let qZ;
+					let qW;
+					let e00 = _this._transform._rotation00;
+					let e11 = _this._transform._rotation11;
+					let e22 = _this._transform._rotation22;
+					let t = e00 + e11 + e22;
+					let s;
+					if(t > 0) {
+						s = Math.sqrt(t + 1);
+						qW = 0.5 * s;
+						s = 0.5 / s;
+						qX = (_this._transform._rotation21 - _this._transform._rotation12) * s;
+						qY = (_this._transform._rotation02 - _this._transform._rotation20) * s;
+						qZ = (_this._transform._rotation10 - _this._transform._rotation01) * s;
+					} else if(e00 > e11) {
+						if(e00 > e22) {
+							s = Math.sqrt(e00 - e11 - e22 + 1);
+							qX = 0.5 * s;
+							s = 0.5 / s;
+							qY = (_this._transform._rotation01 + _this._transform._rotation10) * s;
+							qZ = (_this._transform._rotation02 + _this._transform._rotation20) * s;
+							qW = (_this._transform._rotation21 - _this._transform._rotation12) * s;
+						} else {
+							s = Math.sqrt(e22 - e00 - e11 + 1);
+							qZ = 0.5 * s;
+							s = 0.5 / s;
+							qX = (_this._transform._rotation02 + _this._transform._rotation20) * s;
+							qY = (_this._transform._rotation12 + _this._transform._rotation21) * s;
+							qW = (_this._transform._rotation10 - _this._transform._rotation01) * s;
+						}
+					} else if(e11 > e22) {
+						s = Math.sqrt(e11 - e22 - e00 + 1);
+						qY = 0.5 * s;
+						s = 0.5 / s;
+						qX = (_this._transform._rotation01 + _this._transform._rotation10) * s;
+						qZ = (_this._transform._rotation12 + _this._transform._rotation21) * s;
+						qW = (_this._transform._rotation02 - _this._transform._rotation20) * s;
+					} else {
+						s = Math.sqrt(e22 - e00 - e11 + 1);
+						qZ = 0.5 * s;
+						s = 0.5 / s;
+						qX = (_this._transform._rotation02 + _this._transform._rotation20) * s;
+						qY = (_this._transform._rotation12 + _this._transform._rotation21) * s;
+						qW = (_this._transform._rotation10 - _this._transform._rotation01) * s;
+					}
+					qX = dqW * qX + dqX * qW + dqY * qZ - dqZ * qY;
+					qY = dqW * qY - dqX * qZ + dqY * qW + dqZ * qX;
+					qZ = dqW * qZ + dqX * qY - dqY * qX + dqZ * qW;
+					qW = dqW * qW - dqX * qX - dqY * qY - dqZ * qZ;
+					let l = qX * qX + qY * qY + qZ * qZ + qW * qW;
+					if(l > 1e-32) {
+						l = 1 / Math.sqrt(l);
+					}
+					qX *= l;
+					qY *= l;
+					qZ *= l;
+					qW *= l;
+					let x = qX;
+					let y = qY;
+					let z = qZ;
+					let w = qW;
+					let x2 = 2 * x;
+					let y2 = 2 * y;
+					let z2 = 2 * z;
+					let xx = x * x2;
+					let yy = y * y2;
+					let zz = z * z2;
+					let xy = x * y2;
+					let yz = y * z2;
+					let xz = x * z2;
+					let wx = w * x2;
+					let wy = w * y2;
+					let wz = w * z2;
+					_this._transform._rotation00 = 1 - yy - zz;
+					_this._transform._rotation01 = xy - wz;
+					_this._transform._rotation02 = xz + wy;
+					_this._transform._rotation10 = xy + wz;
+					_this._transform._rotation11 = 1 - xx - zz;
+					_this._transform._rotation12 = yz - wx;
+					_this._transform._rotation20 = xz - wy;
+					_this._transform._rotation21 = yz + wx;
+					_this._transform._rotation22 = 1 - xx - yy;
+					let __tmp__00;
+					let __tmp__01;
+					let __tmp__02;
+					let __tmp__10;
+					let __tmp__11;
+					let __tmp__12;
+					let __tmp__20;
+					let __tmp__21;
+					let __tmp__22;
+					__tmp__00 = _this._transform._rotation00 * _this._invLocalInertia00 + _this._transform._rotation01 * _this._invLocalInertia10 + _this._transform._rotation02 * _this._invLocalInertia20;
+					__tmp__01 = _this._transform._rotation00 * _this._invLocalInertia01 + _this._transform._rotation01 * _this._invLocalInertia11 + _this._transform._rotation02 * _this._invLocalInertia21;
+					__tmp__02 = _this._transform._rotation00 * _this._invLocalInertia02 + _this._transform._rotation01 * _this._invLocalInertia12 + _this._transform._rotation02 * _this._invLocalInertia22;
+					__tmp__10 = _this._transform._rotation10 * _this._invLocalInertia00 + _this._transform._rotation11 * _this._invLocalInertia10 + _this._transform._rotation12 * _this._invLocalInertia20;
+					__tmp__11 = _this._transform._rotation10 * _this._invLocalInertia01 + _this._transform._rotation11 * _this._invLocalInertia11 + _this._transform._rotation12 * _this._invLocalInertia21;
+					__tmp__12 = _this._transform._rotation10 * _this._invLocalInertia02 + _this._transform._rotation11 * _this._invLocalInertia12 + _this._transform._rotation12 * _this._invLocalInertia22;
+					__tmp__20 = _this._transform._rotation20 * _this._invLocalInertia00 + _this._transform._rotation21 * _this._invLocalInertia10 + _this._transform._rotation22 * _this._invLocalInertia20;
+					__tmp__21 = _this._transform._rotation20 * _this._invLocalInertia01 + _this._transform._rotation21 * _this._invLocalInertia11 + _this._transform._rotation22 * _this._invLocalInertia21;
+					__tmp__22 = _this._transform._rotation20 * _this._invLocalInertia02 + _this._transform._rotation21 * _this._invLocalInertia12 + _this._transform._rotation22 * _this._invLocalInertia22;
+					_this._invInertia00 = __tmp__00;
+					_this._invInertia01 = __tmp__01;
+					_this._invInertia02 = __tmp__02;
+					_this._invInertia10 = __tmp__10;
+					_this._invInertia11 = __tmp__11;
+					_this._invInertia12 = __tmp__12;
+					_this._invInertia20 = __tmp__20;
+					_this._invInertia21 = __tmp__21;
+					_this._invInertia22 = __tmp__22;
+					let __tmp__001;
+					let __tmp__011;
+					let __tmp__021;
+					let __tmp__101;
+					let __tmp__111;
+					let __tmp__121;
+					let __tmp__201;
+					let __tmp__211;
+					let __tmp__221;
+					__tmp__001 = _this._invInertia00 * _this._transform._rotation00 + _this._invInertia01 * _this._transform._rotation01 + _this._invInertia02 * _this._transform._rotation02;
+					__tmp__011 = _this._invInertia00 * _this._transform._rotation10 + _this._invInertia01 * _this._transform._rotation11 + _this._invInertia02 * _this._transform._rotation12;
+					__tmp__021 = _this._invInertia00 * _this._transform._rotation20 + _this._invInertia01 * _this._transform._rotation21 + _this._invInertia02 * _this._transform._rotation22;
+					__tmp__101 = _this._invInertia10 * _this._transform._rotation00 + _this._invInertia11 * _this._transform._rotation01 + _this._invInertia12 * _this._transform._rotation02;
+					__tmp__111 = _this._invInertia10 * _this._transform._rotation10 + _this._invInertia11 * _this._transform._rotation11 + _this._invInertia12 * _this._transform._rotation12;
+					__tmp__121 = _this._invInertia10 * _this._transform._rotation20 + _this._invInertia11 * _this._transform._rotation21 + _this._invInertia12 * _this._transform._rotation22;
+					__tmp__201 = _this._invInertia20 * _this._transform._rotation00 + _this._invInertia21 * _this._transform._rotation01 + _this._invInertia22 * _this._transform._rotation02;
+					__tmp__211 = _this._invInertia20 * _this._transform._rotation10 + _this._invInertia21 * _this._transform._rotation11 + _this._invInertia22 * _this._transform._rotation12;
+					__tmp__221 = _this._invInertia20 * _this._transform._rotation20 + _this._invInertia21 * _this._transform._rotation21 + _this._invInertia22 * _this._transform._rotation22;
+					_this._invInertia00 = __tmp__001;
+					_this._invInertia01 = __tmp__011;
+					_this._invInertia02 = __tmp__021;
+					_this._invInertia10 = __tmp__101;
+					_this._invInertia11 = __tmp__111;
+					_this._invInertia12 = __tmp__121;
+					_this._invInertia20 = __tmp__201;
+					_this._invInertia21 = __tmp__211;
+					_this._invInertia22 = __tmp__221;
+					_this._invInertia00 *= _this._rotFactor.x;
+					_this._invInertia01 *= _this._rotFactor.x;
+					_this._invInertia02 *= _this._rotFactor.x;
+					_this._invInertia10 *= _this._rotFactor.y;
+					_this._invInertia11 *= _this._rotFactor.y;
+					_this._invInertia12 *= _this._rotFactor.y;
+					_this._invInertia20 *= _this._rotFactor.z;
+					_this._invInertia21 *= _this._rotFactor.z;
+					_this._invInertia22 *= _this._rotFactor.z;
+					let _this1 = this._b2;
+					let theta1 = Math.sqrt(av2X * av2X + av2Y * av2Y + av2Z * av2Z);
+					let halfTheta1 = theta1 * 0.5;
+					let rotationToSinAxisFactor1;
+					let cosHalfTheta1;
+					if(halfTheta1 < 0.5) {
+						let ht2 = halfTheta1 * halfTheta1;
+						rotationToSinAxisFactor1 = 0.5 * (1 - ht2 * 0.16666666666666666 + ht2 * ht2 * 0.0083333333333333332);
+						cosHalfTheta1 = 1 - ht2 * 0.5 + ht2 * ht2 * 0.041666666666666664;
+					} else {
+						rotationToSinAxisFactor1 = Math.sin(halfTheta1) / theta1;
+						cosHalfTheta1 = Math.cos(halfTheta1);
+					}
+					let sinAxisX1;
+					let sinAxisY1;
+					let sinAxisZ1;
+					sinAxisX1 = av2X * rotationToSinAxisFactor1;
+					sinAxisY1 = av2Y * rotationToSinAxisFactor1;
+					sinAxisZ1 = av2Z * rotationToSinAxisFactor1;
+					let dqX1;
+					let dqY1;
+					let dqZ1;
+					let dqW1;
+					dqX1 = sinAxisX1;
+					dqY1 = sinAxisY1;
+					dqZ1 = sinAxisZ1;
+					dqW1 = cosHalfTheta1;
+					let qX1;
+					let qY1;
+					let qZ1;
+					let qW1;
+					let e001 = _this1._transform._rotation00;
+					let e111 = _this1._transform._rotation11;
+					let e221 = _this1._transform._rotation22;
+					let t1 = e001 + e111 + e221;
+					let s1;
+					if(t1 > 0) {
+						s1 = Math.sqrt(t1 + 1);
+						qW1 = 0.5 * s1;
+						s1 = 0.5 / s1;
+						qX1 = (_this1._transform._rotation21 - _this1._transform._rotation12) * s1;
+						qY1 = (_this1._transform._rotation02 - _this1._transform._rotation20) * s1;
+						qZ1 = (_this1._transform._rotation10 - _this1._transform._rotation01) * s1;
+					} else if(e001 > e111) {
+						if(e001 > e221) {
+							s1 = Math.sqrt(e001 - e111 - e221 + 1);
+							qX1 = 0.5 * s1;
+							s1 = 0.5 / s1;
+							qY1 = (_this1._transform._rotation01 + _this1._transform._rotation10) * s1;
+							qZ1 = (_this1._transform._rotation02 + _this1._transform._rotation20) * s1;
+							qW1 = (_this1._transform._rotation21 - _this1._transform._rotation12) * s1;
+						} else {
+							s1 = Math.sqrt(e221 - e001 - e111 + 1);
+							qZ1 = 0.5 * s1;
+							s1 = 0.5 / s1;
+							qX1 = (_this1._transform._rotation02 + _this1._transform._rotation20) * s1;
+							qY1 = (_this1._transform._rotation12 + _this1._transform._rotation21) * s1;
+							qW1 = (_this1._transform._rotation10 - _this1._transform._rotation01) * s1;
+						}
+					} else if(e111 > e221) {
+						s1 = Math.sqrt(e111 - e221 - e001 + 1);
+						qY1 = 0.5 * s1;
+						s1 = 0.5 / s1;
+						qX1 = (_this1._transform._rotation01 + _this1._transform._rotation10) * s1;
+						qZ1 = (_this1._transform._rotation12 + _this1._transform._rotation21) * s1;
+						qW1 = (_this1._transform._rotation02 - _this1._transform._rotation20) * s1;
+					} else {
+						s1 = Math.sqrt(e221 - e001 - e111 + 1);
+						qZ1 = 0.5 * s1;
+						s1 = 0.5 / s1;
+						qX1 = (_this1._transform._rotation02 + _this1._transform._rotation20) * s1;
+						qY1 = (_this1._transform._rotation12 + _this1._transform._rotation21) * s1;
+						qW1 = (_this1._transform._rotation10 - _this1._transform._rotation01) * s1;
+					}
+					qX1 = dqW1 * qX1 + dqX1 * qW1 + dqY1 * qZ1 - dqZ1 * qY1;
+					qY1 = dqW1 * qY1 - dqX1 * qZ1 + dqY1 * qW1 + dqZ1 * qX1;
+					qZ1 = dqW1 * qZ1 + dqX1 * qY1 - dqY1 * qX1 + dqZ1 * qW1;
+					qW1 = dqW1 * qW1 - dqX1 * qX1 - dqY1 * qY1 - dqZ1 * qZ1;
+					let l1 = qX1 * qX1 + qY1 * qY1 + qZ1 * qZ1 + qW1 * qW1;
+					if(l1 > 1e-32) {
+						l1 = 1 / Math.sqrt(l1);
+					}
+					qX1 *= l1;
+					qY1 *= l1;
+					qZ1 *= l1;
+					qW1 *= l1;
+					let x1 = qX1;
+					let y1 = qY1;
+					let z1 = qZ1;
+					let w1 = qW1;
+					let x21 = 2 * x1;
+					let y21 = 2 * y1;
+					let z21 = 2 * z1;
+					let xx1 = x1 * x21;
+					let yy1 = y1 * y21;
+					let zz1 = z1 * z21;
+					let xy1 = x1 * y21;
+					let yz1 = y1 * z21;
+					let xz1 = x1 * z21;
+					let wx1 = w1 * x21;
+					let wy1 = w1 * y21;
+					let wz1 = w1 * z21;
+					_this1._transform._rotation00 = 1 - yy1 - zz1;
+					_this1._transform._rotation01 = xy1 - wz1;
+					_this1._transform._rotation02 = xz1 + wy1;
+					_this1._transform._rotation10 = xy1 + wz1;
+					_this1._transform._rotation11 = 1 - xx1 - zz1;
+					_this1._transform._rotation12 = yz1 - wx1;
+					_this1._transform._rotation20 = xz1 - wy1;
+					_this1._transform._rotation21 = yz1 + wx1;
+					_this1._transform._rotation22 = 1 - xx1 - yy1;
+					let __tmp__002;
+					let __tmp__012;
+					let __tmp__022;
+					let __tmp__102;
+					let __tmp__112;
+					let __tmp__122;
+					let __tmp__202;
+					let __tmp__212;
+					let __tmp__222;
+					__tmp__002 = _this1._transform._rotation00 * _this1._invLocalInertia00 + _this1._transform._rotation01 * _this1._invLocalInertia10 + _this1._transform._rotation02 * _this1._invLocalInertia20;
+					__tmp__012 = _this1._transform._rotation00 * _this1._invLocalInertia01 + _this1._transform._rotation01 * _this1._invLocalInertia11 + _this1._transform._rotation02 * _this1._invLocalInertia21;
+					__tmp__022 = _this1._transform._rotation00 * _this1._invLocalInertia02 + _this1._transform._rotation01 * _this1._invLocalInertia12 + _this1._transform._rotation02 * _this1._invLocalInertia22;
+					__tmp__102 = _this1._transform._rotation10 * _this1._invLocalInertia00 + _this1._transform._rotation11 * _this1._invLocalInertia10 + _this1._transform._rotation12 * _this1._invLocalInertia20;
+					__tmp__112 = _this1._transform._rotation10 * _this1._invLocalInertia01 + _this1._transform._rotation11 * _this1._invLocalInertia11 + _this1._transform._rotation12 * _this1._invLocalInertia21;
+					__tmp__122 = _this1._transform._rotation10 * _this1._invLocalInertia02 + _this1._transform._rotation11 * _this1._invLocalInertia12 + _this1._transform._rotation12 * _this1._invLocalInertia22;
+					__tmp__202 = _this1._transform._rotation20 * _this1._invLocalInertia00 + _this1._transform._rotation21 * _this1._invLocalInertia10 + _this1._transform._rotation22 * _this1._invLocalInertia20;
+					__tmp__212 = _this1._transform._rotation20 * _this1._invLocalInertia01 + _this1._transform._rotation21 * _this1._invLocalInertia11 + _this1._transform._rotation22 * _this1._invLocalInertia21;
+					__tmp__222 = _this1._transform._rotation20 * _this1._invLocalInertia02 + _this1._transform._rotation21 * _this1._invLocalInertia12 + _this1._transform._rotation22 * _this1._invLocalInertia22;
+					_this1._invInertia00 = __tmp__002;
+					_this1._invInertia01 = __tmp__012;
+					_this1._invInertia02 = __tmp__022;
+					_this1._invInertia10 = __tmp__102;
+					_this1._invInertia11 = __tmp__112;
+					_this1._invInertia12 = __tmp__122;
+					_this1._invInertia20 = __tmp__202;
+					_this1._invInertia21 = __tmp__212;
+					_this1._invInertia22 = __tmp__222;
+					let __tmp__003;
+					let __tmp__013;
+					let __tmp__023;
+					let __tmp__103;
+					let __tmp__113;
+					let __tmp__123;
+					let __tmp__203;
+					let __tmp__213;
+					let __tmp__223;
+					__tmp__003 = _this1._invInertia00 * _this1._transform._rotation00 + _this1._invInertia01 * _this1._transform._rotation01 + _this1._invInertia02 * _this1._transform._rotation02;
+					__tmp__013 = _this1._invInertia00 * _this1._transform._rotation10 + _this1._invInertia01 * _this1._transform._rotation11 + _this1._invInertia02 * _this1._transform._rotation12;
+					__tmp__023 = _this1._invInertia00 * _this1._transform._rotation20 + _this1._invInertia01 * _this1._transform._rotation21 + _this1._invInertia02 * _this1._transform._rotation22;
+					__tmp__103 = _this1._invInertia10 * _this1._transform._rotation00 + _this1._invInertia11 * _this1._transform._rotation01 + _this1._invInertia12 * _this1._transform._rotation02;
+					__tmp__113 = _this1._invInertia10 * _this1._transform._rotation10 + _this1._invInertia11 * _this1._transform._rotation11 + _this1._invInertia12 * _this1._transform._rotation12;
+					__tmp__123 = _this1._invInertia10 * _this1._transform._rotation20 + _this1._invInertia11 * _this1._transform._rotation21 + _this1._invInertia12 * _this1._transform._rotation22;
+					__tmp__203 = _this1._invInertia20 * _this1._transform._rotation00 + _this1._invInertia21 * _this1._transform._rotation01 + _this1._invInertia22 * _this1._transform._rotation02;
+					__tmp__213 = _this1._invInertia20 * _this1._transform._rotation10 + _this1._invInertia21 * _this1._transform._rotation11 + _this1._invInertia22 * _this1._transform._rotation12;
+					__tmp__223 = _this1._invInertia20 * _this1._transform._rotation20 + _this1._invInertia21 * _this1._transform._rotation21 + _this1._invInertia22 * _this1._transform._rotation22;
+					_this1._invInertia00 = __tmp__003;
+					_this1._invInertia01 = __tmp__013;
+					_this1._invInertia02 = __tmp__023;
+					_this1._invInertia10 = __tmp__103;
+					_this1._invInertia11 = __tmp__113;
+					_this1._invInertia12 = __tmp__123;
+					_this1._invInertia20 = __tmp__203;
+					_this1._invInertia21 = __tmp__213;
+					_this1._invInertia22 = __tmp__223;
+					_this1._invInertia00 *= _this1._rotFactor.x;
+					_this1._invInertia01 *= _this1._rotFactor.x;
+					_this1._invInertia02 *= _this1._rotFactor.x;
+					_this1._invInertia10 *= _this1._rotFactor.y;
+					_this1._invInertia11 *= _this1._rotFactor.y;
+					_this1._invInertia12 *= _this1._rotFactor.y;
+					_this1._invInertia20 *= _this1._rotFactor.z;
+					_this1._invInertia21 *= _this1._rotFactor.z;
+					_this1._invInertia22 *= _this1._rotFactor.z;
+				}
+				let _this = this.posBoundarySelector;
+				let i = 0;
+				while(_this.indices[i] != idx) ++i;
+				while(i > 0) {
+					let tmp = _this.indices[i];
+					_this.indices[i] = _this.indices[i - 1];
+					_this.indices[i - 1] = tmp;
+					--i;
+				}
+				solved = true;
+				break;
+			}
+		}
+		if(!solved) {
+			console.log("src/oimo/dynamics/constraint/solver/direct/DirectJointConstraintSolver.hx:502:","could not find solution. (NGS)");
+			return;
+		}
+	}
+	postSolve() {
+		this.joint._syncAnchors();
+		this.joint._checkDestruction();
+	}
+}
+oimo.dynamics.constraint.solver.direct.MassMatrix = class oimo_dynamics_constraint_solver_direct_MassMatrix {
+	constructor(size) {
+		this._size = size;
+		this.tmpMatrix = new Array(this._size);
+		this._invMass = new Array(this._size);
+		this._invMassWithoutCfm = new Array(this._size);
+		let _g = 0;
+		let _g1 = this._size;
+		while(_g < _g1) {
+			let i = _g++;
+			this.tmpMatrix[i] = new Array(this._size);
+			this._invMass[i] = new Array(this._size);
+			this._invMassWithoutCfm[i] = new Array(this._size);
+			let _g1 = 0;
+			let _g2 = this._size;
+			while(_g1 < _g2) {
+				let j = _g1++;
+				this.tmpMatrix[i][j] = 0;
+				this._invMass[i][j] = 0;
+				this._invMassWithoutCfm[i][j] = 0;
+			}
+		}
+		this._maxSubmatrixId = 1 << this._size;
+		this._cacheComputed = new Array(this._maxSubmatrixId);
+		this._cachedSubmatrices = new Array(this._maxSubmatrixId);
+		let _g2 = 0;
+		let _g3 = this._maxSubmatrixId;
+		while(_g2 < _g3) {
+			let i = _g2++;
+			let t;
+			t = (i & 85) + (i >> 1 & 85);
+			t = (t & 51) + (t >> 2 & 51);
+			t = (t & 15) + (t >> 4 & 15);
+			let matrixSize = t;
+			let subMatrix = new Array(matrixSize);
+			let _g = 0;
+			while(_g < matrixSize) {
+				let j = _g++;
+				subMatrix[j] = new Array(matrixSize);
+				let _g1 = 0;
+				while(_g1 < matrixSize) subMatrix[j][_g1++] = 0;
+			}
+			this._cacheComputed[i] = false;
+			this._cachedSubmatrices[i] = subMatrix;
+		}
+	}
+	computeSubmatrix(id,indices,size) {
+		let _g = 0;
+		while(_g < size) {
+			let i = _g++;
+			let ii = indices[i];
+			let _g1 = 0;
+			while(_g1 < size) {
+				let j = _g1++;
+				this.tmpMatrix[i][j] = this._invMass[ii][indices[j]];
+			}
+		}
+		let src = this.tmpMatrix;
+		let dst = this._cachedSubmatrices[id];
+		let srci;
+		let dsti;
+		let srcj;
+		let dstj;
+		let diag;
+		switch(size) {
+		case 4:
+			srci = src[0];
+			dsti = dst[0];
+			diag = 1 / srci[0];
+			dsti[0] = diag;
+			srci[1] *= diag;
+			srci[2] *= diag;
+			srci[3] *= diag;
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srci = src[1];
+			dsti = dst[1];
+			diag = 1 / srci[1];
+			dsti[1] = diag;
+			dsti[0] *= diag;
+			srci[2] *= diag;
+			srci[3] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] -= dsti[0] * srcj[1];
+			dstj[1] = -diag * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] -= dsti[0] * srcj[1];
+			dstj[1] = -diag * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srci = src[2];
+			dsti = dst[2];
+			diag = 1 / srci[2];
+			dsti[2] = diag;
+			dsti[0] *= diag;
+			dsti[1] *= diag;
+			srci[3] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] -= dsti[0] * srcj[2];
+			dstj[1] -= dsti[1] * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] -= dsti[0] * srcj[2];
+			dstj[1] -= dsti[1] * srcj[2];
+			dstj[2] = -diag * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srci = src[3];
+			dsti = dst[3];
+			diag = 1 / srci[3];
+			dsti[3] = diag;
+			dsti[0] *= diag;
+			dsti[1] *= diag;
+			dsti[2] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[3];
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] -= dsti[0] * srcj[3];
+			dstj[1] -= dsti[1] * srcj[3];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] -= dsti[0] * srcj[3];
+			dstj[1] -= dsti[1] * srcj[3];
+			dstj[2] -= dsti[2] * srcj[3];
+			dsti = dst[1];
+			dst[0][1] = dsti[0];
+			dsti = dst[2];
+			dst[0][2] = dsti[0];
+			dst[1][2] = dsti[1];
+			dsti = dst[3];
+			dst[0][3] = dsti[0];
+			dst[1][3] = dsti[1];
+			dst[2][3] = dsti[2];
+			break;
+		case 5:
+			srci = src[0];
+			dsti = dst[0];
+			diag = 1 / srci[0];
+			dsti[0] = diag;
+			srci[1] *= diag;
+			srci[2] *= diag;
+			srci[3] *= diag;
+			srci[4] *= diag;
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srcj[4] -= srci[4] * srcj[0];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srcj[4] -= srci[4] * srcj[0];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srcj[4] -= srci[4] * srcj[0];
+			srcj = src[4];
+			dstj = dst[4];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srcj[4] -= srci[4] * srcj[0];
+			srci = src[1];
+			dsti = dst[1];
+			diag = 1 / srci[1];
+			dsti[1] = diag;
+			dsti[0] *= diag;
+			srci[2] *= diag;
+			srci[3] *= diag;
+			srci[4] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srcj[4] -= srci[4] * srcj[1];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] -= dsti[0] * srcj[1];
+			dstj[1] = -diag * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srcj[4] -= srci[4] * srcj[1];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] -= dsti[0] * srcj[1];
+			dstj[1] = -diag * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srcj[4] -= srci[4] * srcj[1];
+			srcj = src[4];
+			dstj = dst[4];
+			dstj[0] -= dsti[0] * srcj[1];
+			dstj[1] = -diag * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srcj[4] -= srci[4] * srcj[1];
+			srci = src[2];
+			dsti = dst[2];
+			diag = 1 / srci[2];
+			dsti[2] = diag;
+			dsti[0] *= diag;
+			dsti[1] *= diag;
+			srci[3] *= diag;
+			srci[4] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srcj[4] -= srci[4] * srcj[2];
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] -= dsti[0] * srcj[2];
+			dstj[1] -= dsti[1] * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srcj[4] -= srci[4] * srcj[2];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] -= dsti[0] * srcj[2];
+			dstj[1] -= dsti[1] * srcj[2];
+			dstj[2] = -diag * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srcj[4] -= srci[4] * srcj[2];
+			srcj = src[4];
+			dstj = dst[4];
+			dstj[0] -= dsti[0] * srcj[2];
+			dstj[1] -= dsti[1] * srcj[2];
+			dstj[2] = -diag * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srcj[4] -= srci[4] * srcj[2];
+			srci = src[3];
+			dsti = dst[3];
+			diag = 1 / srci[3];
+			dsti[3] = diag;
+			dsti[0] *= diag;
+			dsti[1] *= diag;
+			dsti[2] *= diag;
+			srci[4] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[3];
+			srcj[4] -= srci[4] * srcj[3];
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] -= dsti[0] * srcj[3];
+			dstj[1] -= dsti[1] * srcj[3];
+			srcj[4] -= srci[4] * srcj[3];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] -= dsti[0] * srcj[3];
+			dstj[1] -= dsti[1] * srcj[3];
+			dstj[2] -= dsti[2] * srcj[3];
+			srcj[4] -= srci[4] * srcj[3];
+			srcj = src[4];
+			dstj = dst[4];
+			dstj[0] -= dsti[0] * srcj[3];
+			dstj[1] -= dsti[1] * srcj[3];
+			dstj[2] -= dsti[2] * srcj[3];
+			dstj[3] = -diag * srcj[3];
+			srcj[4] -= srci[4] * srcj[3];
+			srci = src[4];
+			dsti = dst[4];
+			diag = 1 / srci[4];
+			dsti[4] = diag;
+			dsti[0] *= diag;
+			dsti[1] *= diag;
+			dsti[2] *= diag;
+			dsti[3] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[4];
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] -= dsti[0] * srcj[4];
+			dstj[1] -= dsti[1] * srcj[4];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] -= dsti[0] * srcj[4];
+			dstj[1] -= dsti[1] * srcj[4];
+			dstj[2] -= dsti[2] * srcj[4];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] -= dsti[0] * srcj[4];
+			dstj[1] -= dsti[1] * srcj[4];
+			dstj[2] -= dsti[2] * srcj[4];
+			dstj[3] -= dsti[3] * srcj[4];
+			dsti = dst[1];
+			dst[0][1] = dsti[0];
+			dsti = dst[2];
+			dst[0][2] = dsti[0];
+			dst[1][2] = dsti[1];
+			dsti = dst[3];
+			dst[0][3] = dsti[0];
+			dst[1][3] = dsti[1];
+			dst[2][3] = dsti[2];
+			dsti = dst[4];
+			dst[0][4] = dsti[0];
+			dst[1][4] = dsti[1];
+			dst[2][4] = dsti[2];
+			dst[3][4] = dsti[3];
+			break;
+		case 6:
+			srci = src[0];
+			dsti = dst[0];
+			diag = 1 / srci[0];
+			dsti[0] = diag;
+			srci[1] *= diag;
+			srci[2] *= diag;
+			srci[3] *= diag;
+			srci[4] *= diag;
+			srci[5] *= diag;
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srcj[4] -= srci[4] * srcj[0];
+			srcj[5] -= srci[5] * srcj[0];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srcj[4] -= srci[4] * srcj[0];
+			srcj[5] -= srci[5] * srcj[0];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srcj[4] -= srci[4] * srcj[0];
+			srcj[5] -= srci[5] * srcj[0];
+			srcj = src[4];
+			dstj = dst[4];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srcj[4] -= srci[4] * srcj[0];
+			srcj[5] -= srci[5] * srcj[0];
+			srcj = src[5];
+			dstj = dst[5];
+			dstj[0] = -diag * srcj[0];
+			srcj[1] -= srci[1] * srcj[0];
+			srcj[2] -= srci[2] * srcj[0];
+			srcj[3] -= srci[3] * srcj[0];
+			srcj[4] -= srci[4] * srcj[0];
+			srcj[5] -= srci[5] * srcj[0];
+			srci = src[1];
+			dsti = dst[1];
+			diag = 1 / srci[1];
+			dsti[1] = diag;
+			dsti[0] *= diag;
+			srci[2] *= diag;
+			srci[3] *= diag;
+			srci[4] *= diag;
+			srci[5] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srcj[4] -= srci[4] * srcj[1];
+			srcj[5] -= srci[5] * srcj[1];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] -= dsti[0] * srcj[1];
+			dstj[1] = -diag * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srcj[4] -= srci[4] * srcj[1];
+			srcj[5] -= srci[5] * srcj[1];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] -= dsti[0] * srcj[1];
+			dstj[1] = -diag * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srcj[4] -= srci[4] * srcj[1];
+			srcj[5] -= srci[5] * srcj[1];
+			srcj = src[4];
+			dstj = dst[4];
+			dstj[0] -= dsti[0] * srcj[1];
+			dstj[1] = -diag * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srcj[4] -= srci[4] * srcj[1];
+			srcj[5] -= srci[5] * srcj[1];
+			srcj = src[5];
+			dstj = dst[5];
+			dstj[0] -= dsti[0] * srcj[1];
+			dstj[1] = -diag * srcj[1];
+			srcj[2] -= srci[2] * srcj[1];
+			srcj[3] -= srci[3] * srcj[1];
+			srcj[4] -= srci[4] * srcj[1];
+			srcj[5] -= srci[5] * srcj[1];
+			srci = src[2];
+			dsti = dst[2];
+			diag = 1 / srci[2];
+			dsti[2] = diag;
+			dsti[0] *= diag;
+			dsti[1] *= diag;
+			srci[3] *= diag;
+			srci[4] *= diag;
+			srci[5] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srcj[4] -= srci[4] * srcj[2];
+			srcj[5] -= srci[5] * srcj[2];
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] -= dsti[0] * srcj[2];
+			dstj[1] -= dsti[1] * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srcj[4] -= srci[4] * srcj[2];
+			srcj[5] -= srci[5] * srcj[2];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] -= dsti[0] * srcj[2];
+			dstj[1] -= dsti[1] * srcj[2];
+			dstj[2] = -diag * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srcj[4] -= srci[4] * srcj[2];
+			srcj[5] -= srci[5] * srcj[2];
+			srcj = src[4];
+			dstj = dst[4];
+			dstj[0] -= dsti[0] * srcj[2];
+			dstj[1] -= dsti[1] * srcj[2];
+			dstj[2] = -diag * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srcj[4] -= srci[4] * srcj[2];
+			srcj[5] -= srci[5] * srcj[2];
+			srcj = src[5];
+			dstj = dst[5];
+			dstj[0] -= dsti[0] * srcj[2];
+			dstj[1] -= dsti[1] * srcj[2];
+			dstj[2] = -diag * srcj[2];
+			srcj[3] -= srci[3] * srcj[2];
+			srcj[4] -= srci[4] * srcj[2];
+			srcj[5] -= srci[5] * srcj[2];
+			srci = src[3];
+			dsti = dst[3];
+			diag = 1 / srci[3];
+			dsti[3] = diag;
+			dsti[0] *= diag;
+			dsti[1] *= diag;
+			dsti[2] *= diag;
+			srci[4] *= diag;
+			srci[5] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[3];
+			srcj[4] -= srci[4] * srcj[3];
+			srcj[5] -= srci[5] * srcj[3];
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] -= dsti[0] * srcj[3];
+			dstj[1] -= dsti[1] * srcj[3];
+			srcj[4] -= srci[4] * srcj[3];
+			srcj[5] -= srci[5] * srcj[3];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] -= dsti[0] * srcj[3];
+			dstj[1] -= dsti[1] * srcj[3];
+			dstj[2] -= dsti[2] * srcj[3];
+			srcj[4] -= srci[4] * srcj[3];
+			srcj[5] -= srci[5] * srcj[3];
+			srcj = src[4];
+			dstj = dst[4];
+			dstj[0] -= dsti[0] * srcj[3];
+			dstj[1] -= dsti[1] * srcj[3];
+			dstj[2] -= dsti[2] * srcj[3];
+			dstj[3] = -diag * srcj[3];
+			srcj[4] -= srci[4] * srcj[3];
+			srcj[5] -= srci[5] * srcj[3];
+			srcj = src[5];
+			dstj = dst[5];
+			dstj[0] -= dsti[0] * srcj[3];
+			dstj[1] -= dsti[1] * srcj[3];
+			dstj[2] -= dsti[2] * srcj[3];
+			dstj[3] = -diag * srcj[3];
+			srcj[4] -= srci[4] * srcj[3];
+			srcj[5] -= srci[5] * srcj[3];
+			srci = src[4];
+			dsti = dst[4];
+			diag = 1 / srci[4];
+			dsti[4] = diag;
+			dsti[0] *= diag;
+			dsti[1] *= diag;
+			dsti[2] *= diag;
+			dsti[3] *= diag;
+			srci[5] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[4];
+			srcj[5] -= srci[5] * srcj[4];
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] -= dsti[0] * srcj[4];
+			dstj[1] -= dsti[1] * srcj[4];
+			srcj[5] -= srci[5] * srcj[4];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] -= dsti[0] * srcj[4];
+			dstj[1] -= dsti[1] * srcj[4];
+			dstj[2] -= dsti[2] * srcj[4];
+			srcj[5] -= srci[5] * srcj[4];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] -= dsti[0] * srcj[4];
+			dstj[1] -= dsti[1] * srcj[4];
+			dstj[2] -= dsti[2] * srcj[4];
+			dstj[3] -= dsti[3] * srcj[4];
+			srcj[5] -= srci[5] * srcj[4];
+			srcj = src[5];
+			dstj = dst[5];
+			dstj[0] -= dsti[0] * srcj[4];
+			dstj[1] -= dsti[1] * srcj[4];
+			dstj[2] -= dsti[2] * srcj[4];
+			dstj[3] -= dsti[3] * srcj[4];
+			dstj[4] = -diag * srcj[4];
+			srcj[5] -= srci[5] * srcj[4];
+			srci = src[5];
+			dsti = dst[5];
+			diag = 1 / srci[5];
+			dsti[5] = diag;
+			dsti[0] *= diag;
+			dsti[1] *= diag;
+			dsti[2] *= diag;
+			dsti[3] *= diag;
+			dsti[4] *= diag;
+			srcj = src[0];
+			dstj = dst[0];
+			dstj[0] -= dsti[0] * srcj[5];
+			srcj = src[1];
+			dstj = dst[1];
+			dstj[0] -= dsti[0] * srcj[5];
+			dstj[1] -= dsti[1] * srcj[5];
+			srcj = src[2];
+			dstj = dst[2];
+			dstj[0] -= dsti[0] * srcj[5];
+			dstj[1] -= dsti[1] * srcj[5];
+			dstj[2] -= dsti[2] * srcj[5];
+			srcj = src[3];
+			dstj = dst[3];
+			dstj[0] -= dsti[0] * srcj[5];
+			dstj[1] -= dsti[1] * srcj[5];
+			dstj[2] -= dsti[2] * srcj[5];
+			dstj[3] -= dsti[3] * srcj[5];
+			srcj = src[4];
+			dstj = dst[4];
+			dstj[0] -= dsti[0] * srcj[5];
+			dstj[1] -= dsti[1] * srcj[5];
+			dstj[2] -= dsti[2] * srcj[5];
+			dstj[3] -= dsti[3] * srcj[5];
+			dstj[4] -= dsti[4] * srcj[5];
+			dsti = dst[1];
+			dst[0][1] = dsti[0];
+			dsti = dst[2];
+			dst[0][2] = dsti[0];
+			dst[1][2] = dsti[1];
+			dsti = dst[3];
+			dst[0][3] = dsti[0];
+			dst[1][3] = dsti[1];
+			dst[2][3] = dsti[2];
+			dsti = dst[4];
+			dst[0][4] = dsti[0];
+			dst[1][4] = dsti[1];
+			dst[2][4] = dsti[2];
+			dst[3][4] = dsti[3];
+			dsti = dst[5];
+			dst[0][5] = dsti[0];
+			dst[1][5] = dsti[1];
+			dst[2][5] = dsti[2];
+			dst[3][5] = dsti[3];
+			dst[4][5] = dsti[4];
+			break;
+		default:
+			let _g1 = 0;
+			while(_g1 < size) {
+				let i = _g1++;
+				srci = src[i];
+				dsti = dst[i];
+				let diag = 1 / srci[i];
+				dsti[i] = diag;
+				let _g = 0;
+				while(_g < i) dsti[_g++] *= diag;
+				let _g2 = i + 1;
+				while(_g2 < size) srci[_g2++] *= diag;
+				let _g3 = 0;
+				while(_g3 < i) {
+					let j = _g3++;
+					srcj = src[j];
+					dstj = dst[j];
+					let _g = 0;
+					let _g1 = j + 1;
+					while(_g < _g1) {
+						let k = _g++;
+						dstj[k] -= dsti[k] * srcj[i];
+					}
+					let _g2 = i + 1;
+					while(_g2 < size) {
+						let k = _g2++;
+						srcj[k] -= srci[k] * srcj[i];
+					}
+				}
+				let _g4 = i + 1;
+				while(_g4 < size) {
+					let j = _g4++;
+					srcj = src[j];
+					dstj = dst[j];
+					let _g = 0;
+					while(_g < i) {
+						let k = _g++;
+						dstj[k] -= dsti[k] * srcj[i];
+					}
+					dstj[i] = -diag * srcj[i];
+					let _g1 = i + 1;
+					while(_g1 < size) {
+						let k = _g1++;
+						srcj[k] -= srci[k] * srcj[i];
+					}
+				}
+			}
+			let _g2 = 1;
+			while(_g2 < size) {
+				let i = _g2++;
+				dsti = dst[i];
+				let _g = 0;
+				while(_g < i) {
+					let j = _g++;
+					dst[j][i] = dsti[j];
+				}
+			}
+		}
+	}
+	computeInvMass(info,massData) {
+		let invMass = this._invMass;
+		let invMassWithoutCfm = this._invMassWithoutCfm;
+		let numRows = info.numRows;
+		let b1 = info.b1;
+		let b2 = info.b2;
+		let invM1 = b1._invMass;
+		let invM2 = b2._invMass;
+		let invI100;
+		let invI101;
+		let invI102;
+		let invI110;
+		let invI111;
+		let invI112;
+		let invI120;
+		let invI121;
+		let invI122;
+		let invI200;
+		let invI201;
+		let invI202;
+		let invI210;
+		let invI211;
+		let invI212;
+		let invI220;
+		let invI221;
+		let invI222;
+		invI100 = b1._invInertia00;
+		invI101 = b1._invInertia01;
+		invI102 = b1._invInertia02;
+		invI110 = b1._invInertia10;
+		invI111 = b1._invInertia11;
+		invI112 = b1._invInertia12;
+		invI120 = b1._invInertia20;
+		invI121 = b1._invInertia21;
+		invI122 = b1._invInertia22;
+		invI200 = b2._invInertia00;
+		invI201 = b2._invInertia01;
+		invI202 = b2._invInertia02;
+		invI210 = b2._invInertia10;
+		invI211 = b2._invInertia11;
+		invI212 = b2._invInertia12;
+		invI220 = b2._invInertia20;
+		invI221 = b2._invInertia21;
+		invI222 = b2._invInertia22;
+		let _g = 0;
+		while(_g < numRows) {
+			let i = _g++;
+			let j = info.rows[i].jacobian;
+			let md = massData[i];
+			j.updateSparsity();
+			if((j.flag & 1) != 0) {
+				md.invMLin1X = j.lin1X * invM1;
+				md.invMLin1Y = j.lin1Y * invM1;
+				md.invMLin1Z = j.lin1Z * invM1;
+				md.invMLin2X = j.lin2X * invM2;
+				md.invMLin2Y = j.lin2Y * invM2;
+				md.invMLin2Z = j.lin2Z * invM2;
+			} else {
+				md.invMLin1X = 0;
+				md.invMLin1Y = 0;
+				md.invMLin1Z = 0;
+				md.invMLin2X = 0;
+				md.invMLin2Y = 0;
+				md.invMLin2Z = 0;
+			}
+			if((j.flag & 2) != 0) {
+				let __tmp__X;
+				let __tmp__Y;
+				let __tmp__Z;
+				__tmp__X = invI100 * j.ang1X + invI101 * j.ang1Y + invI102 * j.ang1Z;
+				__tmp__Y = invI110 * j.ang1X + invI111 * j.ang1Y + invI112 * j.ang1Z;
+				__tmp__Z = invI120 * j.ang1X + invI121 * j.ang1Y + invI122 * j.ang1Z;
+				md.invMAng1X = __tmp__X;
+				md.invMAng1Y = __tmp__Y;
+				md.invMAng1Z = __tmp__Z;
+				let __tmp__X1;
+				let __tmp__Y1;
+				let __tmp__Z1;
+				__tmp__X1 = invI200 * j.ang2X + invI201 * j.ang2Y + invI202 * j.ang2Z;
+				__tmp__Y1 = invI210 * j.ang2X + invI211 * j.ang2Y + invI212 * j.ang2Z;
+				__tmp__Z1 = invI220 * j.ang2X + invI221 * j.ang2Y + invI222 * j.ang2Z;
+				md.invMAng2X = __tmp__X1;
+				md.invMAng2Y = __tmp__Y1;
+				md.invMAng2Z = __tmp__Z1;
+			} else {
+				md.invMAng1X = 0;
+				md.invMAng1Y = 0;
+				md.invMAng1Z = 0;
+				md.invMAng2X = 0;
+				md.invMAng2Y = 0;
+				md.invMAng2Z = 0;
+			}
+		}
+		let _g1 = 0;
+		while(_g1 < numRows) {
+			let i = _g1++;
+			let j1 = info.rows[i].jacobian;
+			let _g = i;
+			while(_g < numRows) {
+				let j = _g++;
+				let md2 = massData[j];
+				let val = j1.lin1X * md2.invMLin1X + j1.lin1Y * md2.invMLin1Y + j1.lin1Z * md2.invMLin1Z + (j1.ang1X * md2.invMAng1X + j1.ang1Y * md2.invMAng1Y + j1.ang1Z * md2.invMAng1Z) + (j1.lin2X * md2.invMLin2X + j1.lin2Y * md2.invMLin2Y + j1.lin2Z * md2.invMLin2Z) + (j1.ang2X * md2.invMAng2X + j1.ang2Y * md2.invMAng2Y + j1.ang2Z * md2.invMAng2Z);
+				if(i == j) {
+					invMass[i][j] = val + info.rows[i].cfm;
+					invMassWithoutCfm[i][j] = val;
+					md2.mass = val + info.rows[i].cfm;
+					md2.massWithoutCfm = val;
+					if(md2.mass != 0) {
+						md2.mass = 1 / md2.mass;
+					}
+					if(md2.massWithoutCfm != 0) {
+						md2.massWithoutCfm = 1 / md2.massWithoutCfm;
+					}
+				} else {
+					invMass[i][j] = val;
+					invMass[j][i] = val;
+					invMassWithoutCfm[i][j] = val;
+					invMassWithoutCfm[j][i] = val;
+				}
+			}
+		}
+		let _g2 = 0;
+		let _g3 = this._maxSubmatrixId;
+		while(_g2 < _g3) this._cacheComputed[_g2++] = false;
+	}
+}
+if(!oimo.dynamics.constraint.solver.pgs) oimo.dynamics.constraint.solver.pgs = {};
+oimo.dynamics.constraint.solver.pgs.PgsContactConstraintSolver = class oimo_dynamics_constraint_solver_pgs_PgsContactConstraintSolver extends oimo.dynamics.constraint.ConstraintSolver {
+	constructor(constraint) {
+		super();
+		this.constraint = constraint;
+		this.info = new oimo.dynamics.constraint.info.contact.ContactSolverInfo();
+		this.massData = new Array(oimo.common.Setting.maxManifoldPoints);
+		let _g = 0;
+		let _g1 = this.massData.length;
+		while(_g < _g1) this.massData[_g++] = new oimo.dynamics.constraint.solver.common.ContactSolverMassDataRow();
+	}
+	preSolveVelocity(timeStep) {
+		this.constraint._getVelocitySolverInfo(timeStep,this.info);
+		this._b1 = this.info.b1;
+		this._b2 = this.info.b2;
+		let invM1 = this._b1._invMass;
+		let invM2 = this._b2._invMass;
+		let invI100;
+		let invI101;
+		let invI102;
+		let invI110;
+		let invI111;
+		let invI112;
+		let invI120;
+		let invI121;
+		let invI122;
+		let invI200;
+		let invI201;
+		let invI202;
+		let invI210;
+		let invI211;
+		let invI212;
+		let invI220;
+		let invI221;
+		let invI222;
+		invI100 = this._b1._invInertia00;
+		invI101 = this._b1._invInertia01;
+		invI102 = this._b1._invInertia02;
+		invI110 = this._b1._invInertia10;
+		invI111 = this._b1._invInertia11;
+		invI112 = this._b1._invInertia12;
+		invI120 = this._b1._invInertia20;
+		invI121 = this._b1._invInertia21;
+		invI122 = this._b1._invInertia22;
+		invI200 = this._b2._invInertia00;
+		invI201 = this._b2._invInertia01;
+		invI202 = this._b2._invInertia02;
+		invI210 = this._b2._invInertia10;
+		invI211 = this._b2._invInertia11;
+		invI212 = this._b2._invInertia12;
+		invI220 = this._b2._invInertia20;
+		invI221 = this._b2._invInertia21;
+		invI222 = this._b2._invInertia22;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let row = this.info.rows[i];
+			let md = this.massData[i];
+			let j = row.jacobianN;
+			md.invMLinN1X = j.lin1X * invM1;
+			md.invMLinN1Y = j.lin1Y * invM1;
+			md.invMLinN1Z = j.lin1Z * invM1;
+			md.invMLinN2X = j.lin2X * invM2;
+			md.invMLinN2Y = j.lin2Y * invM2;
+			md.invMLinN2Z = j.lin2Z * invM2;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = invI100 * j.ang1X + invI101 * j.ang1Y + invI102 * j.ang1Z;
+			__tmp__Y = invI110 * j.ang1X + invI111 * j.ang1Y + invI112 * j.ang1Z;
+			__tmp__Z = invI120 * j.ang1X + invI121 * j.ang1Y + invI122 * j.ang1Z;
+			md.invMAngN1X = __tmp__X;
+			md.invMAngN1Y = __tmp__Y;
+			md.invMAngN1Z = __tmp__Z;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = invI200 * j.ang2X + invI201 * j.ang2Y + invI202 * j.ang2Z;
+			__tmp__Y1 = invI210 * j.ang2X + invI211 * j.ang2Y + invI212 * j.ang2Z;
+			__tmp__Z1 = invI220 * j.ang2X + invI221 * j.ang2Y + invI222 * j.ang2Z;
+			md.invMAngN2X = __tmp__X1;
+			md.invMAngN2Y = __tmp__Y1;
+			md.invMAngN2Z = __tmp__Z1;
+			md.massN = invM1 + invM2 + (md.invMAngN1X * j.ang1X + md.invMAngN1Y * j.ang1Y + md.invMAngN1Z * j.ang1Z) + (md.invMAngN2X * j.ang2X + md.invMAngN2Y * j.ang2Y + md.invMAngN2Z * j.ang2Z);
+			if(md.massN != 0) {
+				md.massN = 1 / md.massN;
+			}
+			let jt = row.jacobianT;
+			let jb = row.jacobianB;
+			md.invMLinT1X = jt.lin1X * invM1;
+			md.invMLinT1Y = jt.lin1Y * invM1;
+			md.invMLinT1Z = jt.lin1Z * invM1;
+			md.invMLinT2X = jt.lin2X * invM2;
+			md.invMLinT2Y = jt.lin2Y * invM2;
+			md.invMLinT2Z = jt.lin2Z * invM2;
+			md.invMLinB1X = jb.lin1X * invM1;
+			md.invMLinB1Y = jb.lin1Y * invM1;
+			md.invMLinB1Z = jb.lin1Z * invM1;
+			md.invMLinB2X = jb.lin2X * invM2;
+			md.invMLinB2Y = jb.lin2Y * invM2;
+			md.invMLinB2Z = jb.lin2Z * invM2;
+			let __tmp__X2;
+			let __tmp__Y2;
+			let __tmp__Z2;
+			__tmp__X2 = invI100 * jt.ang1X + invI101 * jt.ang1Y + invI102 * jt.ang1Z;
+			__tmp__Y2 = invI110 * jt.ang1X + invI111 * jt.ang1Y + invI112 * jt.ang1Z;
+			__tmp__Z2 = invI120 * jt.ang1X + invI121 * jt.ang1Y + invI122 * jt.ang1Z;
+			md.invMAngT1X = __tmp__X2;
+			md.invMAngT1Y = __tmp__Y2;
+			md.invMAngT1Z = __tmp__Z2;
+			let __tmp__X3;
+			let __tmp__Y3;
+			let __tmp__Z3;
+			__tmp__X3 = invI200 * jt.ang2X + invI201 * jt.ang2Y + invI202 * jt.ang2Z;
+			__tmp__Y3 = invI210 * jt.ang2X + invI211 * jt.ang2Y + invI212 * jt.ang2Z;
+			__tmp__Z3 = invI220 * jt.ang2X + invI221 * jt.ang2Y + invI222 * jt.ang2Z;
+			md.invMAngT2X = __tmp__X3;
+			md.invMAngT2Y = __tmp__Y3;
+			md.invMAngT2Z = __tmp__Z3;
+			let __tmp__X4;
+			let __tmp__Y4;
+			let __tmp__Z4;
+			__tmp__X4 = invI100 * jb.ang1X + invI101 * jb.ang1Y + invI102 * jb.ang1Z;
+			__tmp__Y4 = invI110 * jb.ang1X + invI111 * jb.ang1Y + invI112 * jb.ang1Z;
+			__tmp__Z4 = invI120 * jb.ang1X + invI121 * jb.ang1Y + invI122 * jb.ang1Z;
+			md.invMAngB1X = __tmp__X4;
+			md.invMAngB1Y = __tmp__Y4;
+			md.invMAngB1Z = __tmp__Z4;
+			let __tmp__X5;
+			let __tmp__Y5;
+			let __tmp__Z5;
+			__tmp__X5 = invI200 * jb.ang2X + invI201 * jb.ang2Y + invI202 * jb.ang2Z;
+			__tmp__Y5 = invI210 * jb.ang2X + invI211 * jb.ang2Y + invI212 * jb.ang2Z;
+			__tmp__Z5 = invI220 * jb.ang2X + invI221 * jb.ang2Y + invI222 * jb.ang2Z;
+			md.invMAngB2X = __tmp__X5;
+			md.invMAngB2Y = __tmp__Y5;
+			md.invMAngB2Z = __tmp__Z5;
+			let invMassTB00 = invM1 + invM2 + (md.invMAngT1X * jt.ang1X + md.invMAngT1Y * jt.ang1Y + md.invMAngT1Z * jt.ang1Z) + (md.invMAngT2X * jt.ang2X + md.invMAngT2Y * jt.ang2Y + md.invMAngT2Z * jt.ang2Z);
+			let invMassTB01 = md.invMAngT1X * jb.ang1X + md.invMAngT1Y * jb.ang1Y + md.invMAngT1Z * jb.ang1Z + (md.invMAngT2X * jb.ang2X + md.invMAngT2Y * jb.ang2Y + md.invMAngT2Z * jb.ang2Z);
+			let invMassTB11 = invM1 + invM2 + (md.invMAngB1X * jb.ang1X + md.invMAngB1Y * jb.ang1Y + md.invMAngB1Z * jb.ang1Z) + (md.invMAngB2X * jb.ang2X + md.invMAngB2Y * jb.ang2Y + md.invMAngB2Z * jb.ang2Z);
+			let invDet = invMassTB00 * invMassTB11 - invMassTB01 * invMassTB01;
+			if(invDet != 0) {
+				invDet = 1 / invDet;
+			}
+			md.massTB00 = invMassTB11 * invDet;
+			md.massTB01 = -invMassTB01 * invDet;
+			md.massTB10 = -invMassTB01 * invDet;
+			md.massTB11 = invMassTB00 * invDet;
+		}
+	}
+	warmStart(timeStep) {
+		let lv1X;
+		let lv1Y;
+		let lv1Z;
+		let lv2X;
+		let lv2Y;
+		let lv2Z;
+		let av1X;
+		let av1Y;
+		let av1Z;
+		let av2X;
+		let av2Y;
+		let av2Z;
+		lv1X = this._b1._velX;
+		lv1Y = this._b1._velY;
+		lv1Z = this._b1._velZ;
+		lv2X = this._b2._velX;
+		lv2Y = this._b2._velY;
+		lv2Z = this._b2._velZ;
+		av1X = this._b1._angVelX;
+		av1Y = this._b1._angVelY;
+		av1Z = this._b1._angVelZ;
+		av2X = this._b2._angVelX;
+		av2Y = this._b2._angVelY;
+		av2Z = this._b2._angVelZ;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let row = this.info.rows[i];
+			let imp = row.impulse;
+			let md = this.massData[i];
+			let jt = row.jacobianT;
+			let jb = row.jacobianB;
+			let impulseN = imp.impulseN;
+			let impulseT = imp.impulseLX * jt.lin1X + imp.impulseLY * jt.lin1Y + imp.impulseLZ * jt.lin1Z;
+			let impulseB = imp.impulseLX * jb.lin1X + imp.impulseLY * jb.lin1Y + imp.impulseLZ * jb.lin1Z;
+			imp.impulseT = impulseT;
+			imp.impulseB = impulseB;
+			imp.impulseN *= timeStep.dtRatio;
+			imp.impulseT *= timeStep.dtRatio;
+			imp.impulseB *= timeStep.dtRatio;
+			lv1X += md.invMLinN1X * impulseN;
+			lv1Y += md.invMLinN1Y * impulseN;
+			lv1Z += md.invMLinN1Z * impulseN;
+			lv1X += md.invMLinT1X * impulseT;
+			lv1Y += md.invMLinT1Y * impulseT;
+			lv1Z += md.invMLinT1Z * impulseT;
+			lv1X += md.invMLinB1X * impulseB;
+			lv1Y += md.invMLinB1Y * impulseB;
+			lv1Z += md.invMLinB1Z * impulseB;
+			lv2X += md.invMLinN2X * -impulseN;
+			lv2Y += md.invMLinN2Y * -impulseN;
+			lv2Z += md.invMLinN2Z * -impulseN;
+			lv2X += md.invMLinT2X * -impulseT;
+			lv2Y += md.invMLinT2Y * -impulseT;
+			lv2Z += md.invMLinT2Z * -impulseT;
+			lv2X += md.invMLinB2X * -impulseB;
+			lv2Y += md.invMLinB2Y * -impulseB;
+			lv2Z += md.invMLinB2Z * -impulseB;
+			av1X += md.invMAngN1X * impulseN;
+			av1Y += md.invMAngN1Y * impulseN;
+			av1Z += md.invMAngN1Z * impulseN;
+			av1X += md.invMAngT1X * impulseT;
+			av1Y += md.invMAngT1Y * impulseT;
+			av1Z += md.invMAngT1Z * impulseT;
+			av1X += md.invMAngB1X * impulseB;
+			av1Y += md.invMAngB1Y * impulseB;
+			av1Z += md.invMAngB1Z * impulseB;
+			av2X += md.invMAngN2X * -impulseN;
+			av2Y += md.invMAngN2Y * -impulseN;
+			av2Z += md.invMAngN2Z * -impulseN;
+			av2X += md.invMAngT2X * -impulseT;
+			av2Y += md.invMAngT2Y * -impulseT;
+			av2Z += md.invMAngT2Z * -impulseT;
+			av2X += md.invMAngB2X * -impulseB;
+			av2Y += md.invMAngB2Y * -impulseB;
+			av2Z += md.invMAngB2Z * -impulseB;
+		}
+		this._b1._velX = lv1X;
+		this._b1._velY = lv1Y;
+		this._b1._velZ = lv1Z;
+		this._b2._velX = lv2X;
+		this._b2._velY = lv2Y;
+		this._b2._velZ = lv2Z;
+		this._b1._angVelX = av1X;
+		this._b1._angVelY = av1Y;
+		this._b1._angVelZ = av1Z;
+		this._b2._angVelX = av2X;
+		this._b2._angVelY = av2Y;
+		this._b2._angVelZ = av2Z;
+	}
+	solveVelocity() {
+		let lv1X;
+		let lv1Y;
+		let lv1Z;
+		let lv2X;
+		let lv2Y;
+		let lv2Z;
+		let av1X;
+		let av1Y;
+		let av1Z;
+		let av2X;
+		let av2Y;
+		let av2Z;
+		lv1X = this._b1._velX;
+		lv1Y = this._b1._velY;
+		lv1Z = this._b1._velZ;
+		lv2X = this._b2._velX;
+		lv2Y = this._b2._velY;
+		lv2Z = this._b2._velZ;
+		av1X = this._b1._angVelX;
+		av1Y = this._b1._angVelY;
+		av1Z = this._b1._angVelZ;
+		av2X = this._b2._angVelX;
+		av2Y = this._b2._angVelY;
+		av2Z = this._b2._angVelZ;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let row = this.info.rows[i];
+			let md = this.massData[i];
+			let imp = row.impulse;
+			let rvt = 0;
+			let j = row.jacobianT;
+			rvt += lv1X * j.lin1X + lv1Y * j.lin1Y + lv1Z * j.lin1Z;
+			rvt -= lv2X * j.lin2X + lv2Y * j.lin2Y + lv2Z * j.lin2Z;
+			rvt += av1X * j.ang1X + av1Y * j.ang1Y + av1Z * j.ang1Z;
+			rvt -= av2X * j.ang2X + av2Y * j.ang2Y + av2Z * j.ang2Z;
+			let rvb = 0;
+			j = row.jacobianB;
+			rvb += lv1X * j.lin1X + lv1Y * j.lin1Y + lv1Z * j.lin1Z;
+			rvb -= lv2X * j.lin2X + lv2Y * j.lin2Y + lv2Z * j.lin2Z;
+			rvb += av1X * j.ang1X + av1Y * j.ang1Y + av1Z * j.ang1Z;
+			rvb -= av2X * j.ang2X + av2Y * j.ang2Y + av2Z * j.ang2Z;
+			let impulseT = -(rvt * md.massTB00 + rvb * md.massTB01);
+			let impulseB = -(rvt * md.massTB10 + rvb * md.massTB11);
+			let oldImpulseT = imp.impulseT;
+			let oldImpulseB = imp.impulseB;
+			imp.impulseT += impulseT;
+			imp.impulseB += impulseB;
+			let maxImpulse = row.friction * imp.impulseN;
+			if(maxImpulse == 0) {
+				imp.impulseT = 0;
+				imp.impulseB = 0;
+			} else {
+				let impulseLengthSq = imp.impulseT * imp.impulseT + imp.impulseB * imp.impulseB;
+				if(impulseLengthSq > maxImpulse * maxImpulse) {
+					let invL = maxImpulse / Math.sqrt(impulseLengthSq);
+					imp.impulseT *= invL;
+					imp.impulseB *= invL;
+				}
+			}
+			impulseT = imp.impulseT - oldImpulseT;
+			impulseB = imp.impulseB - oldImpulseB;
+			lv1X += md.invMLinT1X * impulseT;
+			lv1Y += md.invMLinT1Y * impulseT;
+			lv1Z += md.invMLinT1Z * impulseT;
+			lv1X += md.invMLinB1X * impulseB;
+			lv1Y += md.invMLinB1Y * impulseB;
+			lv1Z += md.invMLinB1Z * impulseB;
+			lv2X += md.invMLinT2X * -impulseT;
+			lv2Y += md.invMLinT2Y * -impulseT;
+			lv2Z += md.invMLinT2Z * -impulseT;
+			lv2X += md.invMLinB2X * -impulseB;
+			lv2Y += md.invMLinB2Y * -impulseB;
+			lv2Z += md.invMLinB2Z * -impulseB;
+			av1X += md.invMAngT1X * impulseT;
+			av1Y += md.invMAngT1Y * impulseT;
+			av1Z += md.invMAngT1Z * impulseT;
+			av1X += md.invMAngB1X * impulseB;
+			av1Y += md.invMAngB1Y * impulseB;
+			av1Z += md.invMAngB1Z * impulseB;
+			av2X += md.invMAngT2X * -impulseT;
+			av2Y += md.invMAngT2Y * -impulseT;
+			av2Z += md.invMAngT2Z * -impulseT;
+			av2X += md.invMAngB2X * -impulseB;
+			av2Y += md.invMAngB2Y * -impulseB;
+			av2Z += md.invMAngB2Z * -impulseB;
+		}
+		let _g2 = 0;
+		let _g3 = this.info.numRows;
+		while(_g2 < _g3) {
+			let i = _g2++;
+			let row = this.info.rows[i];
+			let md = this.massData[i];
+			let imp = row.impulse;
+			let rvn = 0;
+			let j = row.jacobianN;
+			rvn += lv1X * j.lin1X + lv1Y * j.lin1Y + lv1Z * j.lin1Z;
+			rvn -= lv2X * j.lin2X + lv2Y * j.lin2Y + lv2Z * j.lin2Z;
+			rvn += av1X * j.ang1X + av1Y * j.ang1Y + av1Z * j.ang1Z;
+			rvn -= av2X * j.ang2X + av2Y * j.ang2Y + av2Z * j.ang2Z;
+			let impulseN = (row.rhs - rvn) * md.massN;
+			let oldImpulseN = imp.impulseN;
+			imp.impulseN += impulseN;
+			if(imp.impulseN < 0) {
+				imp.impulseN = 0;
+			}
+			impulseN = imp.impulseN - oldImpulseN;
+			lv1X += md.invMLinN1X * impulseN;
+			lv1Y += md.invMLinN1Y * impulseN;
+			lv1Z += md.invMLinN1Z * impulseN;
+			lv2X += md.invMLinN2X * -impulseN;
+			lv2Y += md.invMLinN2Y * -impulseN;
+			lv2Z += md.invMLinN2Z * -impulseN;
+			av1X += md.invMAngN1X * impulseN;
+			av1Y += md.invMAngN1Y * impulseN;
+			av1Z += md.invMAngN1Z * impulseN;
+			av2X += md.invMAngN2X * -impulseN;
+			av2Y += md.invMAngN2Y * -impulseN;
+			av2Z += md.invMAngN2Z * -impulseN;
+		}
+		this._b1._velX = lv1X;
+		this._b1._velY = lv1Y;
+		this._b1._velZ = lv1Z;
+		this._b2._velX = lv2X;
+		this._b2._velY = lv2Y;
+		this._b2._velZ = lv2Z;
+		this._b1._angVelX = av1X;
+		this._b1._angVelY = av1Y;
+		this._b1._angVelZ = av1Z;
+		this._b2._angVelX = av2X;
+		this._b2._angVelY = av2Y;
+		this._b2._angVelZ = av2Z;
+	}
+	preSolvePosition(timeStep) {
+		this.constraint._syncManifold();
+		this.constraint._getPositionSolverInfo(this.info);
+		let invM1 = this._b1._invMass;
+		let invM2 = this._b2._invMass;
+		let invI100;
+		let invI101;
+		let invI102;
+		let invI110;
+		let invI111;
+		let invI112;
+		let invI120;
+		let invI121;
+		let invI122;
+		let invI200;
+		let invI201;
+		let invI202;
+		let invI210;
+		let invI211;
+		let invI212;
+		let invI220;
+		let invI221;
+		let invI222;
+		invI100 = this._b1._invInertia00;
+		invI101 = this._b1._invInertia01;
+		invI102 = this._b1._invInertia02;
+		invI110 = this._b1._invInertia10;
+		invI111 = this._b1._invInertia11;
+		invI112 = this._b1._invInertia12;
+		invI120 = this._b1._invInertia20;
+		invI121 = this._b1._invInertia21;
+		invI122 = this._b1._invInertia22;
+		invI200 = this._b2._invInertia00;
+		invI201 = this._b2._invInertia01;
+		invI202 = this._b2._invInertia02;
+		invI210 = this._b2._invInertia10;
+		invI211 = this._b2._invInertia11;
+		invI212 = this._b2._invInertia12;
+		invI220 = this._b2._invInertia20;
+		invI221 = this._b2._invInertia21;
+		invI222 = this._b2._invInertia22;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let md = this.massData[i];
+			let j = this.info.rows[i].jacobianN;
+			md.invMLinN1X = j.lin1X * invM1;
+			md.invMLinN1Y = j.lin1Y * invM1;
+			md.invMLinN1Z = j.lin1Z * invM1;
+			md.invMLinN2X = j.lin2X * invM2;
+			md.invMLinN2Y = j.lin2Y * invM2;
+			md.invMLinN2Z = j.lin2Z * invM2;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = invI100 * j.ang1X + invI101 * j.ang1Y + invI102 * j.ang1Z;
+			__tmp__Y = invI110 * j.ang1X + invI111 * j.ang1Y + invI112 * j.ang1Z;
+			__tmp__Z = invI120 * j.ang1X + invI121 * j.ang1Y + invI122 * j.ang1Z;
+			md.invMAngN1X = __tmp__X;
+			md.invMAngN1Y = __tmp__Y;
+			md.invMAngN1Z = __tmp__Z;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = invI200 * j.ang2X + invI201 * j.ang2Y + invI202 * j.ang2Z;
+			__tmp__Y1 = invI210 * j.ang2X + invI211 * j.ang2Y + invI212 * j.ang2Z;
+			__tmp__Z1 = invI220 * j.ang2X + invI221 * j.ang2Y + invI222 * j.ang2Z;
+			md.invMAngN2X = __tmp__X1;
+			md.invMAngN2Y = __tmp__Y1;
+			md.invMAngN2Z = __tmp__Z1;
+			md.massN = invM1 + invM2 + (md.invMAngN1X * j.ang1X + md.invMAngN1Y * j.ang1Y + md.invMAngN1Z * j.ang1Z) + (md.invMAngN2X * j.ang2X + md.invMAngN2Y * j.ang2Y + md.invMAngN2Z * j.ang2Z);
+			if(md.massN != 0) {
+				md.massN = 1 / md.massN;
+			}
+		}
+		let _g2 = 0;
+		let _g3 = this.info.numRows;
+		while(_g2 < _g3) this.info.rows[_g2++].impulse.impulseP = 0;
+	}
+	solvePositionSplitImpulse() {
+		let lv1X;
+		let lv1Y;
+		let lv1Z;
+		let lv2X;
+		let lv2Y;
+		let lv2Z;
+		let av1X;
+		let av1Y;
+		let av1Z;
+		let av2X;
+		let av2Y;
+		let av2Z;
+		lv1X = this._b1._pseudoVelX;
+		lv1Y = this._b1._pseudoVelY;
+		lv1Z = this._b1._pseudoVelZ;
+		lv2X = this._b2._pseudoVelX;
+		lv2Y = this._b2._pseudoVelY;
+		lv2Z = this._b2._pseudoVelZ;
+		av1X = this._b1._angPseudoVelX;
+		av1Y = this._b1._angPseudoVelY;
+		av1Z = this._b1._angPseudoVelZ;
+		av2X = this._b2._angPseudoVelX;
+		av2Y = this._b2._angPseudoVelY;
+		av2Z = this._b2._angPseudoVelZ;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let row = this.info.rows[i];
+			let md = this.massData[i];
+			let imp = row.impulse;
+			let j = row.jacobianN;
+			let rvn = 0;
+			rvn += lv1X * j.lin1X + lv1Y * j.lin1Y + lv1Z * j.lin1Z;
+			rvn -= lv2X * j.lin2X + lv2Y * j.lin2Y + lv2Z * j.lin2Z;
+			rvn += av1X * j.ang1X + av1Y * j.ang1Y + av1Z * j.ang1Z;
+			rvn -= av2X * j.ang2X + av2Y * j.ang2Y + av2Z * j.ang2Z;
+			let impulseP = (row.rhs - rvn) * md.massN * oimo.common.Setting.positionSplitImpulseBaumgarte;
+			let oldImpulseP = imp.impulseP;
+			imp.impulseP += impulseP;
+			if(imp.impulseP < 0) {
+				imp.impulseP = 0;
+			}
+			impulseP = imp.impulseP - oldImpulseP;
+			lv1X += md.invMLinN1X * impulseP;
+			lv1Y += md.invMLinN1Y * impulseP;
+			lv1Z += md.invMLinN1Z * impulseP;
+			lv2X += md.invMLinN2X * -impulseP;
+			lv2Y += md.invMLinN2Y * -impulseP;
+			lv2Z += md.invMLinN2Z * -impulseP;
+			av1X += md.invMAngN1X * impulseP;
+			av1Y += md.invMAngN1Y * impulseP;
+			av1Z += md.invMAngN1Z * impulseP;
+			av2X += md.invMAngN2X * -impulseP;
+			av2Y += md.invMAngN2Y * -impulseP;
+			av2Z += md.invMAngN2Z * -impulseP;
+		}
+		this._b1._pseudoVelX = lv1X;
+		this._b1._pseudoVelY = lv1Y;
+		this._b1._pseudoVelZ = lv1Z;
+		this._b2._pseudoVelX = lv2X;
+		this._b2._pseudoVelY = lv2Y;
+		this._b2._pseudoVelZ = lv2Z;
+		this._b1._angPseudoVelX = av1X;
+		this._b1._angPseudoVelY = av1Y;
+		this._b1._angPseudoVelZ = av1Z;
+		this._b2._angPseudoVelX = av2X;
+		this._b2._angPseudoVelY = av2Y;
+		this._b2._angPseudoVelZ = av2Z;
+	}
+	solvePositionNgs(timeStep) {
+		this.constraint._syncManifold();
+		this.constraint._getPositionSolverInfo(this.info);
+		let invM1 = this._b1._invMass;
+		let invM2 = this._b2._invMass;
+		let invI100;
+		let invI101;
+		let invI102;
+		let invI110;
+		let invI111;
+		let invI112;
+		let invI120;
+		let invI121;
+		let invI122;
+		let invI200;
+		let invI201;
+		let invI202;
+		let invI210;
+		let invI211;
+		let invI212;
+		let invI220;
+		let invI221;
+		let invI222;
+		invI100 = this._b1._invInertia00;
+		invI101 = this._b1._invInertia01;
+		invI102 = this._b1._invInertia02;
+		invI110 = this._b1._invInertia10;
+		invI111 = this._b1._invInertia11;
+		invI112 = this._b1._invInertia12;
+		invI120 = this._b1._invInertia20;
+		invI121 = this._b1._invInertia21;
+		invI122 = this._b1._invInertia22;
+		invI200 = this._b2._invInertia00;
+		invI201 = this._b2._invInertia01;
+		invI202 = this._b2._invInertia02;
+		invI210 = this._b2._invInertia10;
+		invI211 = this._b2._invInertia11;
+		invI212 = this._b2._invInertia12;
+		invI220 = this._b2._invInertia20;
+		invI221 = this._b2._invInertia21;
+		invI222 = this._b2._invInertia22;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let md = this.massData[i];
+			let j = this.info.rows[i].jacobianN;
+			md.invMLinN1X = j.lin1X * invM1;
+			md.invMLinN1Y = j.lin1Y * invM1;
+			md.invMLinN1Z = j.lin1Z * invM1;
+			md.invMLinN2X = j.lin2X * invM2;
+			md.invMLinN2Y = j.lin2Y * invM2;
+			md.invMLinN2Z = j.lin2Z * invM2;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = invI100 * j.ang1X + invI101 * j.ang1Y + invI102 * j.ang1Z;
+			__tmp__Y = invI110 * j.ang1X + invI111 * j.ang1Y + invI112 * j.ang1Z;
+			__tmp__Z = invI120 * j.ang1X + invI121 * j.ang1Y + invI122 * j.ang1Z;
+			md.invMAngN1X = __tmp__X;
+			md.invMAngN1Y = __tmp__Y;
+			md.invMAngN1Z = __tmp__Z;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = invI200 * j.ang2X + invI201 * j.ang2Y + invI202 * j.ang2Z;
+			__tmp__Y1 = invI210 * j.ang2X + invI211 * j.ang2Y + invI212 * j.ang2Z;
+			__tmp__Z1 = invI220 * j.ang2X + invI221 * j.ang2Y + invI222 * j.ang2Z;
+			md.invMAngN2X = __tmp__X1;
+			md.invMAngN2Y = __tmp__Y1;
+			md.invMAngN2Z = __tmp__Z1;
+			md.massN = invM1 + invM2 + (md.invMAngN1X * j.ang1X + md.invMAngN1Y * j.ang1Y + md.invMAngN1Z * j.ang1Z) + (md.invMAngN2X * j.ang2X + md.invMAngN2Y * j.ang2Y + md.invMAngN2Z * j.ang2Z);
+			if(md.massN != 0) {
+				md.massN = 1 / md.massN;
+			}
+		}
+		let lv1X;
+		let lv1Y;
+		let lv1Z;
+		let lv2X;
+		let lv2Y;
+		let lv2Z;
+		let av1X;
+		let av1Y;
+		let av1Z;
+		let av2X;
+		let av2Y;
+		let av2Z;
+		lv1X = 0;
+		lv1Y = 0;
+		lv1Z = 0;
+		lv2X = 0;
+		lv2Y = 0;
+		lv2Z = 0;
+		av1X = 0;
+		av1Y = 0;
+		av1Z = 0;
+		av2X = 0;
+		av2Y = 0;
+		av2Z = 0;
+		let _g2 = 0;
+		let _g3 = this.info.numRows;
+		while(_g2 < _g3) {
+			let i = _g2++;
+			let row = this.info.rows[i];
+			let md = this.massData[i];
+			let imp = row.impulse;
+			let j = row.jacobianN;
+			let rvn = 0;
+			rvn += lv1X * j.lin1X + lv1Y * j.lin1Y + lv1Z * j.lin1Z;
+			rvn -= lv2X * j.lin2X + lv2Y * j.lin2Y + lv2Z * j.lin2Z;
+			rvn += av1X * j.ang1X + av1Y * j.ang1Y + av1Z * j.ang1Z;
+			rvn -= av2X * j.ang2X + av2Y * j.ang2Y + av2Z * j.ang2Z;
+			let impulseP = (row.rhs - rvn) * md.massN * oimo.common.Setting.positionNgsBaumgarte;
+			let oldImpulseP = imp.impulseP;
+			imp.impulseP += impulseP;
+			if(imp.impulseP < 0) {
+				imp.impulseP = 0;
+			}
+			impulseP = imp.impulseP - oldImpulseP;
+			lv1X += md.invMLinN1X * impulseP;
+			lv1Y += md.invMLinN1Y * impulseP;
+			lv1Z += md.invMLinN1Z * impulseP;
+			lv2X += md.invMLinN2X * -impulseP;
+			lv2Y += md.invMLinN2Y * -impulseP;
+			lv2Z += md.invMLinN2Z * -impulseP;
+			av1X += md.invMAngN1X * impulseP;
+			av1Y += md.invMAngN1Y * impulseP;
+			av1Z += md.invMAngN1Z * impulseP;
+			av2X += md.invMAngN2X * -impulseP;
+			av2Y += md.invMAngN2Y * -impulseP;
+			av2Z += md.invMAngN2Z * -impulseP;
+		}
+		let _this = this._b1;
+		_this._transform._positionX += lv1X;
+		_this._transform._positionY += lv1Y;
+		_this._transform._positionZ += lv1Z;
+		let _this1 = this._b2;
+		_this1._transform._positionX += lv2X;
+		_this1._transform._positionY += lv2Y;
+		_this1._transform._positionZ += lv2Z;
+		let _this2 = this._b1;
+		let theta = Math.sqrt(av1X * av1X + av1Y * av1Y + av1Z * av1Z);
+		let halfTheta = theta * 0.5;
+		let rotationToSinAxisFactor;
+		let cosHalfTheta;
+		if(halfTheta < 0.5) {
+			let ht2 = halfTheta * halfTheta;
+			rotationToSinAxisFactor = 0.5 * (1 - ht2 * 0.16666666666666666 + ht2 * ht2 * 0.0083333333333333332);
+			cosHalfTheta = 1 - ht2 * 0.5 + ht2 * ht2 * 0.041666666666666664;
+		} else {
+			rotationToSinAxisFactor = Math.sin(halfTheta) / theta;
+			cosHalfTheta = Math.cos(halfTheta);
+		}
+		let sinAxisX;
+		let sinAxisY;
+		let sinAxisZ;
+		sinAxisX = av1X * rotationToSinAxisFactor;
+		sinAxisY = av1Y * rotationToSinAxisFactor;
+		sinAxisZ = av1Z * rotationToSinAxisFactor;
+		let dqX;
+		let dqY;
+		let dqZ;
+		let dqW;
+		dqX = sinAxisX;
+		dqY = sinAxisY;
+		dqZ = sinAxisZ;
+		dqW = cosHalfTheta;
+		let qX;
+		let qY;
+		let qZ;
+		let qW;
+		let e00 = _this2._transform._rotation00;
+		let e11 = _this2._transform._rotation11;
+		let e22 = _this2._transform._rotation22;
+		let t = e00 + e11 + e22;
+		let s;
+		if(t > 0) {
+			s = Math.sqrt(t + 1);
+			qW = 0.5 * s;
+			s = 0.5 / s;
+			qX = (_this2._transform._rotation21 - _this2._transform._rotation12) * s;
+			qY = (_this2._transform._rotation02 - _this2._transform._rotation20) * s;
+			qZ = (_this2._transform._rotation10 - _this2._transform._rotation01) * s;
+		} else if(e00 > e11) {
+			if(e00 > e22) {
+				s = Math.sqrt(e00 - e11 - e22 + 1);
+				qX = 0.5 * s;
+				s = 0.5 / s;
+				qY = (_this2._transform._rotation01 + _this2._transform._rotation10) * s;
+				qZ = (_this2._transform._rotation02 + _this2._transform._rotation20) * s;
+				qW = (_this2._transform._rotation21 - _this2._transform._rotation12) * s;
+			} else {
+				s = Math.sqrt(e22 - e00 - e11 + 1);
+				qZ = 0.5 * s;
+				s = 0.5 / s;
+				qX = (_this2._transform._rotation02 + _this2._transform._rotation20) * s;
+				qY = (_this2._transform._rotation12 + _this2._transform._rotation21) * s;
+				qW = (_this2._transform._rotation10 - _this2._transform._rotation01) * s;
+			}
+		} else if(e11 > e22) {
+			s = Math.sqrt(e11 - e22 - e00 + 1);
+			qY = 0.5 * s;
+			s = 0.5 / s;
+			qX = (_this2._transform._rotation01 + _this2._transform._rotation10) * s;
+			qZ = (_this2._transform._rotation12 + _this2._transform._rotation21) * s;
+			qW = (_this2._transform._rotation02 - _this2._transform._rotation20) * s;
+		} else {
+			s = Math.sqrt(e22 - e00 - e11 + 1);
+			qZ = 0.5 * s;
+			s = 0.5 / s;
+			qX = (_this2._transform._rotation02 + _this2._transform._rotation20) * s;
+			qY = (_this2._transform._rotation12 + _this2._transform._rotation21) * s;
+			qW = (_this2._transform._rotation10 - _this2._transform._rotation01) * s;
+		}
+		qX = dqW * qX + dqX * qW + dqY * qZ - dqZ * qY;
+		qY = dqW * qY - dqX * qZ + dqY * qW + dqZ * qX;
+		qZ = dqW * qZ + dqX * qY - dqY * qX + dqZ * qW;
+		qW = dqW * qW - dqX * qX - dqY * qY - dqZ * qZ;
+		let l = qX * qX + qY * qY + qZ * qZ + qW * qW;
+		if(l > 1e-32) {
+			l = 1 / Math.sqrt(l);
+		}
+		qX *= l;
+		qY *= l;
+		qZ *= l;
+		qW *= l;
+		let x = qX;
+		let y = qY;
+		let z = qZ;
+		let w = qW;
+		let x2 = 2 * x;
+		let y2 = 2 * y;
+		let z2 = 2 * z;
+		let xx = x * x2;
+		let yy = y * y2;
+		let zz = z * z2;
+		let xy = x * y2;
+		let yz = y * z2;
+		let xz = x * z2;
+		let wx = w * x2;
+		let wy = w * y2;
+		let wz = w * z2;
+		_this2._transform._rotation00 = 1 - yy - zz;
+		_this2._transform._rotation01 = xy - wz;
+		_this2._transform._rotation02 = xz + wy;
+		_this2._transform._rotation10 = xy + wz;
+		_this2._transform._rotation11 = 1 - xx - zz;
+		_this2._transform._rotation12 = yz - wx;
+		_this2._transform._rotation20 = xz - wy;
+		_this2._transform._rotation21 = yz + wx;
+		_this2._transform._rotation22 = 1 - xx - yy;
+		let __tmp__00;
+		let __tmp__01;
+		let __tmp__02;
+		let __tmp__10;
+		let __tmp__11;
+		let __tmp__12;
+		let __tmp__20;
+		let __tmp__21;
+		let __tmp__22;
+		__tmp__00 = _this2._transform._rotation00 * _this2._invLocalInertia00 + _this2._transform._rotation01 * _this2._invLocalInertia10 + _this2._transform._rotation02 * _this2._invLocalInertia20;
+		__tmp__01 = _this2._transform._rotation00 * _this2._invLocalInertia01 + _this2._transform._rotation01 * _this2._invLocalInertia11 + _this2._transform._rotation02 * _this2._invLocalInertia21;
+		__tmp__02 = _this2._transform._rotation00 * _this2._invLocalInertia02 + _this2._transform._rotation01 * _this2._invLocalInertia12 + _this2._transform._rotation02 * _this2._invLocalInertia22;
+		__tmp__10 = _this2._transform._rotation10 * _this2._invLocalInertia00 + _this2._transform._rotation11 * _this2._invLocalInertia10 + _this2._transform._rotation12 * _this2._invLocalInertia20;
+		__tmp__11 = _this2._transform._rotation10 * _this2._invLocalInertia01 + _this2._transform._rotation11 * _this2._invLocalInertia11 + _this2._transform._rotation12 * _this2._invLocalInertia21;
+		__tmp__12 = _this2._transform._rotation10 * _this2._invLocalInertia02 + _this2._transform._rotation11 * _this2._invLocalInertia12 + _this2._transform._rotation12 * _this2._invLocalInertia22;
+		__tmp__20 = _this2._transform._rotation20 * _this2._invLocalInertia00 + _this2._transform._rotation21 * _this2._invLocalInertia10 + _this2._transform._rotation22 * _this2._invLocalInertia20;
+		__tmp__21 = _this2._transform._rotation20 * _this2._invLocalInertia01 + _this2._transform._rotation21 * _this2._invLocalInertia11 + _this2._transform._rotation22 * _this2._invLocalInertia21;
+		__tmp__22 = _this2._transform._rotation20 * _this2._invLocalInertia02 + _this2._transform._rotation21 * _this2._invLocalInertia12 + _this2._transform._rotation22 * _this2._invLocalInertia22;
+		_this2._invInertia00 = __tmp__00;
+		_this2._invInertia01 = __tmp__01;
+		_this2._invInertia02 = __tmp__02;
+		_this2._invInertia10 = __tmp__10;
+		_this2._invInertia11 = __tmp__11;
+		_this2._invInertia12 = __tmp__12;
+		_this2._invInertia20 = __tmp__20;
+		_this2._invInertia21 = __tmp__21;
+		_this2._invInertia22 = __tmp__22;
+		let __tmp__001;
+		let __tmp__011;
+		let __tmp__021;
+		let __tmp__101;
+		let __tmp__111;
+		let __tmp__121;
+		let __tmp__201;
+		let __tmp__211;
+		let __tmp__221;
+		__tmp__001 = _this2._invInertia00 * _this2._transform._rotation00 + _this2._invInertia01 * _this2._transform._rotation01 + _this2._invInertia02 * _this2._transform._rotation02;
+		__tmp__011 = _this2._invInertia00 * _this2._transform._rotation10 + _this2._invInertia01 * _this2._transform._rotation11 + _this2._invInertia02 * _this2._transform._rotation12;
+		__tmp__021 = _this2._invInertia00 * _this2._transform._rotation20 + _this2._invInertia01 * _this2._transform._rotation21 + _this2._invInertia02 * _this2._transform._rotation22;
+		__tmp__101 = _this2._invInertia10 * _this2._transform._rotation00 + _this2._invInertia11 * _this2._transform._rotation01 + _this2._invInertia12 * _this2._transform._rotation02;
+		__tmp__111 = _this2._invInertia10 * _this2._transform._rotation10 + _this2._invInertia11 * _this2._transform._rotation11 + _this2._invInertia12 * _this2._transform._rotation12;
+		__tmp__121 = _this2._invInertia10 * _this2._transform._rotation20 + _this2._invInertia11 * _this2._transform._rotation21 + _this2._invInertia12 * _this2._transform._rotation22;
+		__tmp__201 = _this2._invInertia20 * _this2._transform._rotation00 + _this2._invInertia21 * _this2._transform._rotation01 + _this2._invInertia22 * _this2._transform._rotation02;
+		__tmp__211 = _this2._invInertia20 * _this2._transform._rotation10 + _this2._invInertia21 * _this2._transform._rotation11 + _this2._invInertia22 * _this2._transform._rotation12;
+		__tmp__221 = _this2._invInertia20 * _this2._transform._rotation20 + _this2._invInertia21 * _this2._transform._rotation21 + _this2._invInertia22 * _this2._transform._rotation22;
+		_this2._invInertia00 = __tmp__001;
+		_this2._invInertia01 = __tmp__011;
+		_this2._invInertia02 = __tmp__021;
+		_this2._invInertia10 = __tmp__101;
+		_this2._invInertia11 = __tmp__111;
+		_this2._invInertia12 = __tmp__121;
+		_this2._invInertia20 = __tmp__201;
+		_this2._invInertia21 = __tmp__211;
+		_this2._invInertia22 = __tmp__221;
+		_this2._invInertia00 *= _this2._rotFactor.x;
+		_this2._invInertia01 *= _this2._rotFactor.x;
+		_this2._invInertia02 *= _this2._rotFactor.x;
+		_this2._invInertia10 *= _this2._rotFactor.y;
+		_this2._invInertia11 *= _this2._rotFactor.y;
+		_this2._invInertia12 *= _this2._rotFactor.y;
+		_this2._invInertia20 *= _this2._rotFactor.z;
+		_this2._invInertia21 *= _this2._rotFactor.z;
+		_this2._invInertia22 *= _this2._rotFactor.z;
+		let _this3 = this._b2;
+		let theta1 = Math.sqrt(av2X * av2X + av2Y * av2Y + av2Z * av2Z);
+		let halfTheta1 = theta1 * 0.5;
+		let rotationToSinAxisFactor1;
+		let cosHalfTheta1;
+		if(halfTheta1 < 0.5) {
+			let ht2 = halfTheta1 * halfTheta1;
+			rotationToSinAxisFactor1 = 0.5 * (1 - ht2 * 0.16666666666666666 + ht2 * ht2 * 0.0083333333333333332);
+			cosHalfTheta1 = 1 - ht2 * 0.5 + ht2 * ht2 * 0.041666666666666664;
+		} else {
+			rotationToSinAxisFactor1 = Math.sin(halfTheta1) / theta1;
+			cosHalfTheta1 = Math.cos(halfTheta1);
+		}
+		let sinAxisX1;
+		let sinAxisY1;
+		let sinAxisZ1;
+		sinAxisX1 = av2X * rotationToSinAxisFactor1;
+		sinAxisY1 = av2Y * rotationToSinAxisFactor1;
+		sinAxisZ1 = av2Z * rotationToSinAxisFactor1;
+		let dqX1;
+		let dqY1;
+		let dqZ1;
+		let dqW1;
+		dqX1 = sinAxisX1;
+		dqY1 = sinAxisY1;
+		dqZ1 = sinAxisZ1;
+		dqW1 = cosHalfTheta1;
+		let qX1;
+		let qY1;
+		let qZ1;
+		let qW1;
+		let e001 = _this3._transform._rotation00;
+		let e111 = _this3._transform._rotation11;
+		let e221 = _this3._transform._rotation22;
+		let t1 = e001 + e111 + e221;
+		let s1;
+		if(t1 > 0) {
+			s1 = Math.sqrt(t1 + 1);
+			qW1 = 0.5 * s1;
+			s1 = 0.5 / s1;
+			qX1 = (_this3._transform._rotation21 - _this3._transform._rotation12) * s1;
+			qY1 = (_this3._transform._rotation02 - _this3._transform._rotation20) * s1;
+			qZ1 = (_this3._transform._rotation10 - _this3._transform._rotation01) * s1;
+		} else if(e001 > e111) {
+			if(e001 > e221) {
+				s1 = Math.sqrt(e001 - e111 - e221 + 1);
+				qX1 = 0.5 * s1;
+				s1 = 0.5 / s1;
+				qY1 = (_this3._transform._rotation01 + _this3._transform._rotation10) * s1;
+				qZ1 = (_this3._transform._rotation02 + _this3._transform._rotation20) * s1;
+				qW1 = (_this3._transform._rotation21 - _this3._transform._rotation12) * s1;
+			} else {
+				s1 = Math.sqrt(e221 - e001 - e111 + 1);
+				qZ1 = 0.5 * s1;
+				s1 = 0.5 / s1;
+				qX1 = (_this3._transform._rotation02 + _this3._transform._rotation20) * s1;
+				qY1 = (_this3._transform._rotation12 + _this3._transform._rotation21) * s1;
+				qW1 = (_this3._transform._rotation10 - _this3._transform._rotation01) * s1;
+			}
+		} else if(e111 > e221) {
+			s1 = Math.sqrt(e111 - e221 - e001 + 1);
+			qY1 = 0.5 * s1;
+			s1 = 0.5 / s1;
+			qX1 = (_this3._transform._rotation01 + _this3._transform._rotation10) * s1;
+			qZ1 = (_this3._transform._rotation12 + _this3._transform._rotation21) * s1;
+			qW1 = (_this3._transform._rotation02 - _this3._transform._rotation20) * s1;
+		} else {
+			s1 = Math.sqrt(e221 - e001 - e111 + 1);
+			qZ1 = 0.5 * s1;
+			s1 = 0.5 / s1;
+			qX1 = (_this3._transform._rotation02 + _this3._transform._rotation20) * s1;
+			qY1 = (_this3._transform._rotation12 + _this3._transform._rotation21) * s1;
+			qW1 = (_this3._transform._rotation10 - _this3._transform._rotation01) * s1;
+		}
+		qX1 = dqW1 * qX1 + dqX1 * qW1 + dqY1 * qZ1 - dqZ1 * qY1;
+		qY1 = dqW1 * qY1 - dqX1 * qZ1 + dqY1 * qW1 + dqZ1 * qX1;
+		qZ1 = dqW1 * qZ1 + dqX1 * qY1 - dqY1 * qX1 + dqZ1 * qW1;
+		qW1 = dqW1 * qW1 - dqX1 * qX1 - dqY1 * qY1 - dqZ1 * qZ1;
+		let l1 = qX1 * qX1 + qY1 * qY1 + qZ1 * qZ1 + qW1 * qW1;
+		if(l1 > 1e-32) {
+			l1 = 1 / Math.sqrt(l1);
+		}
+		qX1 *= l1;
+		qY1 *= l1;
+		qZ1 *= l1;
+		qW1 *= l1;
+		let x1 = qX1;
+		let y1 = qY1;
+		let z1 = qZ1;
+		let w1 = qW1;
+		let x21 = 2 * x1;
+		let y21 = 2 * y1;
+		let z21 = 2 * z1;
+		let xx1 = x1 * x21;
+		let yy1 = y1 * y21;
+		let zz1 = z1 * z21;
+		let xy1 = x1 * y21;
+		let yz1 = y1 * z21;
+		let xz1 = x1 * z21;
+		let wx1 = w1 * x21;
+		let wy1 = w1 * y21;
+		let wz1 = w1 * z21;
+		_this3._transform._rotation00 = 1 - yy1 - zz1;
+		_this3._transform._rotation01 = xy1 - wz1;
+		_this3._transform._rotation02 = xz1 + wy1;
+		_this3._transform._rotation10 = xy1 + wz1;
+		_this3._transform._rotation11 = 1 - xx1 - zz1;
+		_this3._transform._rotation12 = yz1 - wx1;
+		_this3._transform._rotation20 = xz1 - wy1;
+		_this3._transform._rotation21 = yz1 + wx1;
+		_this3._transform._rotation22 = 1 - xx1 - yy1;
+		let __tmp__002;
+		let __tmp__012;
+		let __tmp__022;
+		let __tmp__102;
+		let __tmp__112;
+		let __tmp__122;
+		let __tmp__202;
+		let __tmp__212;
+		let __tmp__222;
+		__tmp__002 = _this3._transform._rotation00 * _this3._invLocalInertia00 + _this3._transform._rotation01 * _this3._invLocalInertia10 + _this3._transform._rotation02 * _this3._invLocalInertia20;
+		__tmp__012 = _this3._transform._rotation00 * _this3._invLocalInertia01 + _this3._transform._rotation01 * _this3._invLocalInertia11 + _this3._transform._rotation02 * _this3._invLocalInertia21;
+		__tmp__022 = _this3._transform._rotation00 * _this3._invLocalInertia02 + _this3._transform._rotation01 * _this3._invLocalInertia12 + _this3._transform._rotation02 * _this3._invLocalInertia22;
+		__tmp__102 = _this3._transform._rotation10 * _this3._invLocalInertia00 + _this3._transform._rotation11 * _this3._invLocalInertia10 + _this3._transform._rotation12 * _this3._invLocalInertia20;
+		__tmp__112 = _this3._transform._rotation10 * _this3._invLocalInertia01 + _this3._transform._rotation11 * _this3._invLocalInertia11 + _this3._transform._rotation12 * _this3._invLocalInertia21;
+		__tmp__122 = _this3._transform._rotation10 * _this3._invLocalInertia02 + _this3._transform._rotation11 * _this3._invLocalInertia12 + _this3._transform._rotation12 * _this3._invLocalInertia22;
+		__tmp__202 = _this3._transform._rotation20 * _this3._invLocalInertia00 + _this3._transform._rotation21 * _this3._invLocalInertia10 + _this3._transform._rotation22 * _this3._invLocalInertia20;
+		__tmp__212 = _this3._transform._rotation20 * _this3._invLocalInertia01 + _this3._transform._rotation21 * _this3._invLocalInertia11 + _this3._transform._rotation22 * _this3._invLocalInertia21;
+		__tmp__222 = _this3._transform._rotation20 * _this3._invLocalInertia02 + _this3._transform._rotation21 * _this3._invLocalInertia12 + _this3._transform._rotation22 * _this3._invLocalInertia22;
+		_this3._invInertia00 = __tmp__002;
+		_this3._invInertia01 = __tmp__012;
+		_this3._invInertia02 = __tmp__022;
+		_this3._invInertia10 = __tmp__102;
+		_this3._invInertia11 = __tmp__112;
+		_this3._invInertia12 = __tmp__122;
+		_this3._invInertia20 = __tmp__202;
+		_this3._invInertia21 = __tmp__212;
+		_this3._invInertia22 = __tmp__222;
+		let __tmp__003;
+		let __tmp__013;
+		let __tmp__023;
+		let __tmp__103;
+		let __tmp__113;
+		let __tmp__123;
+		let __tmp__203;
+		let __tmp__213;
+		let __tmp__223;
+		__tmp__003 = _this3._invInertia00 * _this3._transform._rotation00 + _this3._invInertia01 * _this3._transform._rotation01 + _this3._invInertia02 * _this3._transform._rotation02;
+		__tmp__013 = _this3._invInertia00 * _this3._transform._rotation10 + _this3._invInertia01 * _this3._transform._rotation11 + _this3._invInertia02 * _this3._transform._rotation12;
+		__tmp__023 = _this3._invInertia00 * _this3._transform._rotation20 + _this3._invInertia01 * _this3._transform._rotation21 + _this3._invInertia02 * _this3._transform._rotation22;
+		__tmp__103 = _this3._invInertia10 * _this3._transform._rotation00 + _this3._invInertia11 * _this3._transform._rotation01 + _this3._invInertia12 * _this3._transform._rotation02;
+		__tmp__113 = _this3._invInertia10 * _this3._transform._rotation10 + _this3._invInertia11 * _this3._transform._rotation11 + _this3._invInertia12 * _this3._transform._rotation12;
+		__tmp__123 = _this3._invInertia10 * _this3._transform._rotation20 + _this3._invInertia11 * _this3._transform._rotation21 + _this3._invInertia12 * _this3._transform._rotation22;
+		__tmp__203 = _this3._invInertia20 * _this3._transform._rotation00 + _this3._invInertia21 * _this3._transform._rotation01 + _this3._invInertia22 * _this3._transform._rotation02;
+		__tmp__213 = _this3._invInertia20 * _this3._transform._rotation10 + _this3._invInertia21 * _this3._transform._rotation11 + _this3._invInertia22 * _this3._transform._rotation12;
+		__tmp__223 = _this3._invInertia20 * _this3._transform._rotation20 + _this3._invInertia21 * _this3._transform._rotation21 + _this3._invInertia22 * _this3._transform._rotation22;
+		_this3._invInertia00 = __tmp__003;
+		_this3._invInertia01 = __tmp__013;
+		_this3._invInertia02 = __tmp__023;
+		_this3._invInertia10 = __tmp__103;
+		_this3._invInertia11 = __tmp__113;
+		_this3._invInertia12 = __tmp__123;
+		_this3._invInertia20 = __tmp__203;
+		_this3._invInertia21 = __tmp__213;
+		_this3._invInertia22 = __tmp__223;
+		_this3._invInertia00 *= _this3._rotFactor.x;
+		_this3._invInertia01 *= _this3._rotFactor.x;
+		_this3._invInertia02 *= _this3._rotFactor.x;
+		_this3._invInertia10 *= _this3._rotFactor.y;
+		_this3._invInertia11 *= _this3._rotFactor.y;
+		_this3._invInertia12 *= _this3._rotFactor.y;
+		_this3._invInertia20 *= _this3._rotFactor.z;
+		_this3._invInertia21 *= _this3._rotFactor.z;
+		_this3._invInertia22 *= _this3._rotFactor.z;
+	}
+	postSolve() {
+		let lin1X;
+		let lin1Y;
+		let lin1Z;
+		let ang1X;
+		let ang1Y;
+		let ang1Z;
+		let ang2X;
+		let ang2Y;
+		let ang2Z;
+		lin1X = 0;
+		lin1Y = 0;
+		lin1Z = 0;
+		ang1X = 0;
+		ang1Y = 0;
+		ang1Z = 0;
+		ang2X = 0;
+		ang2Y = 0;
+		ang2Z = 0;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let row = this.info.rows[_g++];
+			let imp = row.impulse;
+			let jn = row.jacobianN;
+			let jt = row.jacobianT;
+			let jb = row.jacobianB;
+			let impN = imp.impulseN;
+			let impT = imp.impulseT;
+			let impB = imp.impulseB;
+			let impulseLX;
+			let impulseLY;
+			let impulseLZ;
+			impulseLX = 0;
+			impulseLY = 0;
+			impulseLZ = 0;
+			impulseLX += jt.lin1X * impT;
+			impulseLY += jt.lin1Y * impT;
+			impulseLZ += jt.lin1Z * impT;
+			impulseLX += jb.lin1X * impB;
+			impulseLY += jb.lin1Y * impB;
+			impulseLZ += jb.lin1Z * impB;
+			imp.impulseLX = impulseLX;
+			imp.impulseLY = impulseLY;
+			imp.impulseLZ = impulseLZ;
+			lin1X += jn.lin1X * impN;
+			lin1Y += jn.lin1Y * impN;
+			lin1Z += jn.lin1Z * impN;
+			ang1X += jn.ang1X * impN;
+			ang1Y += jn.ang1Y * impN;
+			ang1Z += jn.ang1Z * impN;
+			ang2X += jn.ang2X * impN;
+			ang2Y += jn.ang2Y * impN;
+			ang2Z += jn.ang2Z * impN;
+			lin1X += jt.lin1X * impT;
+			lin1Y += jt.lin1Y * impT;
+			lin1Z += jt.lin1Z * impT;
+			ang1X += jt.ang1X * impT;
+			ang1Y += jt.ang1Y * impT;
+			ang1Z += jt.ang1Z * impT;
+			ang2X += jt.ang2X * impT;
+			ang2Y += jt.ang2Y * impT;
+			ang2Z += jt.ang2Z * impT;
+			lin1X += jb.lin1X * impB;
+			lin1Y += jb.lin1Y * impB;
+			lin1Z += jb.lin1Z * impB;
+			ang1X += jb.ang1X * impB;
+			ang1Y += jb.ang1Y * impB;
+			ang1Z += jb.ang1Z * impB;
+			ang2X += jb.ang2X * impB;
+			ang2Y += jb.ang2Y * impB;
+			ang2Z += jb.ang2Z * impB;
+		}
+		this._b1._linearContactImpulseX += lin1X;
+		this._b1._linearContactImpulseY += lin1Y;
+		this._b1._linearContactImpulseZ += lin1Z;
+		this._b1._angularContactImpulseX += ang1X;
+		this._b1._angularContactImpulseY += ang1Y;
+		this._b1._angularContactImpulseZ += ang1Z;
+		this._b2._linearContactImpulseX -= lin1X;
+		this._b2._linearContactImpulseY -= lin1Y;
+		this._b2._linearContactImpulseZ -= lin1Z;
+		this._b2._angularContactImpulseX -= ang2X;
+		this._b2._angularContactImpulseY -= ang2Y;
+		this._b2._angularContactImpulseZ -= ang2Z;
+		this.constraint._syncManifold();
+	}
+}
+oimo.dynamics.constraint.solver.pgs.PgsJointConstraintSolver = class oimo_dynamics_constraint_solver_pgs_PgsJointConstraintSolver extends oimo.dynamics.constraint.ConstraintSolver {
+	constructor(joint) {
+		super();
+		this.joint = joint;
+		this.info = new oimo.dynamics.constraint.info.joint.JointSolverInfo();
+		this.massData = new Array(oimo.common.Setting.maxJacobianRows);
+		let _g = 0;
+		let _g1 = this.massData.length;
+		while(_g < _g1) this.massData[_g++] = new oimo.dynamics.constraint.solver.common.JointSolverMassDataRow();
+	}
+	preSolveVelocity(timeStep) {
+		this.joint._syncAnchors();
+		this.joint._getVelocitySolverInfo(timeStep,this.info);
+		this._b1 = this.info.b1;
+		this._b2 = this.info.b2;
+		let invM1 = this._b1._invMass;
+		let invM2 = this._b2._invMass;
+		let invI100;
+		let invI101;
+		let invI102;
+		let invI110;
+		let invI111;
+		let invI112;
+		let invI120;
+		let invI121;
+		let invI122;
+		let invI200;
+		let invI201;
+		let invI202;
+		let invI210;
+		let invI211;
+		let invI212;
+		let invI220;
+		let invI221;
+		let invI222;
+		invI100 = this._b1._invInertia00;
+		invI101 = this._b1._invInertia01;
+		invI102 = this._b1._invInertia02;
+		invI110 = this._b1._invInertia10;
+		invI111 = this._b1._invInertia11;
+		invI112 = this._b1._invInertia12;
+		invI120 = this._b1._invInertia20;
+		invI121 = this._b1._invInertia21;
+		invI122 = this._b1._invInertia22;
+		invI200 = this._b2._invInertia00;
+		invI201 = this._b2._invInertia01;
+		invI202 = this._b2._invInertia02;
+		invI210 = this._b2._invInertia10;
+		invI211 = this._b2._invInertia11;
+		invI212 = this._b2._invInertia12;
+		invI220 = this._b2._invInertia20;
+		invI221 = this._b2._invInertia21;
+		invI222 = this._b2._invInertia22;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let row = this.info.rows[i];
+			let md = this.massData[i];
+			let j = row.jacobian;
+			j.updateSparsity();
+			if((j.flag & 1) != 0) {
+				md.invMLin1X = j.lin1X * invM1;
+				md.invMLin1Y = j.lin1Y * invM1;
+				md.invMLin1Z = j.lin1Z * invM1;
+				md.invMLin2X = j.lin2X * invM2;
+				md.invMLin2Y = j.lin2Y * invM2;
+				md.invMLin2Z = j.lin2Z * invM2;
+			} else {
+				md.invMLin1X = 0;
+				md.invMLin1Y = 0;
+				md.invMLin1Z = 0;
+				md.invMLin2X = 0;
+				md.invMLin2Y = 0;
+				md.invMLin2Z = 0;
+			}
+			if((j.flag & 2) != 0) {
+				let __tmp__X;
+				let __tmp__Y;
+				let __tmp__Z;
+				__tmp__X = invI100 * j.ang1X + invI101 * j.ang1Y + invI102 * j.ang1Z;
+				__tmp__Y = invI110 * j.ang1X + invI111 * j.ang1Y + invI112 * j.ang1Z;
+				__tmp__Z = invI120 * j.ang1X + invI121 * j.ang1Y + invI122 * j.ang1Z;
+				md.invMAng1X = __tmp__X;
+				md.invMAng1Y = __tmp__Y;
+				md.invMAng1Z = __tmp__Z;
+				let __tmp__X1;
+				let __tmp__Y1;
+				let __tmp__Z1;
+				__tmp__X1 = invI200 * j.ang2X + invI201 * j.ang2Y + invI202 * j.ang2Z;
+				__tmp__Y1 = invI210 * j.ang2X + invI211 * j.ang2Y + invI212 * j.ang2Z;
+				__tmp__Z1 = invI220 * j.ang2X + invI221 * j.ang2Y + invI222 * j.ang2Z;
+				md.invMAng2X = __tmp__X1;
+				md.invMAng2Y = __tmp__Y1;
+				md.invMAng2Z = __tmp__Z1;
+			} else {
+				md.invMAng1X = 0;
+				md.invMAng1Y = 0;
+				md.invMAng1Z = 0;
+				md.invMAng2X = 0;
+				md.invMAng2Y = 0;
+				md.invMAng2Z = 0;
+			}
+			md.massWithoutCfm = md.invMLin1X * j.lin1X + md.invMLin1Y * j.lin1Y + md.invMLin1Z * j.lin1Z + (md.invMLin2X * j.lin2X + md.invMLin2Y * j.lin2Y + md.invMLin2Z * j.lin2Z) + (md.invMAng1X * j.ang1X + md.invMAng1Y * j.ang1Y + md.invMAng1Z * j.ang1Z) + (md.invMAng2X * j.ang2X + md.invMAng2Y * j.ang2Y + md.invMAng2Z * j.ang2Z);
+			md.mass = md.massWithoutCfm + row.cfm;
+			if(md.massWithoutCfm != 0) {
+				md.massWithoutCfm = 1 / md.massWithoutCfm;
+			}
+			if(md.mass != 0) {
+				md.mass = 1 / md.mass;
+			}
+		}
+	}
+	warmStart(timeStep) {
+		let factor = this.joint._positionCorrectionAlgorithm == oimo.dynamics.constraint.PositionCorrectionAlgorithm.BAUMGARTE ? oimo.common.Setting.jointWarmStartingFactorForBaungarte : oimo.common.Setting.jointWarmStartingFactor;
+		factor *= timeStep.dtRatio;
+		if(factor <= 0) {
+			let _g = 0;
+			let _g1 = this.info.numRows;
+			while(_g < _g1) {
+				let _this = this.info.rows[_g++].impulse;
+				_this.impulse = 0;
+				_this.impulseM = 0;
+				_this.impulseP = 0;
+			}
+			return;
+		}
+		let lv1X;
+		let lv1Y;
+		let lv1Z;
+		let lv2X;
+		let lv2Y;
+		let lv2Z;
+		let av1X;
+		let av1Y;
+		let av1Z;
+		let av2X;
+		let av2Y;
+		let av2Z;
+		lv1X = this._b1._velX;
+		lv1Y = this._b1._velY;
+		lv1Z = this._b1._velZ;
+		lv2X = this._b2._velX;
+		lv2Y = this._b2._velY;
+		lv2Z = this._b2._velZ;
+		av1X = this._b1._angVelX;
+		av1Y = this._b1._angVelY;
+		av1Z = this._b1._angVelZ;
+		av2X = this._b2._angVelX;
+		av2Y = this._b2._angVelY;
+		av2Z = this._b2._angVelZ;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let md = this.massData[i];
+			let imp = this.info.rows[i].impulse;
+			imp.impulse *= factor;
+			imp.impulseM *= factor;
+			let impulse = imp.impulse + imp.impulseM;
+			lv1X += md.invMLin1X * impulse;
+			lv1Y += md.invMLin1Y * impulse;
+			lv1Z += md.invMLin1Z * impulse;
+			lv2X += md.invMLin2X * -impulse;
+			lv2Y += md.invMLin2Y * -impulse;
+			lv2Z += md.invMLin2Z * -impulse;
+			av1X += md.invMAng1X * impulse;
+			av1Y += md.invMAng1Y * impulse;
+			av1Z += md.invMAng1Z * impulse;
+			av2X += md.invMAng2X * -impulse;
+			av2Y += md.invMAng2Y * -impulse;
+			av2Z += md.invMAng2Z * -impulse;
+		}
+		this._b1._velX = lv1X;
+		this._b1._velY = lv1Y;
+		this._b1._velZ = lv1Z;
+		this._b2._velX = lv2X;
+		this._b2._velY = lv2Y;
+		this._b2._velZ = lv2Z;
+		this._b1._angVelX = av1X;
+		this._b1._angVelY = av1Y;
+		this._b1._angVelZ = av1Z;
+		this._b2._angVelX = av2X;
+		this._b2._angVelY = av2Y;
+		this._b2._angVelZ = av2Z;
+	}
+	solveVelocity() {
+		let lv1X;
+		let lv1Y;
+		let lv1Z;
+		let lv2X;
+		let lv2Y;
+		let lv2Z;
+		let av1X;
+		let av1Y;
+		let av1Z;
+		let av2X;
+		let av2Y;
+		let av2Z;
+		lv1X = this._b1._velX;
+		lv1Y = this._b1._velY;
+		lv1Z = this._b1._velZ;
+		lv2X = this._b2._velX;
+		lv2Y = this._b2._velY;
+		lv2Z = this._b2._velZ;
+		av1X = this._b1._angVelX;
+		av1Y = this._b1._angVelY;
+		av1Z = this._b1._angVelZ;
+		av2X = this._b2._angVelX;
+		av2Y = this._b2._angVelY;
+		av2Z = this._b2._angVelZ;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let row = this.info.rows[i];
+			let md = this.massData[i];
+			let imp = row.impulse;
+			let j = row.jacobian;
+			if(row.motorMaxImpulse == 0) {
+				continue;
+			}
+			let rv = 0;
+			rv += lv1X * j.lin1X + lv1Y * j.lin1Y + lv1Z * j.lin1Z;
+			rv -= lv2X * j.lin2X + lv2Y * j.lin2Y + lv2Z * j.lin2Z;
+			rv += av1X * j.ang1X + av1Y * j.ang1Y + av1Z * j.ang1Z;
+			rv -= av2X * j.ang2X + av2Y * j.ang2Y + av2Z * j.ang2Z;
+			let impulseM = (-row.motorSpeed - rv) * md.massWithoutCfm;
+			let oldImpulseM = imp.impulseM;
+			imp.impulseM += impulseM;
+			if(imp.impulseM < -row.motorMaxImpulse) {
+				imp.impulseM = -row.motorMaxImpulse;
+			} else if(imp.impulseM > row.motorMaxImpulse) {
+				imp.impulseM = row.motorMaxImpulse;
+			}
+			impulseM = imp.impulseM - oldImpulseM;
+			if((j.flag & 1) != 0) {
+				lv1X += md.invMLin1X * impulseM;
+				lv1Y += md.invMLin1Y * impulseM;
+				lv1Z += md.invMLin1Z * impulseM;
+				lv2X += md.invMLin2X * -impulseM;
+				lv2Y += md.invMLin2Y * -impulseM;
+				lv2Z += md.invMLin2Z * -impulseM;
+			}
+			if((j.flag & 2) != 0) {
+				av1X += md.invMAng1X * impulseM;
+				av1Y += md.invMAng1Y * impulseM;
+				av1Z += md.invMAng1Z * impulseM;
+				av2X += md.invMAng2X * -impulseM;
+				av2Y += md.invMAng2Y * -impulseM;
+				av2Z += md.invMAng2Z * -impulseM;
+			}
+		}
+		let _g2 = 0;
+		let _g3 = this.info.numRows;
+		while(_g2 < _g3) {
+			let i = _g2++;
+			let row = this.info.rows[i];
+			let md = this.massData[i];
+			let imp = row.impulse;
+			let j = row.jacobian;
+			let rv = 0;
+			rv += lv1X * j.lin1X + lv1Y * j.lin1Y + lv1Z * j.lin1Z;
+			rv -= lv2X * j.lin2X + lv2Y * j.lin2Y + lv2Z * j.lin2Z;
+			rv += av1X * j.ang1X + av1Y * j.ang1Y + av1Z * j.ang1Z;
+			rv -= av2X * j.ang2X + av2Y * j.ang2Y + av2Z * j.ang2Z;
+			let impulse = (row.rhs - rv - imp.impulse * row.cfm) * md.mass;
+			let oldImpulse = imp.impulse;
+			imp.impulse += impulse;
+			if(imp.impulse < row.minImpulse) {
+				imp.impulse = row.minImpulse;
+			} else if(imp.impulse > row.maxImpulse) {
+				imp.impulse = row.maxImpulse;
+			}
+			impulse = imp.impulse - oldImpulse;
+			if((j.flag & 1) != 0) {
+				lv1X += md.invMLin1X * impulse;
+				lv1Y += md.invMLin1Y * impulse;
+				lv1Z += md.invMLin1Z * impulse;
+				lv2X += md.invMLin2X * -impulse;
+				lv2Y += md.invMLin2Y * -impulse;
+				lv2Z += md.invMLin2Z * -impulse;
+			}
+			if((j.flag & 2) != 0) {
+				av1X += md.invMAng1X * impulse;
+				av1Y += md.invMAng1Y * impulse;
+				av1Z += md.invMAng1Z * impulse;
+				av2X += md.invMAng2X * -impulse;
+				av2Y += md.invMAng2Y * -impulse;
+				av2Z += md.invMAng2Z * -impulse;
+			}
+		}
+		this._b1._velX = lv1X;
+		this._b1._velY = lv1Y;
+		this._b1._velZ = lv1Z;
+		this._b2._velX = lv2X;
+		this._b2._velY = lv2Y;
+		this._b2._velZ = lv2Z;
+		this._b1._angVelX = av1X;
+		this._b1._angVelY = av1Y;
+		this._b1._angVelZ = av1Z;
+		this._b2._angVelX = av2X;
+		this._b2._angVelY = av2Y;
+		this._b2._angVelZ = av2Z;
+	}
+	postSolveVelocity(timeStep) {
+		let linX;
+		let linY;
+		let linZ;
+		let angX;
+		let angY;
+		let angZ;
+		linX = 0;
+		linY = 0;
+		linZ = 0;
+		angX = 0;
+		angY = 0;
+		angZ = 0;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let row = this.info.rows[_g++];
+			let imp = row.impulse;
+			let j = row.jacobian;
+			if((j.flag & 1) != 0) {
+				linX += j.lin1X * imp.impulse;
+				linY += j.lin1Y * imp.impulse;
+				linZ += j.lin1Z * imp.impulse;
+			} else if((j.flag & 2) != 0) {
+				angX += j.ang1X * imp.impulse;
+				angY += j.ang1Y * imp.impulse;
+				angZ += j.ang1Z * imp.impulse;
+			}
+		}
+		this.joint._appliedForceX = linX * timeStep.invDt;
+		this.joint._appliedForceY = linY * timeStep.invDt;
+		this.joint._appliedForceZ = linZ * timeStep.invDt;
+		this.joint._appliedTorqueX = angX * timeStep.invDt;
+		this.joint._appliedTorqueY = angY * timeStep.invDt;
+		this.joint._appliedTorqueZ = angZ * timeStep.invDt;
+	}
+	preSolvePosition(timeStep) {
+		this.joint._syncAnchors();
+		this.joint._getPositionSolverInfo(this.info);
+		this._b1 = this.info.b1;
+		this._b2 = this.info.b2;
+		let invM1 = this._b1._invMass;
+		let invM2 = this._b2._invMass;
+		let invI100;
+		let invI101;
+		let invI102;
+		let invI110;
+		let invI111;
+		let invI112;
+		let invI120;
+		let invI121;
+		let invI122;
+		let invI200;
+		let invI201;
+		let invI202;
+		let invI210;
+		let invI211;
+		let invI212;
+		let invI220;
+		let invI221;
+		let invI222;
+		invI100 = this._b1._invInertia00;
+		invI101 = this._b1._invInertia01;
+		invI102 = this._b1._invInertia02;
+		invI110 = this._b1._invInertia10;
+		invI111 = this._b1._invInertia11;
+		invI112 = this._b1._invInertia12;
+		invI120 = this._b1._invInertia20;
+		invI121 = this._b1._invInertia21;
+		invI122 = this._b1._invInertia22;
+		invI200 = this._b2._invInertia00;
+		invI201 = this._b2._invInertia01;
+		invI202 = this._b2._invInertia02;
+		invI210 = this._b2._invInertia10;
+		invI211 = this._b2._invInertia11;
+		invI212 = this._b2._invInertia12;
+		invI220 = this._b2._invInertia20;
+		invI221 = this._b2._invInertia21;
+		invI222 = this._b2._invInertia22;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let md = this.massData[i];
+			let j = this.info.rows[i].jacobian;
+			md.invMLin1X = j.lin1X * invM1;
+			md.invMLin1Y = j.lin1Y * invM1;
+			md.invMLin1Z = j.lin1Z * invM1;
+			md.invMLin2X = j.lin2X * invM2;
+			md.invMLin2Y = j.lin2Y * invM2;
+			md.invMLin2Z = j.lin2Z * invM2;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = invI100 * j.ang1X + invI101 * j.ang1Y + invI102 * j.ang1Z;
+			__tmp__Y = invI110 * j.ang1X + invI111 * j.ang1Y + invI112 * j.ang1Z;
+			__tmp__Z = invI120 * j.ang1X + invI121 * j.ang1Y + invI122 * j.ang1Z;
+			md.invMAng1X = __tmp__X;
+			md.invMAng1Y = __tmp__Y;
+			md.invMAng1Z = __tmp__Z;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = invI200 * j.ang2X + invI201 * j.ang2Y + invI202 * j.ang2Z;
+			__tmp__Y1 = invI210 * j.ang2X + invI211 * j.ang2Y + invI212 * j.ang2Z;
+			__tmp__Z1 = invI220 * j.ang2X + invI221 * j.ang2Y + invI222 * j.ang2Z;
+			md.invMAng2X = __tmp__X1;
+			md.invMAng2Y = __tmp__Y1;
+			md.invMAng2Z = __tmp__Z1;
+			md.mass = md.invMLin1X * j.lin1X + md.invMLin1Y * j.lin1Y + md.invMLin1Z * j.lin1Z + (md.invMLin2X * j.lin2X + md.invMLin2Y * j.lin2Y + md.invMLin2Z * j.lin2Z) + (md.invMAng1X * j.ang1X + md.invMAng1Y * j.ang1Y + md.invMAng1Z * j.ang1Z) + (md.invMAng2X * j.ang2X + md.invMAng2Y * j.ang2Y + md.invMAng2Z * j.ang2Z);
+			if(md.mass != 0) {
+				md.mass = 1 / md.mass;
+			}
+		}
+		let _g2 = 0;
+		let _g3 = this.info.numRows;
+		while(_g2 < _g3) this.info.rows[_g2++].impulse.impulseP = 0;
+	}
+	solvePositionSplitImpulse() {
+		let lv1X;
+		let lv1Y;
+		let lv1Z;
+		let lv2X;
+		let lv2Y;
+		let lv2Z;
+		let av1X;
+		let av1Y;
+		let av1Z;
+		let av2X;
+		let av2Y;
+		let av2Z;
+		lv1X = this._b1._pseudoVelX;
+		lv1Y = this._b1._pseudoVelY;
+		lv1Z = this._b1._pseudoVelZ;
+		lv2X = this._b2._pseudoVelX;
+		lv2Y = this._b2._pseudoVelY;
+		lv2Z = this._b2._pseudoVelZ;
+		av1X = this._b1._angPseudoVelX;
+		av1Y = this._b1._angPseudoVelY;
+		av1Z = this._b1._angPseudoVelZ;
+		av2X = this._b2._angPseudoVelX;
+		av2Y = this._b2._angPseudoVelY;
+		av2Z = this._b2._angPseudoVelZ;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let row = this.info.rows[i];
+			let md = this.massData[i];
+			let imp = row.impulse;
+			let j = row.jacobian;
+			let rv = 0;
+			rv += lv1X * j.lin1X + lv1Y * j.lin1Y + lv1Z * j.lin1Z;
+			rv -= lv2X * j.lin2X + lv2Y * j.lin2Y + lv2Z * j.lin2Z;
+			rv += av1X * j.ang1X + av1Y * j.ang1Y + av1Z * j.ang1Z;
+			rv -= av2X * j.ang2X + av2Y * j.ang2Y + av2Z * j.ang2Z;
+			let impulseP = (row.rhs * oimo.common.Setting.positionSplitImpulseBaumgarte - rv) * md.mass;
+			let oldImpulseP = imp.impulseP;
+			imp.impulseP += impulseP;
+			if(imp.impulseP < row.minImpulse) {
+				imp.impulseP = row.minImpulse;
+			} else if(imp.impulseP > row.maxImpulse) {
+				imp.impulseP = row.maxImpulse;
+			}
+			impulseP = imp.impulseP - oldImpulseP;
+			lv1X += md.invMLin1X * impulseP;
+			lv1Y += md.invMLin1Y * impulseP;
+			lv1Z += md.invMLin1Z * impulseP;
+			lv2X += md.invMLin2X * -impulseP;
+			lv2Y += md.invMLin2Y * -impulseP;
+			lv2Z += md.invMLin2Z * -impulseP;
+			av1X += md.invMAng1X * impulseP;
+			av1Y += md.invMAng1Y * impulseP;
+			av1Z += md.invMAng1Z * impulseP;
+			av2X += md.invMAng2X * -impulseP;
+			av2Y += md.invMAng2Y * -impulseP;
+			av2Z += md.invMAng2Z * -impulseP;
+		}
+		this._b1._pseudoVelX = lv1X;
+		this._b1._pseudoVelY = lv1Y;
+		this._b1._pseudoVelZ = lv1Z;
+		this._b2._pseudoVelX = lv2X;
+		this._b2._pseudoVelY = lv2Y;
+		this._b2._pseudoVelZ = lv2Z;
+		this._b1._angPseudoVelX = av1X;
+		this._b1._angPseudoVelY = av1Y;
+		this._b1._angPseudoVelZ = av1Z;
+		this._b2._angPseudoVelX = av2X;
+		this._b2._angPseudoVelY = av2Y;
+		this._b2._angPseudoVelZ = av2Z;
+	}
+	solvePositionNgs(timeStep) {
+		this.joint._syncAnchors();
+		this.joint._getPositionSolverInfo(this.info);
+		this._b1 = this.info.b1;
+		this._b2 = this.info.b2;
+		let invM1 = this._b1._invMass;
+		let invM2 = this._b2._invMass;
+		let invI100;
+		let invI101;
+		let invI102;
+		let invI110;
+		let invI111;
+		let invI112;
+		let invI120;
+		let invI121;
+		let invI122;
+		let invI200;
+		let invI201;
+		let invI202;
+		let invI210;
+		let invI211;
+		let invI212;
+		let invI220;
+		let invI221;
+		let invI222;
+		invI100 = this._b1._invInertia00;
+		invI101 = this._b1._invInertia01;
+		invI102 = this._b1._invInertia02;
+		invI110 = this._b1._invInertia10;
+		invI111 = this._b1._invInertia11;
+		invI112 = this._b1._invInertia12;
+		invI120 = this._b1._invInertia20;
+		invI121 = this._b1._invInertia21;
+		invI122 = this._b1._invInertia22;
+		invI200 = this._b2._invInertia00;
+		invI201 = this._b2._invInertia01;
+		invI202 = this._b2._invInertia02;
+		invI210 = this._b2._invInertia10;
+		invI211 = this._b2._invInertia11;
+		invI212 = this._b2._invInertia12;
+		invI220 = this._b2._invInertia20;
+		invI221 = this._b2._invInertia21;
+		invI222 = this._b2._invInertia22;
+		let _g = 0;
+		let _g1 = this.info.numRows;
+		while(_g < _g1) {
+			let i = _g++;
+			let md = this.massData[i];
+			let j = this.info.rows[i].jacobian;
+			md.invMLin1X = j.lin1X * invM1;
+			md.invMLin1Y = j.lin1Y * invM1;
+			md.invMLin1Z = j.lin1Z * invM1;
+			md.invMLin2X = j.lin2X * invM2;
+			md.invMLin2Y = j.lin2Y * invM2;
+			md.invMLin2Z = j.lin2Z * invM2;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = invI100 * j.ang1X + invI101 * j.ang1Y + invI102 * j.ang1Z;
+			__tmp__Y = invI110 * j.ang1X + invI111 * j.ang1Y + invI112 * j.ang1Z;
+			__tmp__Z = invI120 * j.ang1X + invI121 * j.ang1Y + invI122 * j.ang1Z;
+			md.invMAng1X = __tmp__X;
+			md.invMAng1Y = __tmp__Y;
+			md.invMAng1Z = __tmp__Z;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = invI200 * j.ang2X + invI201 * j.ang2Y + invI202 * j.ang2Z;
+			__tmp__Y1 = invI210 * j.ang2X + invI211 * j.ang2Y + invI212 * j.ang2Z;
+			__tmp__Z1 = invI220 * j.ang2X + invI221 * j.ang2Y + invI222 * j.ang2Z;
+			md.invMAng2X = __tmp__X1;
+			md.invMAng2Y = __tmp__Y1;
+			md.invMAng2Z = __tmp__Z1;
+			md.mass = md.invMLin1X * j.lin1X + md.invMLin1Y * j.lin1Y + md.invMLin1Z * j.lin1Z + (md.invMLin2X * j.lin2X + md.invMLin2Y * j.lin2Y + md.invMLin2Z * j.lin2Z) + (md.invMAng1X * j.ang1X + md.invMAng1Y * j.ang1Y + md.invMAng1Z * j.ang1Z) + (md.invMAng2X * j.ang2X + md.invMAng2Y * j.ang2Y + md.invMAng2Z * j.ang2Z);
+			if(md.mass != 0) {
+				md.mass = 1 / md.mass;
+			}
+		}
+		let lv1X;
+		let lv1Y;
+		let lv1Z;
+		let lv2X;
+		let lv2Y;
+		let lv2Z;
+		let av1X;
+		let av1Y;
+		let av1Z;
+		let av2X;
+		let av2Y;
+		let av2Z;
+		lv1X = 0;
+		lv1Y = 0;
+		lv1Z = 0;
+		lv2X = 0;
+		lv2Y = 0;
+		lv2Z = 0;
+		av1X = 0;
+		av1Y = 0;
+		av1Z = 0;
+		av2X = 0;
+		av2Y = 0;
+		av2Z = 0;
+		let _g2 = 0;
+		let _g3 = this.info.numRows;
+		while(_g2 < _g3) {
+			let i = _g2++;
+			let row = this.info.rows[i];
+			let md = this.massData[i];
+			let imp = row.impulse;
+			let j = row.jacobian;
+			let rv = 0;
+			rv += lv1X * j.lin1X + lv1Y * j.lin1Y + lv1Z * j.lin1Z;
+			rv -= lv2X * j.lin2X + lv2Y * j.lin2Y + lv2Z * j.lin2Z;
+			rv += av1X * j.ang1X + av1Y * j.ang1Y + av1Z * j.ang1Z;
+			rv -= av2X * j.ang2X + av2Y * j.ang2Y + av2Z * j.ang2Z;
+			let impulseP = (row.rhs * oimo.common.Setting.positionNgsBaumgarte - rv) * md.mass;
+			let oldImpulseP = imp.impulseP;
+			imp.impulseP += impulseP;
+			if(imp.impulseP < row.minImpulse) {
+				imp.impulseP = row.minImpulse;
+			} else if(imp.impulseP > row.maxImpulse) {
+				imp.impulseP = row.maxImpulse;
+			}
+			impulseP = imp.impulseP - oldImpulseP;
+			lv1X += md.invMLin1X * impulseP;
+			lv1Y += md.invMLin1Y * impulseP;
+			lv1Z += md.invMLin1Z * impulseP;
+			lv2X += md.invMLin2X * -impulseP;
+			lv2Y += md.invMLin2Y * -impulseP;
+			lv2Z += md.invMLin2Z * -impulseP;
+			av1X += md.invMAng1X * impulseP;
+			av1Y += md.invMAng1Y * impulseP;
+			av1Z += md.invMAng1Z * impulseP;
+			av2X += md.invMAng2X * -impulseP;
+			av2Y += md.invMAng2Y * -impulseP;
+			av2Z += md.invMAng2Z * -impulseP;
+		}
+		let _this = this._b1;
+		_this._transform._positionX += lv1X;
+		_this._transform._positionY += lv1Y;
+		_this._transform._positionZ += lv1Z;
+		let _this1 = this._b2;
+		_this1._transform._positionX += lv2X;
+		_this1._transform._positionY += lv2Y;
+		_this1._transform._positionZ += lv2Z;
+		let _this2 = this._b1;
+		let theta = Math.sqrt(av1X * av1X + av1Y * av1Y + av1Z * av1Z);
+		let halfTheta = theta * 0.5;
+		let rotationToSinAxisFactor;
+		let cosHalfTheta;
+		if(halfTheta < 0.5) {
+			let ht2 = halfTheta * halfTheta;
+			rotationToSinAxisFactor = 0.5 * (1 - ht2 * 0.16666666666666666 + ht2 * ht2 * 0.0083333333333333332);
+			cosHalfTheta = 1 - ht2 * 0.5 + ht2 * ht2 * 0.041666666666666664;
+		} else {
+			rotationToSinAxisFactor = Math.sin(halfTheta) / theta;
+			cosHalfTheta = Math.cos(halfTheta);
+		}
+		let sinAxisX;
+		let sinAxisY;
+		let sinAxisZ;
+		sinAxisX = av1X * rotationToSinAxisFactor;
+		sinAxisY = av1Y * rotationToSinAxisFactor;
+		sinAxisZ = av1Z * rotationToSinAxisFactor;
+		let dqX;
+		let dqY;
+		let dqZ;
+		let dqW;
+		dqX = sinAxisX;
+		dqY = sinAxisY;
+		dqZ = sinAxisZ;
+		dqW = cosHalfTheta;
+		let qX;
+		let qY;
+		let qZ;
+		let qW;
+		let e00 = _this2._transform._rotation00;
+		let e11 = _this2._transform._rotation11;
+		let e22 = _this2._transform._rotation22;
+		let t = e00 + e11 + e22;
+		let s;
+		if(t > 0) {
+			s = Math.sqrt(t + 1);
+			qW = 0.5 * s;
+			s = 0.5 / s;
+			qX = (_this2._transform._rotation21 - _this2._transform._rotation12) * s;
+			qY = (_this2._transform._rotation02 - _this2._transform._rotation20) * s;
+			qZ = (_this2._transform._rotation10 - _this2._transform._rotation01) * s;
+		} else if(e00 > e11) {
+			if(e00 > e22) {
+				s = Math.sqrt(e00 - e11 - e22 + 1);
+				qX = 0.5 * s;
+				s = 0.5 / s;
+				qY = (_this2._transform._rotation01 + _this2._transform._rotation10) * s;
+				qZ = (_this2._transform._rotation02 + _this2._transform._rotation20) * s;
+				qW = (_this2._transform._rotation21 - _this2._transform._rotation12) * s;
+			} else {
+				s = Math.sqrt(e22 - e00 - e11 + 1);
+				qZ = 0.5 * s;
+				s = 0.5 / s;
+				qX = (_this2._transform._rotation02 + _this2._transform._rotation20) * s;
+				qY = (_this2._transform._rotation12 + _this2._transform._rotation21) * s;
+				qW = (_this2._transform._rotation10 - _this2._transform._rotation01) * s;
+			}
+		} else if(e11 > e22) {
+			s = Math.sqrt(e11 - e22 - e00 + 1);
+			qY = 0.5 * s;
+			s = 0.5 / s;
+			qX = (_this2._transform._rotation01 + _this2._transform._rotation10) * s;
+			qZ = (_this2._transform._rotation12 + _this2._transform._rotation21) * s;
+			qW = (_this2._transform._rotation02 - _this2._transform._rotation20) * s;
+		} else {
+			s = Math.sqrt(e22 - e00 - e11 + 1);
+			qZ = 0.5 * s;
+			s = 0.5 / s;
+			qX = (_this2._transform._rotation02 + _this2._transform._rotation20) * s;
+			qY = (_this2._transform._rotation12 + _this2._transform._rotation21) * s;
+			qW = (_this2._transform._rotation10 - _this2._transform._rotation01) * s;
+		}
+		qX = dqW * qX + dqX * qW + dqY * qZ - dqZ * qY;
+		qY = dqW * qY - dqX * qZ + dqY * qW + dqZ * qX;
+		qZ = dqW * qZ + dqX * qY - dqY * qX + dqZ * qW;
+		qW = dqW * qW - dqX * qX - dqY * qY - dqZ * qZ;
+		let l = qX * qX + qY * qY + qZ * qZ + qW * qW;
+		if(l > 1e-32) {
+			l = 1 / Math.sqrt(l);
+		}
+		qX *= l;
+		qY *= l;
+		qZ *= l;
+		qW *= l;
+		let x = qX;
+		let y = qY;
+		let z = qZ;
+		let w = qW;
+		let x2 = 2 * x;
+		let y2 = 2 * y;
+		let z2 = 2 * z;
+		let xx = x * x2;
+		let yy = y * y2;
+		let zz = z * z2;
+		let xy = x * y2;
+		let yz = y * z2;
+		let xz = x * z2;
+		let wx = w * x2;
+		let wy = w * y2;
+		let wz = w * z2;
+		_this2._transform._rotation00 = 1 - yy - zz;
+		_this2._transform._rotation01 = xy - wz;
+		_this2._transform._rotation02 = xz + wy;
+		_this2._transform._rotation10 = xy + wz;
+		_this2._transform._rotation11 = 1 - xx - zz;
+		_this2._transform._rotation12 = yz - wx;
+		_this2._transform._rotation20 = xz - wy;
+		_this2._transform._rotation21 = yz + wx;
+		_this2._transform._rotation22 = 1 - xx - yy;
+		let __tmp__00;
+		let __tmp__01;
+		let __tmp__02;
+		let __tmp__10;
+		let __tmp__11;
+		let __tmp__12;
+		let __tmp__20;
+		let __tmp__21;
+		let __tmp__22;
+		__tmp__00 = _this2._transform._rotation00 * _this2._invLocalInertia00 + _this2._transform._rotation01 * _this2._invLocalInertia10 + _this2._transform._rotation02 * _this2._invLocalInertia20;
+		__tmp__01 = _this2._transform._rotation00 * _this2._invLocalInertia01 + _this2._transform._rotation01 * _this2._invLocalInertia11 + _this2._transform._rotation02 * _this2._invLocalInertia21;
+		__tmp__02 = _this2._transform._rotation00 * _this2._invLocalInertia02 + _this2._transform._rotation01 * _this2._invLocalInertia12 + _this2._transform._rotation02 * _this2._invLocalInertia22;
+		__tmp__10 = _this2._transform._rotation10 * _this2._invLocalInertia00 + _this2._transform._rotation11 * _this2._invLocalInertia10 + _this2._transform._rotation12 * _this2._invLocalInertia20;
+		__tmp__11 = _this2._transform._rotation10 * _this2._invLocalInertia01 + _this2._transform._rotation11 * _this2._invLocalInertia11 + _this2._transform._rotation12 * _this2._invLocalInertia21;
+		__tmp__12 = _this2._transform._rotation10 * _this2._invLocalInertia02 + _this2._transform._rotation11 * _this2._invLocalInertia12 + _this2._transform._rotation12 * _this2._invLocalInertia22;
+		__tmp__20 = _this2._transform._rotation20 * _this2._invLocalInertia00 + _this2._transform._rotation21 * _this2._invLocalInertia10 + _this2._transform._rotation22 * _this2._invLocalInertia20;
+		__tmp__21 = _this2._transform._rotation20 * _this2._invLocalInertia01 + _this2._transform._rotation21 * _this2._invLocalInertia11 + _this2._transform._rotation22 * _this2._invLocalInertia21;
+		__tmp__22 = _this2._transform._rotation20 * _this2._invLocalInertia02 + _this2._transform._rotation21 * _this2._invLocalInertia12 + _this2._transform._rotation22 * _this2._invLocalInertia22;
+		_this2._invInertia00 = __tmp__00;
+		_this2._invInertia01 = __tmp__01;
+		_this2._invInertia02 = __tmp__02;
+		_this2._invInertia10 = __tmp__10;
+		_this2._invInertia11 = __tmp__11;
+		_this2._invInertia12 = __tmp__12;
+		_this2._invInertia20 = __tmp__20;
+		_this2._invInertia21 = __tmp__21;
+		_this2._invInertia22 = __tmp__22;
+		let __tmp__001;
+		let __tmp__011;
+		let __tmp__021;
+		let __tmp__101;
+		let __tmp__111;
+		let __tmp__121;
+		let __tmp__201;
+		let __tmp__211;
+		let __tmp__221;
+		__tmp__001 = _this2._invInertia00 * _this2._transform._rotation00 + _this2._invInertia01 * _this2._transform._rotation01 + _this2._invInertia02 * _this2._transform._rotation02;
+		__tmp__011 = _this2._invInertia00 * _this2._transform._rotation10 + _this2._invInertia01 * _this2._transform._rotation11 + _this2._invInertia02 * _this2._transform._rotation12;
+		__tmp__021 = _this2._invInertia00 * _this2._transform._rotation20 + _this2._invInertia01 * _this2._transform._rotation21 + _this2._invInertia02 * _this2._transform._rotation22;
+		__tmp__101 = _this2._invInertia10 * _this2._transform._rotation00 + _this2._invInertia11 * _this2._transform._rotation01 + _this2._invInertia12 * _this2._transform._rotation02;
+		__tmp__111 = _this2._invInertia10 * _this2._transform._rotation10 + _this2._invInertia11 * _this2._transform._rotation11 + _this2._invInertia12 * _this2._transform._rotation12;
+		__tmp__121 = _this2._invInertia10 * _this2._transform._rotation20 + _this2._invInertia11 * _this2._transform._rotation21 + _this2._invInertia12 * _this2._transform._rotation22;
+		__tmp__201 = _this2._invInertia20 * _this2._transform._rotation00 + _this2._invInertia21 * _this2._transform._rotation01 + _this2._invInertia22 * _this2._transform._rotation02;
+		__tmp__211 = _this2._invInertia20 * _this2._transform._rotation10 + _this2._invInertia21 * _this2._transform._rotation11 + _this2._invInertia22 * _this2._transform._rotation12;
+		__tmp__221 = _this2._invInertia20 * _this2._transform._rotation20 + _this2._invInertia21 * _this2._transform._rotation21 + _this2._invInertia22 * _this2._transform._rotation22;
+		_this2._invInertia00 = __tmp__001;
+		_this2._invInertia01 = __tmp__011;
+		_this2._invInertia02 = __tmp__021;
+		_this2._invInertia10 = __tmp__101;
+		_this2._invInertia11 = __tmp__111;
+		_this2._invInertia12 = __tmp__121;
+		_this2._invInertia20 = __tmp__201;
+		_this2._invInertia21 = __tmp__211;
+		_this2._invInertia22 = __tmp__221;
+		_this2._invInertia00 *= _this2._rotFactor.x;
+		_this2._invInertia01 *= _this2._rotFactor.x;
+		_this2._invInertia02 *= _this2._rotFactor.x;
+		_this2._invInertia10 *= _this2._rotFactor.y;
+		_this2._invInertia11 *= _this2._rotFactor.y;
+		_this2._invInertia12 *= _this2._rotFactor.y;
+		_this2._invInertia20 *= _this2._rotFactor.z;
+		_this2._invInertia21 *= _this2._rotFactor.z;
+		_this2._invInertia22 *= _this2._rotFactor.z;
+		let _this3 = this._b2;
+		let theta1 = Math.sqrt(av2X * av2X + av2Y * av2Y + av2Z * av2Z);
+		let halfTheta1 = theta1 * 0.5;
+		let rotationToSinAxisFactor1;
+		let cosHalfTheta1;
+		if(halfTheta1 < 0.5) {
+			let ht2 = halfTheta1 * halfTheta1;
+			rotationToSinAxisFactor1 = 0.5 * (1 - ht2 * 0.16666666666666666 + ht2 * ht2 * 0.0083333333333333332);
+			cosHalfTheta1 = 1 - ht2 * 0.5 + ht2 * ht2 * 0.041666666666666664;
+		} else {
+			rotationToSinAxisFactor1 = Math.sin(halfTheta1) / theta1;
+			cosHalfTheta1 = Math.cos(halfTheta1);
+		}
+		let sinAxisX1;
+		let sinAxisY1;
+		let sinAxisZ1;
+		sinAxisX1 = av2X * rotationToSinAxisFactor1;
+		sinAxisY1 = av2Y * rotationToSinAxisFactor1;
+		sinAxisZ1 = av2Z * rotationToSinAxisFactor1;
+		let dqX1;
+		let dqY1;
+		let dqZ1;
+		let dqW1;
+		dqX1 = sinAxisX1;
+		dqY1 = sinAxisY1;
+		dqZ1 = sinAxisZ1;
+		dqW1 = cosHalfTheta1;
+		let qX1;
+		let qY1;
+		let qZ1;
+		let qW1;
+		let e001 = _this3._transform._rotation00;
+		let e111 = _this3._transform._rotation11;
+		let e221 = _this3._transform._rotation22;
+		let t1 = e001 + e111 + e221;
+		let s1;
+		if(t1 > 0) {
+			s1 = Math.sqrt(t1 + 1);
+			qW1 = 0.5 * s1;
+			s1 = 0.5 / s1;
+			qX1 = (_this3._transform._rotation21 - _this3._transform._rotation12) * s1;
+			qY1 = (_this3._transform._rotation02 - _this3._transform._rotation20) * s1;
+			qZ1 = (_this3._transform._rotation10 - _this3._transform._rotation01) * s1;
+		} else if(e001 > e111) {
+			if(e001 > e221) {
+				s1 = Math.sqrt(e001 - e111 - e221 + 1);
+				qX1 = 0.5 * s1;
+				s1 = 0.5 / s1;
+				qY1 = (_this3._transform._rotation01 + _this3._transform._rotation10) * s1;
+				qZ1 = (_this3._transform._rotation02 + _this3._transform._rotation20) * s1;
+				qW1 = (_this3._transform._rotation21 - _this3._transform._rotation12) * s1;
+			} else {
+				s1 = Math.sqrt(e221 - e001 - e111 + 1);
+				qZ1 = 0.5 * s1;
+				s1 = 0.5 / s1;
+				qX1 = (_this3._transform._rotation02 + _this3._transform._rotation20) * s1;
+				qY1 = (_this3._transform._rotation12 + _this3._transform._rotation21) * s1;
+				qW1 = (_this3._transform._rotation10 - _this3._transform._rotation01) * s1;
+			}
+		} else if(e111 > e221) {
+			s1 = Math.sqrt(e111 - e221 - e001 + 1);
+			qY1 = 0.5 * s1;
+			s1 = 0.5 / s1;
+			qX1 = (_this3._transform._rotation01 + _this3._transform._rotation10) * s1;
+			qZ1 = (_this3._transform._rotation12 + _this3._transform._rotation21) * s1;
+			qW1 = (_this3._transform._rotation02 - _this3._transform._rotation20) * s1;
+		} else {
+			s1 = Math.sqrt(e221 - e001 - e111 + 1);
+			qZ1 = 0.5 * s1;
+			s1 = 0.5 / s1;
+			qX1 = (_this3._transform._rotation02 + _this3._transform._rotation20) * s1;
+			qY1 = (_this3._transform._rotation12 + _this3._transform._rotation21) * s1;
+			qW1 = (_this3._transform._rotation10 - _this3._transform._rotation01) * s1;
+		}
+		qX1 = dqW1 * qX1 + dqX1 * qW1 + dqY1 * qZ1 - dqZ1 * qY1;
+		qY1 = dqW1 * qY1 - dqX1 * qZ1 + dqY1 * qW1 + dqZ1 * qX1;
+		qZ1 = dqW1 * qZ1 + dqX1 * qY1 - dqY1 * qX1 + dqZ1 * qW1;
+		qW1 = dqW1 * qW1 - dqX1 * qX1 - dqY1 * qY1 - dqZ1 * qZ1;
+		let l1 = qX1 * qX1 + qY1 * qY1 + qZ1 * qZ1 + qW1 * qW1;
+		if(l1 > 1e-32) {
+			l1 = 1 / Math.sqrt(l1);
+		}
+		qX1 *= l1;
+		qY1 *= l1;
+		qZ1 *= l1;
+		qW1 *= l1;
+		let x1 = qX1;
+		let y1 = qY1;
+		let z1 = qZ1;
+		let w1 = qW1;
+		let x21 = 2 * x1;
+		let y21 = 2 * y1;
+		let z21 = 2 * z1;
+		let xx1 = x1 * x21;
+		let yy1 = y1 * y21;
+		let zz1 = z1 * z21;
+		let xy1 = x1 * y21;
+		let yz1 = y1 * z21;
+		let xz1 = x1 * z21;
+		let wx1 = w1 * x21;
+		let wy1 = w1 * y21;
+		let wz1 = w1 * z21;
+		_this3._transform._rotation00 = 1 - yy1 - zz1;
+		_this3._transform._rotation01 = xy1 - wz1;
+		_this3._transform._rotation02 = xz1 + wy1;
+		_this3._transform._rotation10 = xy1 + wz1;
+		_this3._transform._rotation11 = 1 - xx1 - zz1;
+		_this3._transform._rotation12 = yz1 - wx1;
+		_this3._transform._rotation20 = xz1 - wy1;
+		_this3._transform._rotation21 = yz1 + wx1;
+		_this3._transform._rotation22 = 1 - xx1 - yy1;
+		let __tmp__002;
+		let __tmp__012;
+		let __tmp__022;
+		let __tmp__102;
+		let __tmp__112;
+		let __tmp__122;
+		let __tmp__202;
+		let __tmp__212;
+		let __tmp__222;
+		__tmp__002 = _this3._transform._rotation00 * _this3._invLocalInertia00 + _this3._transform._rotation01 * _this3._invLocalInertia10 + _this3._transform._rotation02 * _this3._invLocalInertia20;
+		__tmp__012 = _this3._transform._rotation00 * _this3._invLocalInertia01 + _this3._transform._rotation01 * _this3._invLocalInertia11 + _this3._transform._rotation02 * _this3._invLocalInertia21;
+		__tmp__022 = _this3._transform._rotation00 * _this3._invLocalInertia02 + _this3._transform._rotation01 * _this3._invLocalInertia12 + _this3._transform._rotation02 * _this3._invLocalInertia22;
+		__tmp__102 = _this3._transform._rotation10 * _this3._invLocalInertia00 + _this3._transform._rotation11 * _this3._invLocalInertia10 + _this3._transform._rotation12 * _this3._invLocalInertia20;
+		__tmp__112 = _this3._transform._rotation10 * _this3._invLocalInertia01 + _this3._transform._rotation11 * _this3._invLocalInertia11 + _this3._transform._rotation12 * _this3._invLocalInertia21;
+		__tmp__122 = _this3._transform._rotation10 * _this3._invLocalInertia02 + _this3._transform._rotation11 * _this3._invLocalInertia12 + _this3._transform._rotation12 * _this3._invLocalInertia22;
+		__tmp__202 = _this3._transform._rotation20 * _this3._invLocalInertia00 + _this3._transform._rotation21 * _this3._invLocalInertia10 + _this3._transform._rotation22 * _this3._invLocalInertia20;
+		__tmp__212 = _this3._transform._rotation20 * _this3._invLocalInertia01 + _this3._transform._rotation21 * _this3._invLocalInertia11 + _this3._transform._rotation22 * _this3._invLocalInertia21;
+		__tmp__222 = _this3._transform._rotation20 * _this3._invLocalInertia02 + _this3._transform._rotation21 * _this3._invLocalInertia12 + _this3._transform._rotation22 * _this3._invLocalInertia22;
+		_this3._invInertia00 = __tmp__002;
+		_this3._invInertia01 = __tmp__012;
+		_this3._invInertia02 = __tmp__022;
+		_this3._invInertia10 = __tmp__102;
+		_this3._invInertia11 = __tmp__112;
+		_this3._invInertia12 = __tmp__122;
+		_this3._invInertia20 = __tmp__202;
+		_this3._invInertia21 = __tmp__212;
+		_this3._invInertia22 = __tmp__222;
+		let __tmp__003;
+		let __tmp__013;
+		let __tmp__023;
+		let __tmp__103;
+		let __tmp__113;
+		let __tmp__123;
+		let __tmp__203;
+		let __tmp__213;
+		let __tmp__223;
+		__tmp__003 = _this3._invInertia00 * _this3._transform._rotation00 + _this3._invInertia01 * _this3._transform._rotation01 + _this3._invInertia02 * _this3._transform._rotation02;
+		__tmp__013 = _this3._invInertia00 * _this3._transform._rotation10 + _this3._invInertia01 * _this3._transform._rotation11 + _this3._invInertia02 * _this3._transform._rotation12;
+		__tmp__023 = _this3._invInertia00 * _this3._transform._rotation20 + _this3._invInertia01 * _this3._transform._rotation21 + _this3._invInertia02 * _this3._transform._rotation22;
+		__tmp__103 = _this3._invInertia10 * _this3._transform._rotation00 + _this3._invInertia11 * _this3._transform._rotation01 + _this3._invInertia12 * _this3._transform._rotation02;
+		__tmp__113 = _this3._invInertia10 * _this3._transform._rotation10 + _this3._invInertia11 * _this3._transform._rotation11 + _this3._invInertia12 * _this3._transform._rotation12;
+		__tmp__123 = _this3._invInertia10 * _this3._transform._rotation20 + _this3._invInertia11 * _this3._transform._rotation21 + _this3._invInertia12 * _this3._transform._rotation22;
+		__tmp__203 = _this3._invInertia20 * _this3._transform._rotation00 + _this3._invInertia21 * _this3._transform._rotation01 + _this3._invInertia22 * _this3._transform._rotation02;
+		__tmp__213 = _this3._invInertia20 * _this3._transform._rotation10 + _this3._invInertia21 * _this3._transform._rotation11 + _this3._invInertia22 * _this3._transform._rotation12;
+		__tmp__223 = _this3._invInertia20 * _this3._transform._rotation20 + _this3._invInertia21 * _this3._transform._rotation21 + _this3._invInertia22 * _this3._transform._rotation22;
+		_this3._invInertia00 = __tmp__003;
+		_this3._invInertia01 = __tmp__013;
+		_this3._invInertia02 = __tmp__023;
+		_this3._invInertia10 = __tmp__103;
+		_this3._invInertia11 = __tmp__113;
+		_this3._invInertia12 = __tmp__123;
+		_this3._invInertia20 = __tmp__203;
+		_this3._invInertia21 = __tmp__213;
+		_this3._invInertia22 = __tmp__223;
+		_this3._invInertia00 *= _this3._rotFactor.x;
+		_this3._invInertia01 *= _this3._rotFactor.x;
+		_this3._invInertia02 *= _this3._rotFactor.x;
+		_this3._invInertia10 *= _this3._rotFactor.y;
+		_this3._invInertia11 *= _this3._rotFactor.y;
+		_this3._invInertia12 *= _this3._rotFactor.y;
+		_this3._invInertia20 *= _this3._rotFactor.z;
+		_this3._invInertia21 *= _this3._rotFactor.z;
+		_this3._invInertia22 *= _this3._rotFactor.z;
+	}
+	postSolve() {
+		this.joint._syncAnchors();
+		this.joint._checkDestruction();
+	}
+}
+if(!oimo.dynamics.rigidbody) oimo.dynamics.rigidbody = {};
+oimo.dynamics.rigidbody.MassData = class oimo_dynamics_rigidbody_MassData {
+	constructor() {
+		this.mass = 0;
+		this.localInertia = new oimo.common.Mat3();
+	}
+}
+oimo.dynamics.rigidbody.RigidBody = class oimo_dynamics_rigidbody_RigidBody {
+	constructor(config) {
+		this._next = null;
+		this._prev = null;
+		this._shapeList = null;
+		this._shapeListLast = null;
+		this._numShapes = 0;
+		this._contactLinkList = null;
+		this._contactLinkListLast = null;
+		this._numContactLinks = 0;
+		this._jointLinkList = null;
+		this._jointLinkListLast = null;
+		this._numJointLinks = 0;
+		let v = config.linearVelocity;
+		this._velX = v.x;
+		this._velY = v.y;
+		this._velZ = v.z;
+		let v1 = config.angularVelocity;
+		this._angVelX = v1.x;
+		this._angVelY = v1.y;
+		this._angVelZ = v1.z;
+		this._pseudoVelX = 0;
+		this._pseudoVelY = 0;
+		this._pseudoVelZ = 0;
+		this._angPseudoVelX = 0;
+		this._angPseudoVelY = 0;
+		this._angPseudoVelZ = 0;
+		this._ptransform = new oimo.common.Transform();
+		this._transform = new oimo.common.Transform();
+		let v2 = config.position;
+		this._ptransform._positionX = v2.x;
+		this._ptransform._positionY = v2.y;
+		this._ptransform._positionZ = v2.z;
+		let m = config.rotation;
+		this._ptransform._rotation00 = m.e00;
+		this._ptransform._rotation01 = m.e01;
+		this._ptransform._rotation02 = m.e02;
+		this._ptransform._rotation10 = m.e10;
+		this._ptransform._rotation11 = m.e11;
+		this._ptransform._rotation12 = m.e12;
+		this._ptransform._rotation20 = m.e20;
+		this._ptransform._rotation21 = m.e21;
+		this._ptransform._rotation22 = m.e22;
+		let dst = this._transform;
+		let src = this._ptransform;
+		dst._positionX = src._positionX;
+		dst._positionY = src._positionY;
+		dst._positionZ = src._positionZ;
+		dst._rotation00 = src._rotation00;
+		dst._rotation01 = src._rotation01;
+		dst._rotation02 = src._rotation02;
+		dst._rotation10 = src._rotation10;
+		dst._rotation11 = src._rotation11;
+		dst._rotation12 = src._rotation12;
+		dst._rotation20 = src._rotation20;
+		dst._rotation21 = src._rotation21;
+		dst._rotation22 = src._rotation22;
+		this._type = config.type;
+		this._sleepTime = 0;
+		this._sleeping = false;
+		this._autoSleep = config.autoSleep;
+		this._mass = 0;
+		this._invMass = 0;
+		this._localInertia00 = 0;
+		this._localInertia01 = 0;
+		this._localInertia02 = 0;
+		this._localInertia10 = 0;
+		this._localInertia11 = 0;
+		this._localInertia12 = 0;
+		this._localInertia20 = 0;
+		this._localInertia21 = 0;
+		this._localInertia22 = 0;
+		this._invLocalInertia00 = 0;
+		this._invLocalInertia01 = 0;
+		this._invLocalInertia02 = 0;
+		this._invLocalInertia10 = 0;
+		this._invLocalInertia11 = 0;
+		this._invLocalInertia12 = 0;
+		this._invLocalInertia20 = 0;
+		this._invLocalInertia21 = 0;
+		this._invLocalInertia22 = 0;
+		this._invLocalInertiaWithoutRotFactor00 = 0;
+		this._invLocalInertiaWithoutRotFactor01 = 0;
+		this._invLocalInertiaWithoutRotFactor02 = 0;
+		this._invLocalInertiaWithoutRotFactor10 = 0;
+		this._invLocalInertiaWithoutRotFactor11 = 0;
+		this._invLocalInertiaWithoutRotFactor12 = 0;
+		this._invLocalInertiaWithoutRotFactor20 = 0;
+		this._invLocalInertiaWithoutRotFactor21 = 0;
+		this._invLocalInertiaWithoutRotFactor22 = 0;
+		this._invInertia00 = 0;
+		this._invInertia01 = 0;
+		this._invInertia02 = 0;
+		this._invInertia10 = 0;
+		this._invInertia11 = 0;
+		this._invInertia12 = 0;
+		this._invInertia20 = 0;
+		this._invInertia21 = 0;
+		this._invInertia22 = 0;
+		this._linearDamping = config.linearDamping;
+		this._angularDamping = config.angularDamping;
+		this._forceX = 0;
+		this._forceY = 0;
+		this._forceZ = 0;
+		this._torqueX = 0;
+		this._torqueY = 0;
+		this._torqueZ = 0;
+		this._linearContactImpulseX = 0;
+		this._linearContactImpulseY = 0;
+		this._linearContactImpulseZ = 0;
+		this._angularContactImpulseX = 0;
+		this._angularContactImpulseY = 0;
+		this._angularContactImpulseZ = 0;
+		this._rotFactor = new oimo.common.Vec3(1,1,1);
+		this._addedToIsland = false;
+		this._gravityScale = 1;
+		this._world = null;
+	}
+	_integrate(dt) {
+		switch(this._type) {
+		case 1:
+			this._velX = 0;
+			this._velY = 0;
+			this._velZ = 0;
+			this._angVelX = 0;
+			this._angVelY = 0;
+			this._angVelZ = 0;
+			this._pseudoVelX = 0;
+			this._pseudoVelY = 0;
+			this._pseudoVelZ = 0;
+			this._angPseudoVelX = 0;
+			this._angPseudoVelY = 0;
+			this._angPseudoVelZ = 0;
+			break;
+		case 0:case 2:
+			let translationX;
+			let translationY;
+			let translationZ;
+			let rotationX;
+			let rotationY;
+			let rotationZ;
+			translationX = this._velX * dt;
+			translationY = this._velY * dt;
+			translationZ = this._velZ * dt;
+			rotationX = this._angVelX * dt;
+			rotationY = this._angVelY * dt;
+			rotationZ = this._angVelZ * dt;
+			let translationLengthSq = translationX * translationX + translationY * translationY + translationZ * translationZ;
+			let rotationLengthSq = rotationX * rotationX + rotationY * rotationY + rotationZ * rotationZ;
+			if(translationLengthSq == 0 && rotationLengthSq == 0) {
+				return;
+			}
+			if(translationLengthSq > oimo.common.Setting.maxTranslationPerStep * oimo.common.Setting.maxTranslationPerStep) {
+				let l = oimo.common.Setting.maxTranslationPerStep / Math.sqrt(translationLengthSq);
+				this._velX *= l;
+				this._velY *= l;
+				this._velZ *= l;
+				translationX *= l;
+				translationY *= l;
+				translationZ *= l;
+			}
+			if(rotationLengthSq > oimo.common.Setting.maxRotationPerStep * oimo.common.Setting.maxRotationPerStep) {
+				let l = oimo.common.Setting.maxRotationPerStep / Math.sqrt(rotationLengthSq);
+				this._angVelX *= l;
+				this._angVelY *= l;
+				this._angVelZ *= l;
+				rotationX *= l;
+				rotationY *= l;
+				rotationZ *= l;
+			}
+			this._transform._positionX += translationX;
+			this._transform._positionY += translationY;
+			this._transform._positionZ += translationZ;
+			let theta = Math.sqrt(rotationX * rotationX + rotationY * rotationY + rotationZ * rotationZ);
+			let halfTheta = theta * 0.5;
+			let rotationToSinAxisFactor;
+			let cosHalfTheta;
+			if(halfTheta < 0.5) {
+				let ht2 = halfTheta * halfTheta;
+				rotationToSinAxisFactor = 0.5 * (1 - ht2 * 0.16666666666666666 + ht2 * ht2 * 0.0083333333333333332);
+				cosHalfTheta = 1 - ht2 * 0.5 + ht2 * ht2 * 0.041666666666666664;
+			} else {
+				rotationToSinAxisFactor = Math.sin(halfTheta) / theta;
+				cosHalfTheta = Math.cos(halfTheta);
+			}
+			let sinAxisX;
+			let sinAxisY;
+			let sinAxisZ;
+			sinAxisX = rotationX * rotationToSinAxisFactor;
+			sinAxisY = rotationY * rotationToSinAxisFactor;
+			sinAxisZ = rotationZ * rotationToSinAxisFactor;
+			let dqX;
+			let dqY;
+			let dqZ;
+			let dqW;
+			dqX = sinAxisX;
+			dqY = sinAxisY;
+			dqZ = sinAxisZ;
+			dqW = cosHalfTheta;
+			let qX;
+			let qY;
+			let qZ;
+			let qW;
+			let e00 = this._transform._rotation00;
+			let e11 = this._transform._rotation11;
+			let e22 = this._transform._rotation22;
+			let t = e00 + e11 + e22;
+			let s;
+			if(t > 0) {
+				s = Math.sqrt(t + 1);
+				qW = 0.5 * s;
+				s = 0.5 / s;
+				qX = (this._transform._rotation21 - this._transform._rotation12) * s;
+				qY = (this._transform._rotation02 - this._transform._rotation20) * s;
+				qZ = (this._transform._rotation10 - this._transform._rotation01) * s;
+			} else if(e00 > e11) {
+				if(e00 > e22) {
+					s = Math.sqrt(e00 - e11 - e22 + 1);
+					qX = 0.5 * s;
+					s = 0.5 / s;
+					qY = (this._transform._rotation01 + this._transform._rotation10) * s;
+					qZ = (this._transform._rotation02 + this._transform._rotation20) * s;
+					qW = (this._transform._rotation21 - this._transform._rotation12) * s;
+				} else {
+					s = Math.sqrt(e22 - e00 - e11 + 1);
+					qZ = 0.5 * s;
+					s = 0.5 / s;
+					qX = (this._transform._rotation02 + this._transform._rotation20) * s;
+					qY = (this._transform._rotation12 + this._transform._rotation21) * s;
+					qW = (this._transform._rotation10 - this._transform._rotation01) * s;
+				}
+			} else if(e11 > e22) {
+				s = Math.sqrt(e11 - e22 - e00 + 1);
+				qY = 0.5 * s;
+				s = 0.5 / s;
+				qX = (this._transform._rotation01 + this._transform._rotation10) * s;
+				qZ = (this._transform._rotation12 + this._transform._rotation21) * s;
+				qW = (this._transform._rotation02 - this._transform._rotation20) * s;
+			} else {
+				s = Math.sqrt(e22 - e00 - e11 + 1);
+				qZ = 0.5 * s;
+				s = 0.5 / s;
+				qX = (this._transform._rotation02 + this._transform._rotation20) * s;
+				qY = (this._transform._rotation12 + this._transform._rotation21) * s;
+				qW = (this._transform._rotation10 - this._transform._rotation01) * s;
+			}
+			qX = dqW * qX + dqX * qW + dqY * qZ - dqZ * qY;
+			qY = dqW * qY - dqX * qZ + dqY * qW + dqZ * qX;
+			qZ = dqW * qZ + dqX * qY - dqY * qX + dqZ * qW;
+			qW = dqW * qW - dqX * qX - dqY * qY - dqZ * qZ;
+			let l = qX * qX + qY * qY + qZ * qZ + qW * qW;
+			if(l > 1e-32) {
+				l = 1 / Math.sqrt(l);
+			}
+			qX *= l;
+			qY *= l;
+			qZ *= l;
+			qW *= l;
+			let x = qX;
+			let y = qY;
+			let z = qZ;
+			let w = qW;
+			let x2 = 2 * x;
+			let y2 = 2 * y;
+			let z2 = 2 * z;
+			let xx = x * x2;
+			let yy = y * y2;
+			let zz = z * z2;
+			let xy = x * y2;
+			let yz = y * z2;
+			let xz = x * z2;
+			let wx = w * x2;
+			let wy = w * y2;
+			let wz = w * z2;
+			this._transform._rotation00 = 1 - yy - zz;
+			this._transform._rotation01 = xy - wz;
+			this._transform._rotation02 = xz + wy;
+			this._transform._rotation10 = xy + wz;
+			this._transform._rotation11 = 1 - xx - zz;
+			this._transform._rotation12 = yz - wx;
+			this._transform._rotation20 = xz - wy;
+			this._transform._rotation21 = yz + wx;
+			this._transform._rotation22 = 1 - xx - yy;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = this._transform._rotation00 * this._invLocalInertia00 + this._transform._rotation01 * this._invLocalInertia10 + this._transform._rotation02 * this._invLocalInertia20;
+			__tmp__01 = this._transform._rotation00 * this._invLocalInertia01 + this._transform._rotation01 * this._invLocalInertia11 + this._transform._rotation02 * this._invLocalInertia21;
+			__tmp__02 = this._transform._rotation00 * this._invLocalInertia02 + this._transform._rotation01 * this._invLocalInertia12 + this._transform._rotation02 * this._invLocalInertia22;
+			__tmp__10 = this._transform._rotation10 * this._invLocalInertia00 + this._transform._rotation11 * this._invLocalInertia10 + this._transform._rotation12 * this._invLocalInertia20;
+			__tmp__11 = this._transform._rotation10 * this._invLocalInertia01 + this._transform._rotation11 * this._invLocalInertia11 + this._transform._rotation12 * this._invLocalInertia21;
+			__tmp__12 = this._transform._rotation10 * this._invLocalInertia02 + this._transform._rotation11 * this._invLocalInertia12 + this._transform._rotation12 * this._invLocalInertia22;
+			__tmp__20 = this._transform._rotation20 * this._invLocalInertia00 + this._transform._rotation21 * this._invLocalInertia10 + this._transform._rotation22 * this._invLocalInertia20;
+			__tmp__21 = this._transform._rotation20 * this._invLocalInertia01 + this._transform._rotation21 * this._invLocalInertia11 + this._transform._rotation22 * this._invLocalInertia21;
+			__tmp__22 = this._transform._rotation20 * this._invLocalInertia02 + this._transform._rotation21 * this._invLocalInertia12 + this._transform._rotation22 * this._invLocalInertia22;
+			this._invInertia00 = __tmp__00;
+			this._invInertia01 = __tmp__01;
+			this._invInertia02 = __tmp__02;
+			this._invInertia10 = __tmp__10;
+			this._invInertia11 = __tmp__11;
+			this._invInertia12 = __tmp__12;
+			this._invInertia20 = __tmp__20;
+			this._invInertia21 = __tmp__21;
+			this._invInertia22 = __tmp__22;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = this._invInertia00 * this._transform._rotation00 + this._invInertia01 * this._transform._rotation01 + this._invInertia02 * this._transform._rotation02;
+			__tmp__011 = this._invInertia00 * this._transform._rotation10 + this._invInertia01 * this._transform._rotation11 + this._invInertia02 * this._transform._rotation12;
+			__tmp__021 = this._invInertia00 * this._transform._rotation20 + this._invInertia01 * this._transform._rotation21 + this._invInertia02 * this._transform._rotation22;
+			__tmp__101 = this._invInertia10 * this._transform._rotation00 + this._invInertia11 * this._transform._rotation01 + this._invInertia12 * this._transform._rotation02;
+			__tmp__111 = this._invInertia10 * this._transform._rotation10 + this._invInertia11 * this._transform._rotation11 + this._invInertia12 * this._transform._rotation12;
+			__tmp__121 = this._invInertia10 * this._transform._rotation20 + this._invInertia11 * this._transform._rotation21 + this._invInertia12 * this._transform._rotation22;
+			__tmp__201 = this._invInertia20 * this._transform._rotation00 + this._invInertia21 * this._transform._rotation01 + this._invInertia22 * this._transform._rotation02;
+			__tmp__211 = this._invInertia20 * this._transform._rotation10 + this._invInertia21 * this._transform._rotation11 + this._invInertia22 * this._transform._rotation12;
+			__tmp__221 = this._invInertia20 * this._transform._rotation20 + this._invInertia21 * this._transform._rotation21 + this._invInertia22 * this._transform._rotation22;
+			this._invInertia00 = __tmp__001;
+			this._invInertia01 = __tmp__011;
+			this._invInertia02 = __tmp__021;
+			this._invInertia10 = __tmp__101;
+			this._invInertia11 = __tmp__111;
+			this._invInertia12 = __tmp__121;
+			this._invInertia20 = __tmp__201;
+			this._invInertia21 = __tmp__211;
+			this._invInertia22 = __tmp__221;
+			this._invInertia00 *= this._rotFactor.x;
+			this._invInertia01 *= this._rotFactor.x;
+			this._invInertia02 *= this._rotFactor.x;
+			this._invInertia10 *= this._rotFactor.y;
+			this._invInertia11 *= this._rotFactor.y;
+			this._invInertia12 *= this._rotFactor.y;
+			this._invInertia20 *= this._rotFactor.z;
+			this._invInertia21 *= this._rotFactor.z;
+			this._invInertia22 *= this._rotFactor.z;
+			break;
+		}
+	}
+	_integratePseudoVelocity() {
+		if(this._pseudoVelX * this._pseudoVelX + this._pseudoVelY * this._pseudoVelY + this._pseudoVelZ * this._pseudoVelZ == 0 && this._angPseudoVelX * this._angPseudoVelX + this._angPseudoVelY * this._angPseudoVelY + this._angPseudoVelZ * this._angPseudoVelZ == 0) {
+			return;
+		}
+		switch(this._type) {
+		case 1:
+			this._pseudoVelX = 0;
+			this._pseudoVelY = 0;
+			this._pseudoVelZ = 0;
+			this._angPseudoVelX = 0;
+			this._angPseudoVelY = 0;
+			this._angPseudoVelZ = 0;
+			break;
+		case 0:case 2:
+			let translationX;
+			let translationY;
+			let translationZ;
+			let rotationX;
+			let rotationY;
+			let rotationZ;
+			translationX = this._pseudoVelX;
+			translationY = this._pseudoVelY;
+			translationZ = this._pseudoVelZ;
+			rotationX = this._angPseudoVelX;
+			rotationY = this._angPseudoVelY;
+			rotationZ = this._angPseudoVelZ;
+			this._pseudoVelX = 0;
+			this._pseudoVelY = 0;
+			this._pseudoVelZ = 0;
+			this._angPseudoVelX = 0;
+			this._angPseudoVelY = 0;
+			this._angPseudoVelZ = 0;
+			this._transform._positionX += translationX;
+			this._transform._positionY += translationY;
+			this._transform._positionZ += translationZ;
+			let theta = Math.sqrt(rotationX * rotationX + rotationY * rotationY + rotationZ * rotationZ);
+			let halfTheta = theta * 0.5;
+			let rotationToSinAxisFactor;
+			let cosHalfTheta;
+			if(halfTheta < 0.5) {
+				let ht2 = halfTheta * halfTheta;
+				rotationToSinAxisFactor = 0.5 * (1 - ht2 * 0.16666666666666666 + ht2 * ht2 * 0.0083333333333333332);
+				cosHalfTheta = 1 - ht2 * 0.5 + ht2 * ht2 * 0.041666666666666664;
+			} else {
+				rotationToSinAxisFactor = Math.sin(halfTheta) / theta;
+				cosHalfTheta = Math.cos(halfTheta);
+			}
+			let sinAxisX;
+			let sinAxisY;
+			let sinAxisZ;
+			sinAxisX = rotationX * rotationToSinAxisFactor;
+			sinAxisY = rotationY * rotationToSinAxisFactor;
+			sinAxisZ = rotationZ * rotationToSinAxisFactor;
+			let dqX;
+			let dqY;
+			let dqZ;
+			let dqW;
+			dqX = sinAxisX;
+			dqY = sinAxisY;
+			dqZ = sinAxisZ;
+			dqW = cosHalfTheta;
+			let qX;
+			let qY;
+			let qZ;
+			let qW;
+			let e00 = this._transform._rotation00;
+			let e11 = this._transform._rotation11;
+			let e22 = this._transform._rotation22;
+			let t = e00 + e11 + e22;
+			let s;
+			if(t > 0) {
+				s = Math.sqrt(t + 1);
+				qW = 0.5 * s;
+				s = 0.5 / s;
+				qX = (this._transform._rotation21 - this._transform._rotation12) * s;
+				qY = (this._transform._rotation02 - this._transform._rotation20) * s;
+				qZ = (this._transform._rotation10 - this._transform._rotation01) * s;
+			} else if(e00 > e11) {
+				if(e00 > e22) {
+					s = Math.sqrt(e00 - e11 - e22 + 1);
+					qX = 0.5 * s;
+					s = 0.5 / s;
+					qY = (this._transform._rotation01 + this._transform._rotation10) * s;
+					qZ = (this._transform._rotation02 + this._transform._rotation20) * s;
+					qW = (this._transform._rotation21 - this._transform._rotation12) * s;
+				} else {
+					s = Math.sqrt(e22 - e00 - e11 + 1);
+					qZ = 0.5 * s;
+					s = 0.5 / s;
+					qX = (this._transform._rotation02 + this._transform._rotation20) * s;
+					qY = (this._transform._rotation12 + this._transform._rotation21) * s;
+					qW = (this._transform._rotation10 - this._transform._rotation01) * s;
+				}
+			} else if(e11 > e22) {
+				s = Math.sqrt(e11 - e22 - e00 + 1);
+				qY = 0.5 * s;
+				s = 0.5 / s;
+				qX = (this._transform._rotation01 + this._transform._rotation10) * s;
+				qZ = (this._transform._rotation12 + this._transform._rotation21) * s;
+				qW = (this._transform._rotation02 - this._transform._rotation20) * s;
+			} else {
+				s = Math.sqrt(e22 - e00 - e11 + 1);
+				qZ = 0.5 * s;
+				s = 0.5 / s;
+				qX = (this._transform._rotation02 + this._transform._rotation20) * s;
+				qY = (this._transform._rotation12 + this._transform._rotation21) * s;
+				qW = (this._transform._rotation10 - this._transform._rotation01) * s;
+			}
+			qX = dqW * qX + dqX * qW + dqY * qZ - dqZ * qY;
+			qY = dqW * qY - dqX * qZ + dqY * qW + dqZ * qX;
+			qZ = dqW * qZ + dqX * qY - dqY * qX + dqZ * qW;
+			qW = dqW * qW - dqX * qX - dqY * qY - dqZ * qZ;
+			let l = qX * qX + qY * qY + qZ * qZ + qW * qW;
+			if(l > 1e-32) {
+				l = 1 / Math.sqrt(l);
+			}
+			qX *= l;
+			qY *= l;
+			qZ *= l;
+			qW *= l;
+			let x = qX;
+			let y = qY;
+			let z = qZ;
+			let w = qW;
+			let x2 = 2 * x;
+			let y2 = 2 * y;
+			let z2 = 2 * z;
+			let xx = x * x2;
+			let yy = y * y2;
+			let zz = z * z2;
+			let xy = x * y2;
+			let yz = y * z2;
+			let xz = x * z2;
+			let wx = w * x2;
+			let wy = w * y2;
+			let wz = w * z2;
+			this._transform._rotation00 = 1 - yy - zz;
+			this._transform._rotation01 = xy - wz;
+			this._transform._rotation02 = xz + wy;
+			this._transform._rotation10 = xy + wz;
+			this._transform._rotation11 = 1 - xx - zz;
+			this._transform._rotation12 = yz - wx;
+			this._transform._rotation20 = xz - wy;
+			this._transform._rotation21 = yz + wx;
+			this._transform._rotation22 = 1 - xx - yy;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = this._transform._rotation00 * this._invLocalInertia00 + this._transform._rotation01 * this._invLocalInertia10 + this._transform._rotation02 * this._invLocalInertia20;
+			__tmp__01 = this._transform._rotation00 * this._invLocalInertia01 + this._transform._rotation01 * this._invLocalInertia11 + this._transform._rotation02 * this._invLocalInertia21;
+			__tmp__02 = this._transform._rotation00 * this._invLocalInertia02 + this._transform._rotation01 * this._invLocalInertia12 + this._transform._rotation02 * this._invLocalInertia22;
+			__tmp__10 = this._transform._rotation10 * this._invLocalInertia00 + this._transform._rotation11 * this._invLocalInertia10 + this._transform._rotation12 * this._invLocalInertia20;
+			__tmp__11 = this._transform._rotation10 * this._invLocalInertia01 + this._transform._rotation11 * this._invLocalInertia11 + this._transform._rotation12 * this._invLocalInertia21;
+			__tmp__12 = this._transform._rotation10 * this._invLocalInertia02 + this._transform._rotation11 * this._invLocalInertia12 + this._transform._rotation12 * this._invLocalInertia22;
+			__tmp__20 = this._transform._rotation20 * this._invLocalInertia00 + this._transform._rotation21 * this._invLocalInertia10 + this._transform._rotation22 * this._invLocalInertia20;
+			__tmp__21 = this._transform._rotation20 * this._invLocalInertia01 + this._transform._rotation21 * this._invLocalInertia11 + this._transform._rotation22 * this._invLocalInertia21;
+			__tmp__22 = this._transform._rotation20 * this._invLocalInertia02 + this._transform._rotation21 * this._invLocalInertia12 + this._transform._rotation22 * this._invLocalInertia22;
+			this._invInertia00 = __tmp__00;
+			this._invInertia01 = __tmp__01;
+			this._invInertia02 = __tmp__02;
+			this._invInertia10 = __tmp__10;
+			this._invInertia11 = __tmp__11;
+			this._invInertia12 = __tmp__12;
+			this._invInertia20 = __tmp__20;
+			this._invInertia21 = __tmp__21;
+			this._invInertia22 = __tmp__22;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = this._invInertia00 * this._transform._rotation00 + this._invInertia01 * this._transform._rotation01 + this._invInertia02 * this._transform._rotation02;
+			__tmp__011 = this._invInertia00 * this._transform._rotation10 + this._invInertia01 * this._transform._rotation11 + this._invInertia02 * this._transform._rotation12;
+			__tmp__021 = this._invInertia00 * this._transform._rotation20 + this._invInertia01 * this._transform._rotation21 + this._invInertia02 * this._transform._rotation22;
+			__tmp__101 = this._invInertia10 * this._transform._rotation00 + this._invInertia11 * this._transform._rotation01 + this._invInertia12 * this._transform._rotation02;
+			__tmp__111 = this._invInertia10 * this._transform._rotation10 + this._invInertia11 * this._transform._rotation11 + this._invInertia12 * this._transform._rotation12;
+			__tmp__121 = this._invInertia10 * this._transform._rotation20 + this._invInertia11 * this._transform._rotation21 + this._invInertia12 * this._transform._rotation22;
+			__tmp__201 = this._invInertia20 * this._transform._rotation00 + this._invInertia21 * this._transform._rotation01 + this._invInertia22 * this._transform._rotation02;
+			__tmp__211 = this._invInertia20 * this._transform._rotation10 + this._invInertia21 * this._transform._rotation11 + this._invInertia22 * this._transform._rotation12;
+			__tmp__221 = this._invInertia20 * this._transform._rotation20 + this._invInertia21 * this._transform._rotation21 + this._invInertia22 * this._transform._rotation22;
+			this._invInertia00 = __tmp__001;
+			this._invInertia01 = __tmp__011;
+			this._invInertia02 = __tmp__021;
+			this._invInertia10 = __tmp__101;
+			this._invInertia11 = __tmp__111;
+			this._invInertia12 = __tmp__121;
+			this._invInertia20 = __tmp__201;
+			this._invInertia21 = __tmp__211;
+			this._invInertia22 = __tmp__221;
+			this._invInertia00 *= this._rotFactor.x;
+			this._invInertia01 *= this._rotFactor.x;
+			this._invInertia02 *= this._rotFactor.x;
+			this._invInertia10 *= this._rotFactor.y;
+			this._invInertia11 *= this._rotFactor.y;
+			this._invInertia12 *= this._rotFactor.y;
+			this._invInertia20 *= this._rotFactor.z;
+			this._invInertia21 *= this._rotFactor.z;
+			this._invInertia22 *= this._rotFactor.z;
+			break;
+		}
+	}
+	updateMass() {
+		let totalInertia00;
+		let totalInertia01;
+		let totalInertia02;
+		let totalInertia10;
+		let totalInertia11;
+		let totalInertia12;
+		let totalInertia20;
+		let totalInertia21;
+		let totalInertia22;
+		totalInertia00 = 0;
+		totalInertia01 = 0;
+		totalInertia02 = 0;
+		totalInertia10 = 0;
+		totalInertia11 = 0;
+		totalInertia12 = 0;
+		totalInertia20 = 0;
+		totalInertia21 = 0;
+		totalInertia22 = 0;
+		let totalMass = 0;
+		let s = this._shapeList;
+		while(s != null) {
+			let n = s._next;
+			let g = s._geom;
+			g._updateMass();
+			let mass = s._density * g._volume;
+			let inertia00;
+			let inertia01;
+			let inertia02;
+			let inertia10;
+			let inertia11;
+			let inertia12;
+			let inertia20;
+			let inertia21;
+			let inertia22;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = s._localTransform._rotation00 * g._inertiaCoeff00 + s._localTransform._rotation01 * g._inertiaCoeff10 + s._localTransform._rotation02 * g._inertiaCoeff20;
+			__tmp__01 = s._localTransform._rotation00 * g._inertiaCoeff01 + s._localTransform._rotation01 * g._inertiaCoeff11 + s._localTransform._rotation02 * g._inertiaCoeff21;
+			__tmp__02 = s._localTransform._rotation00 * g._inertiaCoeff02 + s._localTransform._rotation01 * g._inertiaCoeff12 + s._localTransform._rotation02 * g._inertiaCoeff22;
+			__tmp__10 = s._localTransform._rotation10 * g._inertiaCoeff00 + s._localTransform._rotation11 * g._inertiaCoeff10 + s._localTransform._rotation12 * g._inertiaCoeff20;
+			__tmp__11 = s._localTransform._rotation10 * g._inertiaCoeff01 + s._localTransform._rotation11 * g._inertiaCoeff11 + s._localTransform._rotation12 * g._inertiaCoeff21;
+			__tmp__12 = s._localTransform._rotation10 * g._inertiaCoeff02 + s._localTransform._rotation11 * g._inertiaCoeff12 + s._localTransform._rotation12 * g._inertiaCoeff22;
+			__tmp__20 = s._localTransform._rotation20 * g._inertiaCoeff00 + s._localTransform._rotation21 * g._inertiaCoeff10 + s._localTransform._rotation22 * g._inertiaCoeff20;
+			__tmp__21 = s._localTransform._rotation20 * g._inertiaCoeff01 + s._localTransform._rotation21 * g._inertiaCoeff11 + s._localTransform._rotation22 * g._inertiaCoeff21;
+			__tmp__22 = s._localTransform._rotation20 * g._inertiaCoeff02 + s._localTransform._rotation21 * g._inertiaCoeff12 + s._localTransform._rotation22 * g._inertiaCoeff22;
+			inertia00 = __tmp__00;
+			inertia01 = __tmp__01;
+			inertia02 = __tmp__02;
+			inertia10 = __tmp__10;
+			inertia11 = __tmp__11;
+			inertia12 = __tmp__12;
+			inertia20 = __tmp__20;
+			inertia21 = __tmp__21;
+			inertia22 = __tmp__22;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = inertia00 * s._localTransform._rotation00 + inertia01 * s._localTransform._rotation01 + inertia02 * s._localTransform._rotation02;
+			__tmp__011 = inertia00 * s._localTransform._rotation10 + inertia01 * s._localTransform._rotation11 + inertia02 * s._localTransform._rotation12;
+			__tmp__021 = inertia00 * s._localTransform._rotation20 + inertia01 * s._localTransform._rotation21 + inertia02 * s._localTransform._rotation22;
+			__tmp__101 = inertia10 * s._localTransform._rotation00 + inertia11 * s._localTransform._rotation01 + inertia12 * s._localTransform._rotation02;
+			__tmp__111 = inertia10 * s._localTransform._rotation10 + inertia11 * s._localTransform._rotation11 + inertia12 * s._localTransform._rotation12;
+			__tmp__121 = inertia10 * s._localTransform._rotation20 + inertia11 * s._localTransform._rotation21 + inertia12 * s._localTransform._rotation22;
+			__tmp__201 = inertia20 * s._localTransform._rotation00 + inertia21 * s._localTransform._rotation01 + inertia22 * s._localTransform._rotation02;
+			__tmp__211 = inertia20 * s._localTransform._rotation10 + inertia21 * s._localTransform._rotation11 + inertia22 * s._localTransform._rotation12;
+			__tmp__221 = inertia20 * s._localTransform._rotation20 + inertia21 * s._localTransform._rotation21 + inertia22 * s._localTransform._rotation22;
+			inertia00 = __tmp__001;
+			inertia01 = __tmp__011;
+			inertia02 = __tmp__021;
+			inertia10 = __tmp__101;
+			inertia11 = __tmp__111;
+			inertia12 = __tmp__121;
+			inertia20 = __tmp__201;
+			inertia21 = __tmp__211;
+			inertia22 = __tmp__221;
+			inertia00 *= mass;
+			inertia01 *= mass;
+			inertia02 *= mass;
+			inertia10 *= mass;
+			inertia11 *= mass;
+			inertia12 *= mass;
+			inertia20 *= mass;
+			inertia21 *= mass;
+			inertia22 *= mass;
+			let cogInertia00;
+			let cogInertia01;
+			let cogInertia02;
+			let cogInertia10;
+			let cogInertia11;
+			let cogInertia12;
+			let cogInertia20;
+			let cogInertia21;
+			let cogInertia22;
+			let xx = s._localTransform._positionX * s._localTransform._positionX;
+			let yy = s._localTransform._positionY * s._localTransform._positionY;
+			let zz = s._localTransform._positionZ * s._localTransform._positionZ;
+			let xy = -s._localTransform._positionX * s._localTransform._positionY;
+			let yz = -s._localTransform._positionY * s._localTransform._positionZ;
+			let zx = -s._localTransform._positionZ * s._localTransform._positionX;
+			cogInertia00 = yy + zz;
+			cogInertia01 = xy;
+			cogInertia02 = zx;
+			cogInertia10 = xy;
+			cogInertia11 = xx + zz;
+			cogInertia12 = yz;
+			cogInertia20 = zx;
+			cogInertia21 = yz;
+			cogInertia22 = xx + yy;
+			inertia00 += cogInertia00 * mass;
+			inertia01 += cogInertia01 * mass;
+			inertia02 += cogInertia02 * mass;
+			inertia10 += cogInertia10 * mass;
+			inertia11 += cogInertia11 * mass;
+			inertia12 += cogInertia12 * mass;
+			inertia20 += cogInertia20 * mass;
+			inertia21 += cogInertia21 * mass;
+			inertia22 += cogInertia22 * mass;
+			totalMass += mass;
+			totalInertia00 += inertia00;
+			totalInertia01 += inertia01;
+			totalInertia02 += inertia02;
+			totalInertia10 += inertia10;
+			totalInertia11 += inertia11;
+			totalInertia12 += inertia12;
+			totalInertia20 += inertia20;
+			totalInertia21 += inertia21;
+			totalInertia22 += inertia22;
+			s = n;
+		}
+		this._mass = totalMass;
+		this._localInertia00 = totalInertia00;
+		this._localInertia01 = totalInertia01;
+		this._localInertia02 = totalInertia02;
+		this._localInertia10 = totalInertia10;
+		this._localInertia11 = totalInertia11;
+		this._localInertia12 = totalInertia12;
+		this._localInertia20 = totalInertia20;
+		this._localInertia21 = totalInertia21;
+		this._localInertia22 = totalInertia22;
+		if(this._mass > 0 && this._localInertia00 * (this._localInertia11 * this._localInertia22 - this._localInertia12 * this._localInertia21) - this._localInertia01 * (this._localInertia10 * this._localInertia22 - this._localInertia12 * this._localInertia20) + this._localInertia02 * (this._localInertia10 * this._localInertia21 - this._localInertia11 * this._localInertia20) > 0 && this._type == 0) {
+			this._invMass = 1 / this._mass;
+			let d00 = this._localInertia11 * this._localInertia22 - this._localInertia12 * this._localInertia21;
+			let d01 = this._localInertia10 * this._localInertia22 - this._localInertia12 * this._localInertia20;
+			let d02 = this._localInertia10 * this._localInertia21 - this._localInertia11 * this._localInertia20;
+			let d = this._localInertia00 * d00 - this._localInertia01 * d01 + this._localInertia02 * d02;
+			if(d < -1e-32 || d > 1e-32) {
+				d = 1 / d;
+			}
+			this._invLocalInertia00 = d00 * d;
+			this._invLocalInertia01 = -(this._localInertia01 * this._localInertia22 - this._localInertia02 * this._localInertia21) * d;
+			this._invLocalInertia02 = (this._localInertia01 * this._localInertia12 - this._localInertia02 * this._localInertia11) * d;
+			this._invLocalInertia10 = -d01 * d;
+			this._invLocalInertia11 = (this._localInertia00 * this._localInertia22 - this._localInertia02 * this._localInertia20) * d;
+			this._invLocalInertia12 = -(this._localInertia00 * this._localInertia12 - this._localInertia02 * this._localInertia10) * d;
+			this._invLocalInertia20 = d02 * d;
+			this._invLocalInertia21 = -(this._localInertia00 * this._localInertia21 - this._localInertia01 * this._localInertia20) * d;
+			this._invLocalInertia22 = (this._localInertia00 * this._localInertia11 - this._localInertia01 * this._localInertia10) * d;
+			this._invLocalInertiaWithoutRotFactor00 = this._invLocalInertia00;
+			this._invLocalInertiaWithoutRotFactor01 = this._invLocalInertia01;
+			this._invLocalInertiaWithoutRotFactor02 = this._invLocalInertia02;
+			this._invLocalInertiaWithoutRotFactor10 = this._invLocalInertia10;
+			this._invLocalInertiaWithoutRotFactor11 = this._invLocalInertia11;
+			this._invLocalInertiaWithoutRotFactor12 = this._invLocalInertia12;
+			this._invLocalInertiaWithoutRotFactor20 = this._invLocalInertia20;
+			this._invLocalInertiaWithoutRotFactor21 = this._invLocalInertia21;
+			this._invLocalInertiaWithoutRotFactor22 = this._invLocalInertia22;
+			this._invLocalInertia00 = this._invLocalInertiaWithoutRotFactor00 * this._rotFactor.x;
+			this._invLocalInertia01 = this._invLocalInertiaWithoutRotFactor01 * this._rotFactor.x;
+			this._invLocalInertia02 = this._invLocalInertiaWithoutRotFactor02 * this._rotFactor.x;
+			this._invLocalInertia10 = this._invLocalInertiaWithoutRotFactor10 * this._rotFactor.y;
+			this._invLocalInertia11 = this._invLocalInertiaWithoutRotFactor11 * this._rotFactor.y;
+			this._invLocalInertia12 = this._invLocalInertiaWithoutRotFactor12 * this._rotFactor.y;
+			this._invLocalInertia20 = this._invLocalInertiaWithoutRotFactor20 * this._rotFactor.z;
+			this._invLocalInertia21 = this._invLocalInertiaWithoutRotFactor21 * this._rotFactor.z;
+			this._invLocalInertia22 = this._invLocalInertiaWithoutRotFactor22 * this._rotFactor.z;
+		} else {
+			this._invMass = 0;
+			this._invLocalInertia00 = 0;
+			this._invLocalInertia01 = 0;
+			this._invLocalInertia02 = 0;
+			this._invLocalInertia10 = 0;
+			this._invLocalInertia11 = 0;
+			this._invLocalInertia12 = 0;
+			this._invLocalInertia20 = 0;
+			this._invLocalInertia21 = 0;
+			this._invLocalInertia22 = 0;
+			this._invLocalInertiaWithoutRotFactor00 = 0;
+			this._invLocalInertiaWithoutRotFactor01 = 0;
+			this._invLocalInertiaWithoutRotFactor02 = 0;
+			this._invLocalInertiaWithoutRotFactor10 = 0;
+			this._invLocalInertiaWithoutRotFactor11 = 0;
+			this._invLocalInertiaWithoutRotFactor12 = 0;
+			this._invLocalInertiaWithoutRotFactor20 = 0;
+			this._invLocalInertiaWithoutRotFactor21 = 0;
+			this._invLocalInertiaWithoutRotFactor22 = 0;
+			if(this._type == 0) {
+				this._type = 1;
+			}
+		}
+		let __tmp__00;
+		let __tmp__01;
+		let __tmp__02;
+		let __tmp__10;
+		let __tmp__11;
+		let __tmp__12;
+		let __tmp__20;
+		let __tmp__21;
+		let __tmp__22;
+		__tmp__00 = this._transform._rotation00 * this._invLocalInertia00 + this._transform._rotation01 * this._invLocalInertia10 + this._transform._rotation02 * this._invLocalInertia20;
+		__tmp__01 = this._transform._rotation00 * this._invLocalInertia01 + this._transform._rotation01 * this._invLocalInertia11 + this._transform._rotation02 * this._invLocalInertia21;
+		__tmp__02 = this._transform._rotation00 * this._invLocalInertia02 + this._transform._rotation01 * this._invLocalInertia12 + this._transform._rotation02 * this._invLocalInertia22;
+		__tmp__10 = this._transform._rotation10 * this._invLocalInertia00 + this._transform._rotation11 * this._invLocalInertia10 + this._transform._rotation12 * this._invLocalInertia20;
+		__tmp__11 = this._transform._rotation10 * this._invLocalInertia01 + this._transform._rotation11 * this._invLocalInertia11 + this._transform._rotation12 * this._invLocalInertia21;
+		__tmp__12 = this._transform._rotation10 * this._invLocalInertia02 + this._transform._rotation11 * this._invLocalInertia12 + this._transform._rotation12 * this._invLocalInertia22;
+		__tmp__20 = this._transform._rotation20 * this._invLocalInertia00 + this._transform._rotation21 * this._invLocalInertia10 + this._transform._rotation22 * this._invLocalInertia20;
+		__tmp__21 = this._transform._rotation20 * this._invLocalInertia01 + this._transform._rotation21 * this._invLocalInertia11 + this._transform._rotation22 * this._invLocalInertia21;
+		__tmp__22 = this._transform._rotation20 * this._invLocalInertia02 + this._transform._rotation21 * this._invLocalInertia12 + this._transform._rotation22 * this._invLocalInertia22;
+		this._invInertia00 = __tmp__00;
+		this._invInertia01 = __tmp__01;
+		this._invInertia02 = __tmp__02;
+		this._invInertia10 = __tmp__10;
+		this._invInertia11 = __tmp__11;
+		this._invInertia12 = __tmp__12;
+		this._invInertia20 = __tmp__20;
+		this._invInertia21 = __tmp__21;
+		this._invInertia22 = __tmp__22;
+		let __tmp__001;
+		let __tmp__011;
+		let __tmp__021;
+		let __tmp__101;
+		let __tmp__111;
+		let __tmp__121;
+		let __tmp__201;
+		let __tmp__211;
+		let __tmp__221;
+		__tmp__001 = this._invInertia00 * this._transform._rotation00 + this._invInertia01 * this._transform._rotation01 + this._invInertia02 * this._transform._rotation02;
+		__tmp__011 = this._invInertia00 * this._transform._rotation10 + this._invInertia01 * this._transform._rotation11 + this._invInertia02 * this._transform._rotation12;
+		__tmp__021 = this._invInertia00 * this._transform._rotation20 + this._invInertia01 * this._transform._rotation21 + this._invInertia02 * this._transform._rotation22;
+		__tmp__101 = this._invInertia10 * this._transform._rotation00 + this._invInertia11 * this._transform._rotation01 + this._invInertia12 * this._transform._rotation02;
+		__tmp__111 = this._invInertia10 * this._transform._rotation10 + this._invInertia11 * this._transform._rotation11 + this._invInertia12 * this._transform._rotation12;
+		__tmp__121 = this._invInertia10 * this._transform._rotation20 + this._invInertia11 * this._transform._rotation21 + this._invInertia12 * this._transform._rotation22;
+		__tmp__201 = this._invInertia20 * this._transform._rotation00 + this._invInertia21 * this._transform._rotation01 + this._invInertia22 * this._transform._rotation02;
+		__tmp__211 = this._invInertia20 * this._transform._rotation10 + this._invInertia21 * this._transform._rotation11 + this._invInertia22 * this._transform._rotation12;
+		__tmp__221 = this._invInertia20 * this._transform._rotation20 + this._invInertia21 * this._transform._rotation21 + this._invInertia22 * this._transform._rotation22;
+		this._invInertia00 = __tmp__001;
+		this._invInertia01 = __tmp__011;
+		this._invInertia02 = __tmp__021;
+		this._invInertia10 = __tmp__101;
+		this._invInertia11 = __tmp__111;
+		this._invInertia12 = __tmp__121;
+		this._invInertia20 = __tmp__201;
+		this._invInertia21 = __tmp__211;
+		this._invInertia22 = __tmp__221;
+		this._invInertia00 *= this._rotFactor.x;
+		this._invInertia01 *= this._rotFactor.x;
+		this._invInertia02 *= this._rotFactor.x;
+		this._invInertia10 *= this._rotFactor.y;
+		this._invInertia11 *= this._rotFactor.y;
+		this._invInertia12 *= this._rotFactor.y;
+		this._invInertia20 *= this._rotFactor.z;
+		this._invInertia21 *= this._rotFactor.z;
+		this._invInertia22 *= this._rotFactor.z;
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	getPosition() {
+		let v = new oimo.common.Vec3();
+		v.x = this._transform._positionX;
+		v.y = this._transform._positionY;
+		v.z = this._transform._positionZ;
+		return v;
+	}
+	getPositionTo(position) {
+		position.x = this._transform._positionX;
+		position.y = this._transform._positionY;
+		position.z = this._transform._positionZ;
+	}
+	setPosition(position) {
+		this._transform._positionX = position.x;
+		this._transform._positionY = position.y;
+		this._transform._positionZ = position.z;
+		let dst = this._ptransform;
+		let src = this._transform;
+		dst._positionX = src._positionX;
+		dst._positionY = src._positionY;
+		dst._positionZ = src._positionZ;
+		dst._rotation00 = src._rotation00;
+		dst._rotation01 = src._rotation01;
+		dst._rotation02 = src._rotation02;
+		dst._rotation10 = src._rotation10;
+		dst._rotation11 = src._rotation11;
+		dst._rotation12 = src._rotation12;
+		dst._rotation20 = src._rotation20;
+		dst._rotation21 = src._rotation21;
+		dst._rotation22 = src._rotation22;
+		let s = this._shapeList;
+		while(s != null) {
+			let n = s._next;
+			let tf1 = this._ptransform;
+			let tf2 = this._transform;
+			let dst = s._ptransform;
+			let src1 = s._localTransform;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+			__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+			__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+			__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+			__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+			__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+			__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+			__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+			__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+			dst._rotation00 = __tmp__00;
+			dst._rotation01 = __tmp__01;
+			dst._rotation02 = __tmp__02;
+			dst._rotation10 = __tmp__10;
+			dst._rotation11 = __tmp__11;
+			dst._rotation12 = __tmp__12;
+			dst._rotation20 = __tmp__20;
+			dst._rotation21 = __tmp__21;
+			dst._rotation22 = __tmp__22;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+			__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+			__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+			dst._positionX = __tmp__X;
+			dst._positionY = __tmp__Y;
+			dst._positionZ = __tmp__Z;
+			dst._positionX += tf1._positionX;
+			dst._positionY += tf1._positionY;
+			dst._positionZ += tf1._positionZ;
+			let dst1 = s._transform;
+			let src11 = s._localTransform;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+			__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+			__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+			__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+			__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+			__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+			__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+			__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+			__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+			dst1._rotation00 = __tmp__001;
+			dst1._rotation01 = __tmp__011;
+			dst1._rotation02 = __tmp__021;
+			dst1._rotation10 = __tmp__101;
+			dst1._rotation11 = __tmp__111;
+			dst1._rotation12 = __tmp__121;
+			dst1._rotation20 = __tmp__201;
+			dst1._rotation21 = __tmp__211;
+			dst1._rotation22 = __tmp__221;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+			__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+			__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+			dst1._positionX = __tmp__X1;
+			dst1._positionY = __tmp__Y1;
+			dst1._positionZ = __tmp__Z1;
+			dst1._positionX += tf2._positionX;
+			dst1._positionY += tf2._positionY;
+			dst1._positionZ += tf2._positionZ;
+			let minX;
+			let minY;
+			let minZ;
+			let maxX;
+			let maxY;
+			let maxZ;
+			s._geom._computeAabb(s._aabb,s._ptransform);
+			minX = s._aabb._minX;
+			minY = s._aabb._minY;
+			minZ = s._aabb._minZ;
+			maxX = s._aabb._maxX;
+			maxY = s._aabb._maxY;
+			maxZ = s._aabb._maxZ;
+			s._geom._computeAabb(s._aabb,s._transform);
+			s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+			s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+			s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+			s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+			s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+			s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+			if(s._proxy != null) {
+				let dX;
+				let dY;
+				let dZ;
+				dX = s._transform._positionX - s._ptransform._positionX;
+				dY = s._transform._positionY - s._ptransform._positionY;
+				dZ = s._transform._positionZ - s._ptransform._positionZ;
+				let v = s.displacement;
+				v.x = dX;
+				v.y = dY;
+				v.z = dZ;
+				s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+			}
+			s = n;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	translate(translation) {
+		let diffX;
+		let diffY;
+		let diffZ;
+		diffX = translation.x;
+		diffY = translation.y;
+		diffZ = translation.z;
+		this._transform._positionX += diffX;
+		this._transform._positionY += diffY;
+		this._transform._positionZ += diffZ;
+		let dst = this._ptransform;
+		let src = this._transform;
+		dst._positionX = src._positionX;
+		dst._positionY = src._positionY;
+		dst._positionZ = src._positionZ;
+		dst._rotation00 = src._rotation00;
+		dst._rotation01 = src._rotation01;
+		dst._rotation02 = src._rotation02;
+		dst._rotation10 = src._rotation10;
+		dst._rotation11 = src._rotation11;
+		dst._rotation12 = src._rotation12;
+		dst._rotation20 = src._rotation20;
+		dst._rotation21 = src._rotation21;
+		dst._rotation22 = src._rotation22;
+		let s = this._shapeList;
+		while(s != null) {
+			let n = s._next;
+			let tf1 = this._ptransform;
+			let tf2 = this._transform;
+			let dst = s._ptransform;
+			let src1 = s._localTransform;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+			__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+			__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+			__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+			__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+			__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+			__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+			__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+			__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+			dst._rotation00 = __tmp__00;
+			dst._rotation01 = __tmp__01;
+			dst._rotation02 = __tmp__02;
+			dst._rotation10 = __tmp__10;
+			dst._rotation11 = __tmp__11;
+			dst._rotation12 = __tmp__12;
+			dst._rotation20 = __tmp__20;
+			dst._rotation21 = __tmp__21;
+			dst._rotation22 = __tmp__22;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+			__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+			__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+			dst._positionX = __tmp__X;
+			dst._positionY = __tmp__Y;
+			dst._positionZ = __tmp__Z;
+			dst._positionX += tf1._positionX;
+			dst._positionY += tf1._positionY;
+			dst._positionZ += tf1._positionZ;
+			let dst1 = s._transform;
+			let src11 = s._localTransform;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+			__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+			__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+			__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+			__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+			__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+			__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+			__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+			__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+			dst1._rotation00 = __tmp__001;
+			dst1._rotation01 = __tmp__011;
+			dst1._rotation02 = __tmp__021;
+			dst1._rotation10 = __tmp__101;
+			dst1._rotation11 = __tmp__111;
+			dst1._rotation12 = __tmp__121;
+			dst1._rotation20 = __tmp__201;
+			dst1._rotation21 = __tmp__211;
+			dst1._rotation22 = __tmp__221;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+			__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+			__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+			dst1._positionX = __tmp__X1;
+			dst1._positionY = __tmp__Y1;
+			dst1._positionZ = __tmp__Z1;
+			dst1._positionX += tf2._positionX;
+			dst1._positionY += tf2._positionY;
+			dst1._positionZ += tf2._positionZ;
+			let minX;
+			let minY;
+			let minZ;
+			let maxX;
+			let maxY;
+			let maxZ;
+			s._geom._computeAabb(s._aabb,s._ptransform);
+			minX = s._aabb._minX;
+			minY = s._aabb._minY;
+			minZ = s._aabb._minZ;
+			maxX = s._aabb._maxX;
+			maxY = s._aabb._maxY;
+			maxZ = s._aabb._maxZ;
+			s._geom._computeAabb(s._aabb,s._transform);
+			s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+			s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+			s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+			s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+			s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+			s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+			if(s._proxy != null) {
+				let dX;
+				let dY;
+				let dZ;
+				dX = s._transform._positionX - s._ptransform._positionX;
+				dY = s._transform._positionY - s._ptransform._positionY;
+				dZ = s._transform._positionZ - s._ptransform._positionZ;
+				let v = s.displacement;
+				v.x = dX;
+				v.y = dY;
+				v.z = dZ;
+				s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+			}
+			s = n;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	getRotation() {
+		let m = new oimo.common.Mat3();
+		m.e00 = this._transform._rotation00;
+		m.e01 = this._transform._rotation01;
+		m.e02 = this._transform._rotation02;
+		m.e10 = this._transform._rotation10;
+		m.e11 = this._transform._rotation11;
+		m.e12 = this._transform._rotation12;
+		m.e20 = this._transform._rotation20;
+		m.e21 = this._transform._rotation21;
+		m.e22 = this._transform._rotation22;
+		return m;
+	}
+	getRotationTo(rotation) {
+		rotation.e00 = this._transform._rotation00;
+		rotation.e01 = this._transform._rotation01;
+		rotation.e02 = this._transform._rotation02;
+		rotation.e10 = this._transform._rotation10;
+		rotation.e11 = this._transform._rotation11;
+		rotation.e12 = this._transform._rotation12;
+		rotation.e20 = this._transform._rotation20;
+		rotation.e21 = this._transform._rotation21;
+		rotation.e22 = this._transform._rotation22;
+	}
+	setRotation(rotation) {
+		this._transform._rotation00 = rotation.e00;
+		this._transform._rotation01 = rotation.e01;
+		this._transform._rotation02 = rotation.e02;
+		this._transform._rotation10 = rotation.e10;
+		this._transform._rotation11 = rotation.e11;
+		this._transform._rotation12 = rotation.e12;
+		this._transform._rotation20 = rotation.e20;
+		this._transform._rotation21 = rotation.e21;
+		this._transform._rotation22 = rotation.e22;
+		let __tmp__00;
+		let __tmp__01;
+		let __tmp__02;
+		let __tmp__10;
+		let __tmp__11;
+		let __tmp__12;
+		let __tmp__20;
+		let __tmp__21;
+		let __tmp__22;
+		__tmp__00 = this._transform._rotation00 * this._invLocalInertia00 + this._transform._rotation01 * this._invLocalInertia10 + this._transform._rotation02 * this._invLocalInertia20;
+		__tmp__01 = this._transform._rotation00 * this._invLocalInertia01 + this._transform._rotation01 * this._invLocalInertia11 + this._transform._rotation02 * this._invLocalInertia21;
+		__tmp__02 = this._transform._rotation00 * this._invLocalInertia02 + this._transform._rotation01 * this._invLocalInertia12 + this._transform._rotation02 * this._invLocalInertia22;
+		__tmp__10 = this._transform._rotation10 * this._invLocalInertia00 + this._transform._rotation11 * this._invLocalInertia10 + this._transform._rotation12 * this._invLocalInertia20;
+		__tmp__11 = this._transform._rotation10 * this._invLocalInertia01 + this._transform._rotation11 * this._invLocalInertia11 + this._transform._rotation12 * this._invLocalInertia21;
+		__tmp__12 = this._transform._rotation10 * this._invLocalInertia02 + this._transform._rotation11 * this._invLocalInertia12 + this._transform._rotation12 * this._invLocalInertia22;
+		__tmp__20 = this._transform._rotation20 * this._invLocalInertia00 + this._transform._rotation21 * this._invLocalInertia10 + this._transform._rotation22 * this._invLocalInertia20;
+		__tmp__21 = this._transform._rotation20 * this._invLocalInertia01 + this._transform._rotation21 * this._invLocalInertia11 + this._transform._rotation22 * this._invLocalInertia21;
+		__tmp__22 = this._transform._rotation20 * this._invLocalInertia02 + this._transform._rotation21 * this._invLocalInertia12 + this._transform._rotation22 * this._invLocalInertia22;
+		this._invInertia00 = __tmp__00;
+		this._invInertia01 = __tmp__01;
+		this._invInertia02 = __tmp__02;
+		this._invInertia10 = __tmp__10;
+		this._invInertia11 = __tmp__11;
+		this._invInertia12 = __tmp__12;
+		this._invInertia20 = __tmp__20;
+		this._invInertia21 = __tmp__21;
+		this._invInertia22 = __tmp__22;
+		let __tmp__001;
+		let __tmp__011;
+		let __tmp__021;
+		let __tmp__101;
+		let __tmp__111;
+		let __tmp__121;
+		let __tmp__201;
+		let __tmp__211;
+		let __tmp__221;
+		__tmp__001 = this._invInertia00 * this._transform._rotation00 + this._invInertia01 * this._transform._rotation01 + this._invInertia02 * this._transform._rotation02;
+		__tmp__011 = this._invInertia00 * this._transform._rotation10 + this._invInertia01 * this._transform._rotation11 + this._invInertia02 * this._transform._rotation12;
+		__tmp__021 = this._invInertia00 * this._transform._rotation20 + this._invInertia01 * this._transform._rotation21 + this._invInertia02 * this._transform._rotation22;
+		__tmp__101 = this._invInertia10 * this._transform._rotation00 + this._invInertia11 * this._transform._rotation01 + this._invInertia12 * this._transform._rotation02;
+		__tmp__111 = this._invInertia10 * this._transform._rotation10 + this._invInertia11 * this._transform._rotation11 + this._invInertia12 * this._transform._rotation12;
+		__tmp__121 = this._invInertia10 * this._transform._rotation20 + this._invInertia11 * this._transform._rotation21 + this._invInertia12 * this._transform._rotation22;
+		__tmp__201 = this._invInertia20 * this._transform._rotation00 + this._invInertia21 * this._transform._rotation01 + this._invInertia22 * this._transform._rotation02;
+		__tmp__211 = this._invInertia20 * this._transform._rotation10 + this._invInertia21 * this._transform._rotation11 + this._invInertia22 * this._transform._rotation12;
+		__tmp__221 = this._invInertia20 * this._transform._rotation20 + this._invInertia21 * this._transform._rotation21 + this._invInertia22 * this._transform._rotation22;
+		this._invInertia00 = __tmp__001;
+		this._invInertia01 = __tmp__011;
+		this._invInertia02 = __tmp__021;
+		this._invInertia10 = __tmp__101;
+		this._invInertia11 = __tmp__111;
+		this._invInertia12 = __tmp__121;
+		this._invInertia20 = __tmp__201;
+		this._invInertia21 = __tmp__211;
+		this._invInertia22 = __tmp__221;
+		this._invInertia00 *= this._rotFactor.x;
+		this._invInertia01 *= this._rotFactor.x;
+		this._invInertia02 *= this._rotFactor.x;
+		this._invInertia10 *= this._rotFactor.y;
+		this._invInertia11 *= this._rotFactor.y;
+		this._invInertia12 *= this._rotFactor.y;
+		this._invInertia20 *= this._rotFactor.z;
+		this._invInertia21 *= this._rotFactor.z;
+		this._invInertia22 *= this._rotFactor.z;
+		let dst = this._ptransform;
+		let src = this._transform;
+		dst._positionX = src._positionX;
+		dst._positionY = src._positionY;
+		dst._positionZ = src._positionZ;
+		dst._rotation00 = src._rotation00;
+		dst._rotation01 = src._rotation01;
+		dst._rotation02 = src._rotation02;
+		dst._rotation10 = src._rotation10;
+		dst._rotation11 = src._rotation11;
+		dst._rotation12 = src._rotation12;
+		dst._rotation20 = src._rotation20;
+		dst._rotation21 = src._rotation21;
+		dst._rotation22 = src._rotation22;
+		let s = this._shapeList;
+		while(s != null) {
+			let n = s._next;
+			let tf1 = this._ptransform;
+			let tf2 = this._transform;
+			let dst = s._ptransform;
+			let src1 = s._localTransform;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+			__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+			__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+			__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+			__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+			__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+			__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+			__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+			__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+			dst._rotation00 = __tmp__00;
+			dst._rotation01 = __tmp__01;
+			dst._rotation02 = __tmp__02;
+			dst._rotation10 = __tmp__10;
+			dst._rotation11 = __tmp__11;
+			dst._rotation12 = __tmp__12;
+			dst._rotation20 = __tmp__20;
+			dst._rotation21 = __tmp__21;
+			dst._rotation22 = __tmp__22;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+			__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+			__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+			dst._positionX = __tmp__X;
+			dst._positionY = __tmp__Y;
+			dst._positionZ = __tmp__Z;
+			dst._positionX += tf1._positionX;
+			dst._positionY += tf1._positionY;
+			dst._positionZ += tf1._positionZ;
+			let dst1 = s._transform;
+			let src11 = s._localTransform;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+			__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+			__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+			__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+			__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+			__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+			__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+			__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+			__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+			dst1._rotation00 = __tmp__001;
+			dst1._rotation01 = __tmp__011;
+			dst1._rotation02 = __tmp__021;
+			dst1._rotation10 = __tmp__101;
+			dst1._rotation11 = __tmp__111;
+			dst1._rotation12 = __tmp__121;
+			dst1._rotation20 = __tmp__201;
+			dst1._rotation21 = __tmp__211;
+			dst1._rotation22 = __tmp__221;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+			__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+			__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+			dst1._positionX = __tmp__X1;
+			dst1._positionY = __tmp__Y1;
+			dst1._positionZ = __tmp__Z1;
+			dst1._positionX += tf2._positionX;
+			dst1._positionY += tf2._positionY;
+			dst1._positionZ += tf2._positionZ;
+			let minX;
+			let minY;
+			let minZ;
+			let maxX;
+			let maxY;
+			let maxZ;
+			s._geom._computeAabb(s._aabb,s._ptransform);
+			minX = s._aabb._minX;
+			minY = s._aabb._minY;
+			minZ = s._aabb._minZ;
+			maxX = s._aabb._maxX;
+			maxY = s._aabb._maxY;
+			maxZ = s._aabb._maxZ;
+			s._geom._computeAabb(s._aabb,s._transform);
+			s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+			s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+			s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+			s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+			s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+			s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+			if(s._proxy != null) {
+				let dX;
+				let dY;
+				let dZ;
+				dX = s._transform._positionX - s._ptransform._positionX;
+				dY = s._transform._positionY - s._ptransform._positionY;
+				dZ = s._transform._positionZ - s._ptransform._positionZ;
+				let v = s.displacement;
+				v.x = dX;
+				v.y = dY;
+				v.z = dZ;
+				s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+			}
+			s = n;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	setRotationXyz(eulerAngles) {
+		let xyzX;
+		let xyzY;
+		let xyzZ;
+		xyzX = eulerAngles.x;
+		xyzY = eulerAngles.y;
+		xyzZ = eulerAngles.z;
+		let sx = Math.sin(xyzX);
+		let sy = Math.sin(xyzY);
+		let sz = Math.sin(xyzZ);
+		let cx = Math.cos(xyzX);
+		let cy = Math.cos(xyzY);
+		let cz = Math.cos(xyzZ);
+		this._transform._rotation00 = cy * cz;
+		this._transform._rotation01 = -cy * sz;
+		this._transform._rotation02 = sy;
+		this._transform._rotation10 = cx * sz + cz * sx * sy;
+		this._transform._rotation11 = cx * cz - sx * sy * sz;
+		this._transform._rotation12 = -cy * sx;
+		this._transform._rotation20 = sx * sz - cx * cz * sy;
+		this._transform._rotation21 = cz * sx + cx * sy * sz;
+		this._transform._rotation22 = cx * cy;
+		let __tmp__00;
+		let __tmp__01;
+		let __tmp__02;
+		let __tmp__10;
+		let __tmp__11;
+		let __tmp__12;
+		let __tmp__20;
+		let __tmp__21;
+		let __tmp__22;
+		__tmp__00 = this._transform._rotation00 * this._invLocalInertia00 + this._transform._rotation01 * this._invLocalInertia10 + this._transform._rotation02 * this._invLocalInertia20;
+		__tmp__01 = this._transform._rotation00 * this._invLocalInertia01 + this._transform._rotation01 * this._invLocalInertia11 + this._transform._rotation02 * this._invLocalInertia21;
+		__tmp__02 = this._transform._rotation00 * this._invLocalInertia02 + this._transform._rotation01 * this._invLocalInertia12 + this._transform._rotation02 * this._invLocalInertia22;
+		__tmp__10 = this._transform._rotation10 * this._invLocalInertia00 + this._transform._rotation11 * this._invLocalInertia10 + this._transform._rotation12 * this._invLocalInertia20;
+		__tmp__11 = this._transform._rotation10 * this._invLocalInertia01 + this._transform._rotation11 * this._invLocalInertia11 + this._transform._rotation12 * this._invLocalInertia21;
+		__tmp__12 = this._transform._rotation10 * this._invLocalInertia02 + this._transform._rotation11 * this._invLocalInertia12 + this._transform._rotation12 * this._invLocalInertia22;
+		__tmp__20 = this._transform._rotation20 * this._invLocalInertia00 + this._transform._rotation21 * this._invLocalInertia10 + this._transform._rotation22 * this._invLocalInertia20;
+		__tmp__21 = this._transform._rotation20 * this._invLocalInertia01 + this._transform._rotation21 * this._invLocalInertia11 + this._transform._rotation22 * this._invLocalInertia21;
+		__tmp__22 = this._transform._rotation20 * this._invLocalInertia02 + this._transform._rotation21 * this._invLocalInertia12 + this._transform._rotation22 * this._invLocalInertia22;
+		this._invInertia00 = __tmp__00;
+		this._invInertia01 = __tmp__01;
+		this._invInertia02 = __tmp__02;
+		this._invInertia10 = __tmp__10;
+		this._invInertia11 = __tmp__11;
+		this._invInertia12 = __tmp__12;
+		this._invInertia20 = __tmp__20;
+		this._invInertia21 = __tmp__21;
+		this._invInertia22 = __tmp__22;
+		let __tmp__001;
+		let __tmp__011;
+		let __tmp__021;
+		let __tmp__101;
+		let __tmp__111;
+		let __tmp__121;
+		let __tmp__201;
+		let __tmp__211;
+		let __tmp__221;
+		__tmp__001 = this._invInertia00 * this._transform._rotation00 + this._invInertia01 * this._transform._rotation01 + this._invInertia02 * this._transform._rotation02;
+		__tmp__011 = this._invInertia00 * this._transform._rotation10 + this._invInertia01 * this._transform._rotation11 + this._invInertia02 * this._transform._rotation12;
+		__tmp__021 = this._invInertia00 * this._transform._rotation20 + this._invInertia01 * this._transform._rotation21 + this._invInertia02 * this._transform._rotation22;
+		__tmp__101 = this._invInertia10 * this._transform._rotation00 + this._invInertia11 * this._transform._rotation01 + this._invInertia12 * this._transform._rotation02;
+		__tmp__111 = this._invInertia10 * this._transform._rotation10 + this._invInertia11 * this._transform._rotation11 + this._invInertia12 * this._transform._rotation12;
+		__tmp__121 = this._invInertia10 * this._transform._rotation20 + this._invInertia11 * this._transform._rotation21 + this._invInertia12 * this._transform._rotation22;
+		__tmp__201 = this._invInertia20 * this._transform._rotation00 + this._invInertia21 * this._transform._rotation01 + this._invInertia22 * this._transform._rotation02;
+		__tmp__211 = this._invInertia20 * this._transform._rotation10 + this._invInertia21 * this._transform._rotation11 + this._invInertia22 * this._transform._rotation12;
+		__tmp__221 = this._invInertia20 * this._transform._rotation20 + this._invInertia21 * this._transform._rotation21 + this._invInertia22 * this._transform._rotation22;
+		this._invInertia00 = __tmp__001;
+		this._invInertia01 = __tmp__011;
+		this._invInertia02 = __tmp__021;
+		this._invInertia10 = __tmp__101;
+		this._invInertia11 = __tmp__111;
+		this._invInertia12 = __tmp__121;
+		this._invInertia20 = __tmp__201;
+		this._invInertia21 = __tmp__211;
+		this._invInertia22 = __tmp__221;
+		this._invInertia00 *= this._rotFactor.x;
+		this._invInertia01 *= this._rotFactor.x;
+		this._invInertia02 *= this._rotFactor.x;
+		this._invInertia10 *= this._rotFactor.y;
+		this._invInertia11 *= this._rotFactor.y;
+		this._invInertia12 *= this._rotFactor.y;
+		this._invInertia20 *= this._rotFactor.z;
+		this._invInertia21 *= this._rotFactor.z;
+		this._invInertia22 *= this._rotFactor.z;
+		let dst = this._ptransform;
+		let src = this._transform;
+		dst._positionX = src._positionX;
+		dst._positionY = src._positionY;
+		dst._positionZ = src._positionZ;
+		dst._rotation00 = src._rotation00;
+		dst._rotation01 = src._rotation01;
+		dst._rotation02 = src._rotation02;
+		dst._rotation10 = src._rotation10;
+		dst._rotation11 = src._rotation11;
+		dst._rotation12 = src._rotation12;
+		dst._rotation20 = src._rotation20;
+		dst._rotation21 = src._rotation21;
+		dst._rotation22 = src._rotation22;
+		let s = this._shapeList;
+		while(s != null) {
+			let n = s._next;
+			let tf1 = this._ptransform;
+			let tf2 = this._transform;
+			let dst = s._ptransform;
+			let src1 = s._localTransform;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+			__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+			__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+			__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+			__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+			__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+			__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+			__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+			__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+			dst._rotation00 = __tmp__00;
+			dst._rotation01 = __tmp__01;
+			dst._rotation02 = __tmp__02;
+			dst._rotation10 = __tmp__10;
+			dst._rotation11 = __tmp__11;
+			dst._rotation12 = __tmp__12;
+			dst._rotation20 = __tmp__20;
+			dst._rotation21 = __tmp__21;
+			dst._rotation22 = __tmp__22;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+			__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+			__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+			dst._positionX = __tmp__X;
+			dst._positionY = __tmp__Y;
+			dst._positionZ = __tmp__Z;
+			dst._positionX += tf1._positionX;
+			dst._positionY += tf1._positionY;
+			dst._positionZ += tf1._positionZ;
+			let dst1 = s._transform;
+			let src11 = s._localTransform;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+			__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+			__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+			__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+			__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+			__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+			__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+			__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+			__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+			dst1._rotation00 = __tmp__001;
+			dst1._rotation01 = __tmp__011;
+			dst1._rotation02 = __tmp__021;
+			dst1._rotation10 = __tmp__101;
+			dst1._rotation11 = __tmp__111;
+			dst1._rotation12 = __tmp__121;
+			dst1._rotation20 = __tmp__201;
+			dst1._rotation21 = __tmp__211;
+			dst1._rotation22 = __tmp__221;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+			__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+			__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+			dst1._positionX = __tmp__X1;
+			dst1._positionY = __tmp__Y1;
+			dst1._positionZ = __tmp__Z1;
+			dst1._positionX += tf2._positionX;
+			dst1._positionY += tf2._positionY;
+			dst1._positionZ += tf2._positionZ;
+			let minX;
+			let minY;
+			let minZ;
+			let maxX;
+			let maxY;
+			let maxZ;
+			s._geom._computeAabb(s._aabb,s._ptransform);
+			minX = s._aabb._minX;
+			minY = s._aabb._minY;
+			minZ = s._aabb._minZ;
+			maxX = s._aabb._maxX;
+			maxY = s._aabb._maxY;
+			maxZ = s._aabb._maxZ;
+			s._geom._computeAabb(s._aabb,s._transform);
+			s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+			s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+			s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+			s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+			s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+			s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+			if(s._proxy != null) {
+				let dX;
+				let dY;
+				let dZ;
+				dX = s._transform._positionX - s._ptransform._positionX;
+				dY = s._transform._positionY - s._ptransform._positionY;
+				dZ = s._transform._positionZ - s._ptransform._positionZ;
+				let v = s.displacement;
+				v.x = dX;
+				v.y = dY;
+				v.z = dZ;
+				s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+			}
+			s = n;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	rotate(rotation) {
+		let rot00;
+		let rot01;
+		let rot02;
+		let rot10;
+		let rot11;
+		let rot12;
+		let rot20;
+		let rot21;
+		let rot22;
+		rot00 = rotation.e00;
+		rot01 = rotation.e01;
+		rot02 = rotation.e02;
+		rot10 = rotation.e10;
+		rot11 = rotation.e11;
+		rot12 = rotation.e12;
+		rot20 = rotation.e20;
+		rot21 = rotation.e21;
+		rot22 = rotation.e22;
+		let __tmp__00;
+		let __tmp__01;
+		let __tmp__02;
+		let __tmp__10;
+		let __tmp__11;
+		let __tmp__12;
+		let __tmp__20;
+		let __tmp__21;
+		let __tmp__22;
+		__tmp__00 = rot00 * this._transform._rotation00 + rot01 * this._transform._rotation10 + rot02 * this._transform._rotation20;
+		__tmp__01 = rot00 * this._transform._rotation01 + rot01 * this._transform._rotation11 + rot02 * this._transform._rotation21;
+		__tmp__02 = rot00 * this._transform._rotation02 + rot01 * this._transform._rotation12 + rot02 * this._transform._rotation22;
+		__tmp__10 = rot10 * this._transform._rotation00 + rot11 * this._transform._rotation10 + rot12 * this._transform._rotation20;
+		__tmp__11 = rot10 * this._transform._rotation01 + rot11 * this._transform._rotation11 + rot12 * this._transform._rotation21;
+		__tmp__12 = rot10 * this._transform._rotation02 + rot11 * this._transform._rotation12 + rot12 * this._transform._rotation22;
+		__tmp__20 = rot20 * this._transform._rotation00 + rot21 * this._transform._rotation10 + rot22 * this._transform._rotation20;
+		__tmp__21 = rot20 * this._transform._rotation01 + rot21 * this._transform._rotation11 + rot22 * this._transform._rotation21;
+		__tmp__22 = rot20 * this._transform._rotation02 + rot21 * this._transform._rotation12 + rot22 * this._transform._rotation22;
+		this._transform._rotation00 = __tmp__00;
+		this._transform._rotation01 = __tmp__01;
+		this._transform._rotation02 = __tmp__02;
+		this._transform._rotation10 = __tmp__10;
+		this._transform._rotation11 = __tmp__11;
+		this._transform._rotation12 = __tmp__12;
+		this._transform._rotation20 = __tmp__20;
+		this._transform._rotation21 = __tmp__21;
+		this._transform._rotation22 = __tmp__22;
+		let __tmp__001;
+		let __tmp__011;
+		let __tmp__021;
+		let __tmp__101;
+		let __tmp__111;
+		let __tmp__121;
+		let __tmp__201;
+		let __tmp__211;
+		let __tmp__221;
+		__tmp__001 = this._transform._rotation00 * this._invLocalInertia00 + this._transform._rotation01 * this._invLocalInertia10 + this._transform._rotation02 * this._invLocalInertia20;
+		__tmp__011 = this._transform._rotation00 * this._invLocalInertia01 + this._transform._rotation01 * this._invLocalInertia11 + this._transform._rotation02 * this._invLocalInertia21;
+		__tmp__021 = this._transform._rotation00 * this._invLocalInertia02 + this._transform._rotation01 * this._invLocalInertia12 + this._transform._rotation02 * this._invLocalInertia22;
+		__tmp__101 = this._transform._rotation10 * this._invLocalInertia00 + this._transform._rotation11 * this._invLocalInertia10 + this._transform._rotation12 * this._invLocalInertia20;
+		__tmp__111 = this._transform._rotation10 * this._invLocalInertia01 + this._transform._rotation11 * this._invLocalInertia11 + this._transform._rotation12 * this._invLocalInertia21;
+		__tmp__121 = this._transform._rotation10 * this._invLocalInertia02 + this._transform._rotation11 * this._invLocalInertia12 + this._transform._rotation12 * this._invLocalInertia22;
+		__tmp__201 = this._transform._rotation20 * this._invLocalInertia00 + this._transform._rotation21 * this._invLocalInertia10 + this._transform._rotation22 * this._invLocalInertia20;
+		__tmp__211 = this._transform._rotation20 * this._invLocalInertia01 + this._transform._rotation21 * this._invLocalInertia11 + this._transform._rotation22 * this._invLocalInertia21;
+		__tmp__221 = this._transform._rotation20 * this._invLocalInertia02 + this._transform._rotation21 * this._invLocalInertia12 + this._transform._rotation22 * this._invLocalInertia22;
+		this._invInertia00 = __tmp__001;
+		this._invInertia01 = __tmp__011;
+		this._invInertia02 = __tmp__021;
+		this._invInertia10 = __tmp__101;
+		this._invInertia11 = __tmp__111;
+		this._invInertia12 = __tmp__121;
+		this._invInertia20 = __tmp__201;
+		this._invInertia21 = __tmp__211;
+		this._invInertia22 = __tmp__221;
+		let __tmp__002;
+		let __tmp__012;
+		let __tmp__022;
+		let __tmp__102;
+		let __tmp__112;
+		let __tmp__122;
+		let __tmp__202;
+		let __tmp__212;
+		let __tmp__222;
+		__tmp__002 = this._invInertia00 * this._transform._rotation00 + this._invInertia01 * this._transform._rotation01 + this._invInertia02 * this._transform._rotation02;
+		__tmp__012 = this._invInertia00 * this._transform._rotation10 + this._invInertia01 * this._transform._rotation11 + this._invInertia02 * this._transform._rotation12;
+		__tmp__022 = this._invInertia00 * this._transform._rotation20 + this._invInertia01 * this._transform._rotation21 + this._invInertia02 * this._transform._rotation22;
+		__tmp__102 = this._invInertia10 * this._transform._rotation00 + this._invInertia11 * this._transform._rotation01 + this._invInertia12 * this._transform._rotation02;
+		__tmp__112 = this._invInertia10 * this._transform._rotation10 + this._invInertia11 * this._transform._rotation11 + this._invInertia12 * this._transform._rotation12;
+		__tmp__122 = this._invInertia10 * this._transform._rotation20 + this._invInertia11 * this._transform._rotation21 + this._invInertia12 * this._transform._rotation22;
+		__tmp__202 = this._invInertia20 * this._transform._rotation00 + this._invInertia21 * this._transform._rotation01 + this._invInertia22 * this._transform._rotation02;
+		__tmp__212 = this._invInertia20 * this._transform._rotation10 + this._invInertia21 * this._transform._rotation11 + this._invInertia22 * this._transform._rotation12;
+		__tmp__222 = this._invInertia20 * this._transform._rotation20 + this._invInertia21 * this._transform._rotation21 + this._invInertia22 * this._transform._rotation22;
+		this._invInertia00 = __tmp__002;
+		this._invInertia01 = __tmp__012;
+		this._invInertia02 = __tmp__022;
+		this._invInertia10 = __tmp__102;
+		this._invInertia11 = __tmp__112;
+		this._invInertia12 = __tmp__122;
+		this._invInertia20 = __tmp__202;
+		this._invInertia21 = __tmp__212;
+		this._invInertia22 = __tmp__222;
+		this._invInertia00 *= this._rotFactor.x;
+		this._invInertia01 *= this._rotFactor.x;
+		this._invInertia02 *= this._rotFactor.x;
+		this._invInertia10 *= this._rotFactor.y;
+		this._invInertia11 *= this._rotFactor.y;
+		this._invInertia12 *= this._rotFactor.y;
+		this._invInertia20 *= this._rotFactor.z;
+		this._invInertia21 *= this._rotFactor.z;
+		this._invInertia22 *= this._rotFactor.z;
+		let dst = this._ptransform;
+		let src = this._transform;
+		dst._positionX = src._positionX;
+		dst._positionY = src._positionY;
+		dst._positionZ = src._positionZ;
+		dst._rotation00 = src._rotation00;
+		dst._rotation01 = src._rotation01;
+		dst._rotation02 = src._rotation02;
+		dst._rotation10 = src._rotation10;
+		dst._rotation11 = src._rotation11;
+		dst._rotation12 = src._rotation12;
+		dst._rotation20 = src._rotation20;
+		dst._rotation21 = src._rotation21;
+		dst._rotation22 = src._rotation22;
+		let s = this._shapeList;
+		while(s != null) {
+			let n = s._next;
+			let tf1 = this._ptransform;
+			let tf2 = this._transform;
+			let dst = s._ptransform;
+			let src1 = s._localTransform;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+			__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+			__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+			__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+			__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+			__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+			__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+			__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+			__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+			dst._rotation00 = __tmp__00;
+			dst._rotation01 = __tmp__01;
+			dst._rotation02 = __tmp__02;
+			dst._rotation10 = __tmp__10;
+			dst._rotation11 = __tmp__11;
+			dst._rotation12 = __tmp__12;
+			dst._rotation20 = __tmp__20;
+			dst._rotation21 = __tmp__21;
+			dst._rotation22 = __tmp__22;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+			__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+			__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+			dst._positionX = __tmp__X;
+			dst._positionY = __tmp__Y;
+			dst._positionZ = __tmp__Z;
+			dst._positionX += tf1._positionX;
+			dst._positionY += tf1._positionY;
+			dst._positionZ += tf1._positionZ;
+			let dst1 = s._transform;
+			let src11 = s._localTransform;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+			__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+			__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+			__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+			__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+			__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+			__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+			__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+			__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+			dst1._rotation00 = __tmp__001;
+			dst1._rotation01 = __tmp__011;
+			dst1._rotation02 = __tmp__021;
+			dst1._rotation10 = __tmp__101;
+			dst1._rotation11 = __tmp__111;
+			dst1._rotation12 = __tmp__121;
+			dst1._rotation20 = __tmp__201;
+			dst1._rotation21 = __tmp__211;
+			dst1._rotation22 = __tmp__221;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+			__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+			__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+			dst1._positionX = __tmp__X1;
+			dst1._positionY = __tmp__Y1;
+			dst1._positionZ = __tmp__Z1;
+			dst1._positionX += tf2._positionX;
+			dst1._positionY += tf2._positionY;
+			dst1._positionZ += tf2._positionZ;
+			let minX;
+			let minY;
+			let minZ;
+			let maxX;
+			let maxY;
+			let maxZ;
+			s._geom._computeAabb(s._aabb,s._ptransform);
+			minX = s._aabb._minX;
+			minY = s._aabb._minY;
+			minZ = s._aabb._minZ;
+			maxX = s._aabb._maxX;
+			maxY = s._aabb._maxY;
+			maxZ = s._aabb._maxZ;
+			s._geom._computeAabb(s._aabb,s._transform);
+			s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+			s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+			s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+			s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+			s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+			s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+			if(s._proxy != null) {
+				let dX;
+				let dY;
+				let dZ;
+				dX = s._transform._positionX - s._ptransform._positionX;
+				dY = s._transform._positionY - s._ptransform._positionY;
+				dZ = s._transform._positionZ - s._ptransform._positionZ;
+				let v = s.displacement;
+				v.x = dX;
+				v.y = dY;
+				v.z = dZ;
+				s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+			}
+			s = n;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	rotateXyz(eulerAngles) {
+		let xyzX;
+		let xyzY;
+		let xyzZ;
+		let rot00;
+		let rot01;
+		let rot02;
+		let rot10;
+		let rot11;
+		let rot12;
+		let rot20;
+		let rot21;
+		let rot22;
+		xyzX = eulerAngles.x;
+		xyzY = eulerAngles.y;
+		xyzZ = eulerAngles.z;
+		let sx = Math.sin(xyzX);
+		let sy = Math.sin(xyzY);
+		let sz = Math.sin(xyzZ);
+		let cx = Math.cos(xyzX);
+		let cy = Math.cos(xyzY);
+		let cz = Math.cos(xyzZ);
+		rot00 = cy * cz;
+		rot01 = -cy * sz;
+		rot02 = sy;
+		rot10 = cx * sz + cz * sx * sy;
+		rot11 = cx * cz - sx * sy * sz;
+		rot12 = -cy * sx;
+		rot20 = sx * sz - cx * cz * sy;
+		rot21 = cz * sx + cx * sy * sz;
+		rot22 = cx * cy;
+		let __tmp__00;
+		let __tmp__01;
+		let __tmp__02;
+		let __tmp__10;
+		let __tmp__11;
+		let __tmp__12;
+		let __tmp__20;
+		let __tmp__21;
+		let __tmp__22;
+		__tmp__00 = rot00 * this._transform._rotation00 + rot01 * this._transform._rotation10 + rot02 * this._transform._rotation20;
+		__tmp__01 = rot00 * this._transform._rotation01 + rot01 * this._transform._rotation11 + rot02 * this._transform._rotation21;
+		__tmp__02 = rot00 * this._transform._rotation02 + rot01 * this._transform._rotation12 + rot02 * this._transform._rotation22;
+		__tmp__10 = rot10 * this._transform._rotation00 + rot11 * this._transform._rotation10 + rot12 * this._transform._rotation20;
+		__tmp__11 = rot10 * this._transform._rotation01 + rot11 * this._transform._rotation11 + rot12 * this._transform._rotation21;
+		__tmp__12 = rot10 * this._transform._rotation02 + rot11 * this._transform._rotation12 + rot12 * this._transform._rotation22;
+		__tmp__20 = rot20 * this._transform._rotation00 + rot21 * this._transform._rotation10 + rot22 * this._transform._rotation20;
+		__tmp__21 = rot20 * this._transform._rotation01 + rot21 * this._transform._rotation11 + rot22 * this._transform._rotation21;
+		__tmp__22 = rot20 * this._transform._rotation02 + rot21 * this._transform._rotation12 + rot22 * this._transform._rotation22;
+		this._transform._rotation00 = __tmp__00;
+		this._transform._rotation01 = __tmp__01;
+		this._transform._rotation02 = __tmp__02;
+		this._transform._rotation10 = __tmp__10;
+		this._transform._rotation11 = __tmp__11;
+		this._transform._rotation12 = __tmp__12;
+		this._transform._rotation20 = __tmp__20;
+		this._transform._rotation21 = __tmp__21;
+		this._transform._rotation22 = __tmp__22;
+		let __tmp__001;
+		let __tmp__011;
+		let __tmp__021;
+		let __tmp__101;
+		let __tmp__111;
+		let __tmp__121;
+		let __tmp__201;
+		let __tmp__211;
+		let __tmp__221;
+		__tmp__001 = this._transform._rotation00 * this._invLocalInertia00 + this._transform._rotation01 * this._invLocalInertia10 + this._transform._rotation02 * this._invLocalInertia20;
+		__tmp__011 = this._transform._rotation00 * this._invLocalInertia01 + this._transform._rotation01 * this._invLocalInertia11 + this._transform._rotation02 * this._invLocalInertia21;
+		__tmp__021 = this._transform._rotation00 * this._invLocalInertia02 + this._transform._rotation01 * this._invLocalInertia12 + this._transform._rotation02 * this._invLocalInertia22;
+		__tmp__101 = this._transform._rotation10 * this._invLocalInertia00 + this._transform._rotation11 * this._invLocalInertia10 + this._transform._rotation12 * this._invLocalInertia20;
+		__tmp__111 = this._transform._rotation10 * this._invLocalInertia01 + this._transform._rotation11 * this._invLocalInertia11 + this._transform._rotation12 * this._invLocalInertia21;
+		__tmp__121 = this._transform._rotation10 * this._invLocalInertia02 + this._transform._rotation11 * this._invLocalInertia12 + this._transform._rotation12 * this._invLocalInertia22;
+		__tmp__201 = this._transform._rotation20 * this._invLocalInertia00 + this._transform._rotation21 * this._invLocalInertia10 + this._transform._rotation22 * this._invLocalInertia20;
+		__tmp__211 = this._transform._rotation20 * this._invLocalInertia01 + this._transform._rotation21 * this._invLocalInertia11 + this._transform._rotation22 * this._invLocalInertia21;
+		__tmp__221 = this._transform._rotation20 * this._invLocalInertia02 + this._transform._rotation21 * this._invLocalInertia12 + this._transform._rotation22 * this._invLocalInertia22;
+		this._invInertia00 = __tmp__001;
+		this._invInertia01 = __tmp__011;
+		this._invInertia02 = __tmp__021;
+		this._invInertia10 = __tmp__101;
+		this._invInertia11 = __tmp__111;
+		this._invInertia12 = __tmp__121;
+		this._invInertia20 = __tmp__201;
+		this._invInertia21 = __tmp__211;
+		this._invInertia22 = __tmp__221;
+		let __tmp__002;
+		let __tmp__012;
+		let __tmp__022;
+		let __tmp__102;
+		let __tmp__112;
+		let __tmp__122;
+		let __tmp__202;
+		let __tmp__212;
+		let __tmp__222;
+		__tmp__002 = this._invInertia00 * this._transform._rotation00 + this._invInertia01 * this._transform._rotation01 + this._invInertia02 * this._transform._rotation02;
+		__tmp__012 = this._invInertia00 * this._transform._rotation10 + this._invInertia01 * this._transform._rotation11 + this._invInertia02 * this._transform._rotation12;
+		__tmp__022 = this._invInertia00 * this._transform._rotation20 + this._invInertia01 * this._transform._rotation21 + this._invInertia02 * this._transform._rotation22;
+		__tmp__102 = this._invInertia10 * this._transform._rotation00 + this._invInertia11 * this._transform._rotation01 + this._invInertia12 * this._transform._rotation02;
+		__tmp__112 = this._invInertia10 * this._transform._rotation10 + this._invInertia11 * this._transform._rotation11 + this._invInertia12 * this._transform._rotation12;
+		__tmp__122 = this._invInertia10 * this._transform._rotation20 + this._invInertia11 * this._transform._rotation21 + this._invInertia12 * this._transform._rotation22;
+		__tmp__202 = this._invInertia20 * this._transform._rotation00 + this._invInertia21 * this._transform._rotation01 + this._invInertia22 * this._transform._rotation02;
+		__tmp__212 = this._invInertia20 * this._transform._rotation10 + this._invInertia21 * this._transform._rotation11 + this._invInertia22 * this._transform._rotation12;
+		__tmp__222 = this._invInertia20 * this._transform._rotation20 + this._invInertia21 * this._transform._rotation21 + this._invInertia22 * this._transform._rotation22;
+		this._invInertia00 = __tmp__002;
+		this._invInertia01 = __tmp__012;
+		this._invInertia02 = __tmp__022;
+		this._invInertia10 = __tmp__102;
+		this._invInertia11 = __tmp__112;
+		this._invInertia12 = __tmp__122;
+		this._invInertia20 = __tmp__202;
+		this._invInertia21 = __tmp__212;
+		this._invInertia22 = __tmp__222;
+		this._invInertia00 *= this._rotFactor.x;
+		this._invInertia01 *= this._rotFactor.x;
+		this._invInertia02 *= this._rotFactor.x;
+		this._invInertia10 *= this._rotFactor.y;
+		this._invInertia11 *= this._rotFactor.y;
+		this._invInertia12 *= this._rotFactor.y;
+		this._invInertia20 *= this._rotFactor.z;
+		this._invInertia21 *= this._rotFactor.z;
+		this._invInertia22 *= this._rotFactor.z;
+		let dst = this._ptransform;
+		let src = this._transform;
+		dst._positionX = src._positionX;
+		dst._positionY = src._positionY;
+		dst._positionZ = src._positionZ;
+		dst._rotation00 = src._rotation00;
+		dst._rotation01 = src._rotation01;
+		dst._rotation02 = src._rotation02;
+		dst._rotation10 = src._rotation10;
+		dst._rotation11 = src._rotation11;
+		dst._rotation12 = src._rotation12;
+		dst._rotation20 = src._rotation20;
+		dst._rotation21 = src._rotation21;
+		dst._rotation22 = src._rotation22;
+		let s = this._shapeList;
+		while(s != null) {
+			let n = s._next;
+			let tf1 = this._ptransform;
+			let tf2 = this._transform;
+			let dst = s._ptransform;
+			let src1 = s._localTransform;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+			__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+			__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+			__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+			__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+			__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+			__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+			__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+			__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+			dst._rotation00 = __tmp__00;
+			dst._rotation01 = __tmp__01;
+			dst._rotation02 = __tmp__02;
+			dst._rotation10 = __tmp__10;
+			dst._rotation11 = __tmp__11;
+			dst._rotation12 = __tmp__12;
+			dst._rotation20 = __tmp__20;
+			dst._rotation21 = __tmp__21;
+			dst._rotation22 = __tmp__22;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+			__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+			__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+			dst._positionX = __tmp__X;
+			dst._positionY = __tmp__Y;
+			dst._positionZ = __tmp__Z;
+			dst._positionX += tf1._positionX;
+			dst._positionY += tf1._positionY;
+			dst._positionZ += tf1._positionZ;
+			let dst1 = s._transform;
+			let src11 = s._localTransform;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+			__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+			__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+			__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+			__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+			__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+			__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+			__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+			__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+			dst1._rotation00 = __tmp__001;
+			dst1._rotation01 = __tmp__011;
+			dst1._rotation02 = __tmp__021;
+			dst1._rotation10 = __tmp__101;
+			dst1._rotation11 = __tmp__111;
+			dst1._rotation12 = __tmp__121;
+			dst1._rotation20 = __tmp__201;
+			dst1._rotation21 = __tmp__211;
+			dst1._rotation22 = __tmp__221;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+			__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+			__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+			dst1._positionX = __tmp__X1;
+			dst1._positionY = __tmp__Y1;
+			dst1._positionZ = __tmp__Z1;
+			dst1._positionX += tf2._positionX;
+			dst1._positionY += tf2._positionY;
+			dst1._positionZ += tf2._positionZ;
+			let minX;
+			let minY;
+			let minZ;
+			let maxX;
+			let maxY;
+			let maxZ;
+			s._geom._computeAabb(s._aabb,s._ptransform);
+			minX = s._aabb._minX;
+			minY = s._aabb._minY;
+			minZ = s._aabb._minZ;
+			maxX = s._aabb._maxX;
+			maxY = s._aabb._maxY;
+			maxZ = s._aabb._maxZ;
+			s._geom._computeAabb(s._aabb,s._transform);
+			s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+			s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+			s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+			s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+			s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+			s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+			if(s._proxy != null) {
+				let dX;
+				let dY;
+				let dZ;
+				dX = s._transform._positionX - s._ptransform._positionX;
+				dY = s._transform._positionY - s._ptransform._positionY;
+				dZ = s._transform._positionZ - s._ptransform._positionZ;
+				let v = s.displacement;
+				v.x = dX;
+				v.y = dY;
+				v.z = dZ;
+				s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+			}
+			s = n;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	getOrientation() {
+		let q = new oimo.common.Quat();
+		let iqX;
+		let iqY;
+		let iqZ;
+		let iqW;
+		let e00 = this._transform._rotation00;
+		let e11 = this._transform._rotation11;
+		let e22 = this._transform._rotation22;
+		let t = e00 + e11 + e22;
+		let s;
+		if(t > 0) {
+			s = Math.sqrt(t + 1);
+			iqW = 0.5 * s;
+			s = 0.5 / s;
+			iqX = (this._transform._rotation21 - this._transform._rotation12) * s;
+			iqY = (this._transform._rotation02 - this._transform._rotation20) * s;
+			iqZ = (this._transform._rotation10 - this._transform._rotation01) * s;
+		} else if(e00 > e11) {
+			if(e00 > e22) {
+				s = Math.sqrt(e00 - e11 - e22 + 1);
+				iqX = 0.5 * s;
+				s = 0.5 / s;
+				iqY = (this._transform._rotation01 + this._transform._rotation10) * s;
+				iqZ = (this._transform._rotation02 + this._transform._rotation20) * s;
+				iqW = (this._transform._rotation21 - this._transform._rotation12) * s;
+			} else {
+				s = Math.sqrt(e22 - e00 - e11 + 1);
+				iqZ = 0.5 * s;
+				s = 0.5 / s;
+				iqX = (this._transform._rotation02 + this._transform._rotation20) * s;
+				iqY = (this._transform._rotation12 + this._transform._rotation21) * s;
+				iqW = (this._transform._rotation10 - this._transform._rotation01) * s;
+			}
+		} else if(e11 > e22) {
+			s = Math.sqrt(e11 - e22 - e00 + 1);
+			iqY = 0.5 * s;
+			s = 0.5 / s;
+			iqX = (this._transform._rotation01 + this._transform._rotation10) * s;
+			iqZ = (this._transform._rotation12 + this._transform._rotation21) * s;
+			iqW = (this._transform._rotation02 - this._transform._rotation20) * s;
+		} else {
+			s = Math.sqrt(e22 - e00 - e11 + 1);
+			iqZ = 0.5 * s;
+			s = 0.5 / s;
+			iqX = (this._transform._rotation02 + this._transform._rotation20) * s;
+			iqY = (this._transform._rotation12 + this._transform._rotation21) * s;
+			iqW = (this._transform._rotation10 - this._transform._rotation01) * s;
+		}
+		q.x = iqX;
+		q.y = iqY;
+		q.z = iqZ;
+		q.w = iqW;
+		return q;
+	}
+	getOrientationTo(orientation) {
+		let iqX;
+		let iqY;
+		let iqZ;
+		let iqW;
+		let e00 = this._transform._rotation00;
+		let e11 = this._transform._rotation11;
+		let e22 = this._transform._rotation22;
+		let t = e00 + e11 + e22;
+		let s;
+		if(t > 0) {
+			s = Math.sqrt(t + 1);
+			iqW = 0.5 * s;
+			s = 0.5 / s;
+			iqX = (this._transform._rotation21 - this._transform._rotation12) * s;
+			iqY = (this._transform._rotation02 - this._transform._rotation20) * s;
+			iqZ = (this._transform._rotation10 - this._transform._rotation01) * s;
+		} else if(e00 > e11) {
+			if(e00 > e22) {
+				s = Math.sqrt(e00 - e11 - e22 + 1);
+				iqX = 0.5 * s;
+				s = 0.5 / s;
+				iqY = (this._transform._rotation01 + this._transform._rotation10) * s;
+				iqZ = (this._transform._rotation02 + this._transform._rotation20) * s;
+				iqW = (this._transform._rotation21 - this._transform._rotation12) * s;
+			} else {
+				s = Math.sqrt(e22 - e00 - e11 + 1);
+				iqZ = 0.5 * s;
+				s = 0.5 / s;
+				iqX = (this._transform._rotation02 + this._transform._rotation20) * s;
+				iqY = (this._transform._rotation12 + this._transform._rotation21) * s;
+				iqW = (this._transform._rotation10 - this._transform._rotation01) * s;
+			}
+		} else if(e11 > e22) {
+			s = Math.sqrt(e11 - e22 - e00 + 1);
+			iqY = 0.5 * s;
+			s = 0.5 / s;
+			iqX = (this._transform._rotation01 + this._transform._rotation10) * s;
+			iqZ = (this._transform._rotation12 + this._transform._rotation21) * s;
+			iqW = (this._transform._rotation02 - this._transform._rotation20) * s;
+		} else {
+			s = Math.sqrt(e22 - e00 - e11 + 1);
+			iqZ = 0.5 * s;
+			s = 0.5 / s;
+			iqX = (this._transform._rotation02 + this._transform._rotation20) * s;
+			iqY = (this._transform._rotation12 + this._transform._rotation21) * s;
+			iqW = (this._transform._rotation10 - this._transform._rotation01) * s;
+		}
+		orientation.x = iqX;
+		orientation.y = iqY;
+		orientation.z = iqZ;
+		orientation.w = iqW;
+	}
+	setOrientation(quaternion) {
+		let qX;
+		let qY;
+		let qZ;
+		let qW;
+		qX = quaternion.x;
+		qY = quaternion.y;
+		qZ = quaternion.z;
+		qW = quaternion.w;
+		let x = qX;
+		let y = qY;
+		let z = qZ;
+		let w = qW;
+		let x2 = 2 * x;
+		let y2 = 2 * y;
+		let z2 = 2 * z;
+		let xx = x * x2;
+		let yy = y * y2;
+		let zz = z * z2;
+		let xy = x * y2;
+		let yz = y * z2;
+		let xz = x * z2;
+		let wx = w * x2;
+		let wy = w * y2;
+		let wz = w * z2;
+		this._transform._rotation00 = 1 - yy - zz;
+		this._transform._rotation01 = xy - wz;
+		this._transform._rotation02 = xz + wy;
+		this._transform._rotation10 = xy + wz;
+		this._transform._rotation11 = 1 - xx - zz;
+		this._transform._rotation12 = yz - wx;
+		this._transform._rotation20 = xz - wy;
+		this._transform._rotation21 = yz + wx;
+		this._transform._rotation22 = 1 - xx - yy;
+		let __tmp__00;
+		let __tmp__01;
+		let __tmp__02;
+		let __tmp__10;
+		let __tmp__11;
+		let __tmp__12;
+		let __tmp__20;
+		let __tmp__21;
+		let __tmp__22;
+		__tmp__00 = this._transform._rotation00 * this._invLocalInertia00 + this._transform._rotation01 * this._invLocalInertia10 + this._transform._rotation02 * this._invLocalInertia20;
+		__tmp__01 = this._transform._rotation00 * this._invLocalInertia01 + this._transform._rotation01 * this._invLocalInertia11 + this._transform._rotation02 * this._invLocalInertia21;
+		__tmp__02 = this._transform._rotation00 * this._invLocalInertia02 + this._transform._rotation01 * this._invLocalInertia12 + this._transform._rotation02 * this._invLocalInertia22;
+		__tmp__10 = this._transform._rotation10 * this._invLocalInertia00 + this._transform._rotation11 * this._invLocalInertia10 + this._transform._rotation12 * this._invLocalInertia20;
+		__tmp__11 = this._transform._rotation10 * this._invLocalInertia01 + this._transform._rotation11 * this._invLocalInertia11 + this._transform._rotation12 * this._invLocalInertia21;
+		__tmp__12 = this._transform._rotation10 * this._invLocalInertia02 + this._transform._rotation11 * this._invLocalInertia12 + this._transform._rotation12 * this._invLocalInertia22;
+		__tmp__20 = this._transform._rotation20 * this._invLocalInertia00 + this._transform._rotation21 * this._invLocalInertia10 + this._transform._rotation22 * this._invLocalInertia20;
+		__tmp__21 = this._transform._rotation20 * this._invLocalInertia01 + this._transform._rotation21 * this._invLocalInertia11 + this._transform._rotation22 * this._invLocalInertia21;
+		__tmp__22 = this._transform._rotation20 * this._invLocalInertia02 + this._transform._rotation21 * this._invLocalInertia12 + this._transform._rotation22 * this._invLocalInertia22;
+		this._invInertia00 = __tmp__00;
+		this._invInertia01 = __tmp__01;
+		this._invInertia02 = __tmp__02;
+		this._invInertia10 = __tmp__10;
+		this._invInertia11 = __tmp__11;
+		this._invInertia12 = __tmp__12;
+		this._invInertia20 = __tmp__20;
+		this._invInertia21 = __tmp__21;
+		this._invInertia22 = __tmp__22;
+		let __tmp__001;
+		let __tmp__011;
+		let __tmp__021;
+		let __tmp__101;
+		let __tmp__111;
+		let __tmp__121;
+		let __tmp__201;
+		let __tmp__211;
+		let __tmp__221;
+		__tmp__001 = this._invInertia00 * this._transform._rotation00 + this._invInertia01 * this._transform._rotation01 + this._invInertia02 * this._transform._rotation02;
+		__tmp__011 = this._invInertia00 * this._transform._rotation10 + this._invInertia01 * this._transform._rotation11 + this._invInertia02 * this._transform._rotation12;
+		__tmp__021 = this._invInertia00 * this._transform._rotation20 + this._invInertia01 * this._transform._rotation21 + this._invInertia02 * this._transform._rotation22;
+		__tmp__101 = this._invInertia10 * this._transform._rotation00 + this._invInertia11 * this._transform._rotation01 + this._invInertia12 * this._transform._rotation02;
+		__tmp__111 = this._invInertia10 * this._transform._rotation10 + this._invInertia11 * this._transform._rotation11 + this._invInertia12 * this._transform._rotation12;
+		__tmp__121 = this._invInertia10 * this._transform._rotation20 + this._invInertia11 * this._transform._rotation21 + this._invInertia12 * this._transform._rotation22;
+		__tmp__201 = this._invInertia20 * this._transform._rotation00 + this._invInertia21 * this._transform._rotation01 + this._invInertia22 * this._transform._rotation02;
+		__tmp__211 = this._invInertia20 * this._transform._rotation10 + this._invInertia21 * this._transform._rotation11 + this._invInertia22 * this._transform._rotation12;
+		__tmp__221 = this._invInertia20 * this._transform._rotation20 + this._invInertia21 * this._transform._rotation21 + this._invInertia22 * this._transform._rotation22;
+		this._invInertia00 = __tmp__001;
+		this._invInertia01 = __tmp__011;
+		this._invInertia02 = __tmp__021;
+		this._invInertia10 = __tmp__101;
+		this._invInertia11 = __tmp__111;
+		this._invInertia12 = __tmp__121;
+		this._invInertia20 = __tmp__201;
+		this._invInertia21 = __tmp__211;
+		this._invInertia22 = __tmp__221;
+		this._invInertia00 *= this._rotFactor.x;
+		this._invInertia01 *= this._rotFactor.x;
+		this._invInertia02 *= this._rotFactor.x;
+		this._invInertia10 *= this._rotFactor.y;
+		this._invInertia11 *= this._rotFactor.y;
+		this._invInertia12 *= this._rotFactor.y;
+		this._invInertia20 *= this._rotFactor.z;
+		this._invInertia21 *= this._rotFactor.z;
+		this._invInertia22 *= this._rotFactor.z;
+		let dst = this._ptransform;
+		let src = this._transform;
+		dst._positionX = src._positionX;
+		dst._positionY = src._positionY;
+		dst._positionZ = src._positionZ;
+		dst._rotation00 = src._rotation00;
+		dst._rotation01 = src._rotation01;
+		dst._rotation02 = src._rotation02;
+		dst._rotation10 = src._rotation10;
+		dst._rotation11 = src._rotation11;
+		dst._rotation12 = src._rotation12;
+		dst._rotation20 = src._rotation20;
+		dst._rotation21 = src._rotation21;
+		dst._rotation22 = src._rotation22;
+		let s = this._shapeList;
+		while(s != null) {
+			let n = s._next;
+			let tf1 = this._ptransform;
+			let tf2 = this._transform;
+			let dst = s._ptransform;
+			let src1 = s._localTransform;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+			__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+			__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+			__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+			__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+			__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+			__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+			__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+			__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+			dst._rotation00 = __tmp__00;
+			dst._rotation01 = __tmp__01;
+			dst._rotation02 = __tmp__02;
+			dst._rotation10 = __tmp__10;
+			dst._rotation11 = __tmp__11;
+			dst._rotation12 = __tmp__12;
+			dst._rotation20 = __tmp__20;
+			dst._rotation21 = __tmp__21;
+			dst._rotation22 = __tmp__22;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+			__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+			__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+			dst._positionX = __tmp__X;
+			dst._positionY = __tmp__Y;
+			dst._positionZ = __tmp__Z;
+			dst._positionX += tf1._positionX;
+			dst._positionY += tf1._positionY;
+			dst._positionZ += tf1._positionZ;
+			let dst1 = s._transform;
+			let src11 = s._localTransform;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+			__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+			__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+			__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+			__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+			__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+			__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+			__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+			__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+			dst1._rotation00 = __tmp__001;
+			dst1._rotation01 = __tmp__011;
+			dst1._rotation02 = __tmp__021;
+			dst1._rotation10 = __tmp__101;
+			dst1._rotation11 = __tmp__111;
+			dst1._rotation12 = __tmp__121;
+			dst1._rotation20 = __tmp__201;
+			dst1._rotation21 = __tmp__211;
+			dst1._rotation22 = __tmp__221;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+			__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+			__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+			dst1._positionX = __tmp__X1;
+			dst1._positionY = __tmp__Y1;
+			dst1._positionZ = __tmp__Z1;
+			dst1._positionX += tf2._positionX;
+			dst1._positionY += tf2._positionY;
+			dst1._positionZ += tf2._positionZ;
+			let minX;
+			let minY;
+			let minZ;
+			let maxX;
+			let maxY;
+			let maxZ;
+			s._geom._computeAabb(s._aabb,s._ptransform);
+			minX = s._aabb._minX;
+			minY = s._aabb._minY;
+			minZ = s._aabb._minZ;
+			maxX = s._aabb._maxX;
+			maxY = s._aabb._maxY;
+			maxZ = s._aabb._maxZ;
+			s._geom._computeAabb(s._aabb,s._transform);
+			s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+			s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+			s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+			s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+			s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+			s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+			if(s._proxy != null) {
+				let dX;
+				let dY;
+				let dZ;
+				dX = s._transform._positionX - s._ptransform._positionX;
+				dY = s._transform._positionY - s._ptransform._positionY;
+				dZ = s._transform._positionZ - s._ptransform._positionZ;
+				let v = s.displacement;
+				v.x = dX;
+				v.y = dY;
+				v.z = dZ;
+				s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+			}
+			s = n;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	getTransform() {
+		let _this = this._transform;
+		let tf = new oimo.common.Transform();
+		tf._positionX = _this._positionX;
+		tf._positionY = _this._positionY;
+		tf._positionZ = _this._positionZ;
+		tf._rotation00 = _this._rotation00;
+		tf._rotation01 = _this._rotation01;
+		tf._rotation02 = _this._rotation02;
+		tf._rotation10 = _this._rotation10;
+		tf._rotation11 = _this._rotation11;
+		tf._rotation12 = _this._rotation12;
+		tf._rotation20 = _this._rotation20;
+		tf._rotation21 = _this._rotation21;
+		tf._rotation22 = _this._rotation22;
+		return tf;
+	}
+	getTransformTo(transform) {
+		let transform1 = this._transform;
+		transform._positionX = transform1._positionX;
+		transform._positionY = transform1._positionY;
+		transform._positionZ = transform1._positionZ;
+		transform._rotation00 = transform1._rotation00;
+		transform._rotation01 = transform1._rotation01;
+		transform._rotation02 = transform1._rotation02;
+		transform._rotation10 = transform1._rotation10;
+		transform._rotation11 = transform1._rotation11;
+		transform._rotation12 = transform1._rotation12;
+		transform._rotation20 = transform1._rotation20;
+		transform._rotation21 = transform1._rotation21;
+		transform._rotation22 = transform1._rotation22;
+	}
+	setTransform(transform) {
+		this._transform._positionX = transform._positionX;
+		this._transform._positionY = transform._positionY;
+		this._transform._positionZ = transform._positionZ;
+		this._transform._rotation00 = transform._rotation00;
+		this._transform._rotation01 = transform._rotation01;
+		this._transform._rotation02 = transform._rotation02;
+		this._transform._rotation10 = transform._rotation10;
+		this._transform._rotation11 = transform._rotation11;
+		this._transform._rotation12 = transform._rotation12;
+		this._transform._rotation20 = transform._rotation20;
+		this._transform._rotation21 = transform._rotation21;
+		this._transform._rotation22 = transform._rotation22;
+		let __tmp__00;
+		let __tmp__01;
+		let __tmp__02;
+		let __tmp__10;
+		let __tmp__11;
+		let __tmp__12;
+		let __tmp__20;
+		let __tmp__21;
+		let __tmp__22;
+		__tmp__00 = this._transform._rotation00 * this._invLocalInertia00 + this._transform._rotation01 * this._invLocalInertia10 + this._transform._rotation02 * this._invLocalInertia20;
+		__tmp__01 = this._transform._rotation00 * this._invLocalInertia01 + this._transform._rotation01 * this._invLocalInertia11 + this._transform._rotation02 * this._invLocalInertia21;
+		__tmp__02 = this._transform._rotation00 * this._invLocalInertia02 + this._transform._rotation01 * this._invLocalInertia12 + this._transform._rotation02 * this._invLocalInertia22;
+		__tmp__10 = this._transform._rotation10 * this._invLocalInertia00 + this._transform._rotation11 * this._invLocalInertia10 + this._transform._rotation12 * this._invLocalInertia20;
+		__tmp__11 = this._transform._rotation10 * this._invLocalInertia01 + this._transform._rotation11 * this._invLocalInertia11 + this._transform._rotation12 * this._invLocalInertia21;
+		__tmp__12 = this._transform._rotation10 * this._invLocalInertia02 + this._transform._rotation11 * this._invLocalInertia12 + this._transform._rotation12 * this._invLocalInertia22;
+		__tmp__20 = this._transform._rotation20 * this._invLocalInertia00 + this._transform._rotation21 * this._invLocalInertia10 + this._transform._rotation22 * this._invLocalInertia20;
+		__tmp__21 = this._transform._rotation20 * this._invLocalInertia01 + this._transform._rotation21 * this._invLocalInertia11 + this._transform._rotation22 * this._invLocalInertia21;
+		__tmp__22 = this._transform._rotation20 * this._invLocalInertia02 + this._transform._rotation21 * this._invLocalInertia12 + this._transform._rotation22 * this._invLocalInertia22;
+		this._invInertia00 = __tmp__00;
+		this._invInertia01 = __tmp__01;
+		this._invInertia02 = __tmp__02;
+		this._invInertia10 = __tmp__10;
+		this._invInertia11 = __tmp__11;
+		this._invInertia12 = __tmp__12;
+		this._invInertia20 = __tmp__20;
+		this._invInertia21 = __tmp__21;
+		this._invInertia22 = __tmp__22;
+		let __tmp__001;
+		let __tmp__011;
+		let __tmp__021;
+		let __tmp__101;
+		let __tmp__111;
+		let __tmp__121;
+		let __tmp__201;
+		let __tmp__211;
+		let __tmp__221;
+		__tmp__001 = this._invInertia00 * this._transform._rotation00 + this._invInertia01 * this._transform._rotation01 + this._invInertia02 * this._transform._rotation02;
+		__tmp__011 = this._invInertia00 * this._transform._rotation10 + this._invInertia01 * this._transform._rotation11 + this._invInertia02 * this._transform._rotation12;
+		__tmp__021 = this._invInertia00 * this._transform._rotation20 + this._invInertia01 * this._transform._rotation21 + this._invInertia02 * this._transform._rotation22;
+		__tmp__101 = this._invInertia10 * this._transform._rotation00 + this._invInertia11 * this._transform._rotation01 + this._invInertia12 * this._transform._rotation02;
+		__tmp__111 = this._invInertia10 * this._transform._rotation10 + this._invInertia11 * this._transform._rotation11 + this._invInertia12 * this._transform._rotation12;
+		__tmp__121 = this._invInertia10 * this._transform._rotation20 + this._invInertia11 * this._transform._rotation21 + this._invInertia12 * this._transform._rotation22;
+		__tmp__201 = this._invInertia20 * this._transform._rotation00 + this._invInertia21 * this._transform._rotation01 + this._invInertia22 * this._transform._rotation02;
+		__tmp__211 = this._invInertia20 * this._transform._rotation10 + this._invInertia21 * this._transform._rotation11 + this._invInertia22 * this._transform._rotation12;
+		__tmp__221 = this._invInertia20 * this._transform._rotation20 + this._invInertia21 * this._transform._rotation21 + this._invInertia22 * this._transform._rotation22;
+		this._invInertia00 = __tmp__001;
+		this._invInertia01 = __tmp__011;
+		this._invInertia02 = __tmp__021;
+		this._invInertia10 = __tmp__101;
+		this._invInertia11 = __tmp__111;
+		this._invInertia12 = __tmp__121;
+		this._invInertia20 = __tmp__201;
+		this._invInertia21 = __tmp__211;
+		this._invInertia22 = __tmp__221;
+		this._invInertia00 *= this._rotFactor.x;
+		this._invInertia01 *= this._rotFactor.x;
+		this._invInertia02 *= this._rotFactor.x;
+		this._invInertia10 *= this._rotFactor.y;
+		this._invInertia11 *= this._rotFactor.y;
+		this._invInertia12 *= this._rotFactor.y;
+		this._invInertia20 *= this._rotFactor.z;
+		this._invInertia21 *= this._rotFactor.z;
+		this._invInertia22 *= this._rotFactor.z;
+		let dst = this._ptransform;
+		let src = this._transform;
+		dst._positionX = src._positionX;
+		dst._positionY = src._positionY;
+		dst._positionZ = src._positionZ;
+		dst._rotation00 = src._rotation00;
+		dst._rotation01 = src._rotation01;
+		dst._rotation02 = src._rotation02;
+		dst._rotation10 = src._rotation10;
+		dst._rotation11 = src._rotation11;
+		dst._rotation12 = src._rotation12;
+		dst._rotation20 = src._rotation20;
+		dst._rotation21 = src._rotation21;
+		dst._rotation22 = src._rotation22;
+		let s = this._shapeList;
+		while(s != null) {
+			let n = s._next;
+			let tf1 = this._ptransform;
+			let tf2 = this._transform;
+			let dst = s._ptransform;
+			let src1 = s._localTransform;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+			__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+			__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+			__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+			__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+			__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+			__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+			__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+			__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+			dst._rotation00 = __tmp__00;
+			dst._rotation01 = __tmp__01;
+			dst._rotation02 = __tmp__02;
+			dst._rotation10 = __tmp__10;
+			dst._rotation11 = __tmp__11;
+			dst._rotation12 = __tmp__12;
+			dst._rotation20 = __tmp__20;
+			dst._rotation21 = __tmp__21;
+			dst._rotation22 = __tmp__22;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+			__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+			__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+			dst._positionX = __tmp__X;
+			dst._positionY = __tmp__Y;
+			dst._positionZ = __tmp__Z;
+			dst._positionX += tf1._positionX;
+			dst._positionY += tf1._positionY;
+			dst._positionZ += tf1._positionZ;
+			let dst1 = s._transform;
+			let src11 = s._localTransform;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+			__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+			__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+			__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+			__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+			__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+			__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+			__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+			__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+			dst1._rotation00 = __tmp__001;
+			dst1._rotation01 = __tmp__011;
+			dst1._rotation02 = __tmp__021;
+			dst1._rotation10 = __tmp__101;
+			dst1._rotation11 = __tmp__111;
+			dst1._rotation12 = __tmp__121;
+			dst1._rotation20 = __tmp__201;
+			dst1._rotation21 = __tmp__211;
+			dst1._rotation22 = __tmp__221;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+			__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+			__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+			dst1._positionX = __tmp__X1;
+			dst1._positionY = __tmp__Y1;
+			dst1._positionZ = __tmp__Z1;
+			dst1._positionX += tf2._positionX;
+			dst1._positionY += tf2._positionY;
+			dst1._positionZ += tf2._positionZ;
+			let minX;
+			let minY;
+			let minZ;
+			let maxX;
+			let maxY;
+			let maxZ;
+			s._geom._computeAabb(s._aabb,s._ptransform);
+			minX = s._aabb._minX;
+			minY = s._aabb._minY;
+			minZ = s._aabb._minZ;
+			maxX = s._aabb._maxX;
+			maxY = s._aabb._maxY;
+			maxZ = s._aabb._maxZ;
+			s._geom._computeAabb(s._aabb,s._transform);
+			s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+			s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+			s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+			s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+			s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+			s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+			if(s._proxy != null) {
+				let dX;
+				let dY;
+				let dZ;
+				dX = s._transform._positionX - s._ptransform._positionX;
+				dY = s._transform._positionY - s._ptransform._positionY;
+				dZ = s._transform._positionZ - s._ptransform._positionZ;
+				let v = s.displacement;
+				v.x = dX;
+				v.y = dY;
+				v.z = dZ;
+				s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+			}
+			s = n;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	getMass() {
+		return this._mass;
+	}
+	getLocalInertia() {
+		let m = new oimo.common.Mat3();
+		m.e00 = this._localInertia00;
+		m.e01 = this._localInertia01;
+		m.e02 = this._localInertia02;
+		m.e10 = this._localInertia10;
+		m.e11 = this._localInertia11;
+		m.e12 = this._localInertia12;
+		m.e20 = this._localInertia20;
+		m.e21 = this._localInertia21;
+		m.e22 = this._localInertia22;
+		return m;
+	}
+	getLocalInertiaTo(inertia) {
+		inertia.e00 = this._localInertia00;
+		inertia.e01 = this._localInertia01;
+		inertia.e02 = this._localInertia02;
+		inertia.e10 = this._localInertia10;
+		inertia.e11 = this._localInertia11;
+		inertia.e12 = this._localInertia12;
+		inertia.e20 = this._localInertia20;
+		inertia.e21 = this._localInertia21;
+		inertia.e22 = this._localInertia22;
+	}
+	getMassData() {
+		let md = new oimo.dynamics.rigidbody.MassData();
+		md.mass = this._mass;
+		let m = md.localInertia;
+		m.e00 = this._localInertia00;
+		m.e01 = this._localInertia01;
+		m.e02 = this._localInertia02;
+		m.e10 = this._localInertia10;
+		m.e11 = this._localInertia11;
+		m.e12 = this._localInertia12;
+		m.e20 = this._localInertia20;
+		m.e21 = this._localInertia21;
+		m.e22 = this._localInertia22;
+		return md;
+	}
+	getMassDataTo(massData) {
+		massData.mass = this._mass;
+		let m = massData.localInertia;
+		m.e00 = this._localInertia00;
+		m.e01 = this._localInertia01;
+		m.e02 = this._localInertia02;
+		m.e10 = this._localInertia10;
+		m.e11 = this._localInertia11;
+		m.e12 = this._localInertia12;
+		m.e20 = this._localInertia20;
+		m.e21 = this._localInertia21;
+		m.e22 = this._localInertia22;
+	}
+	setMassData(massData) {
+		this._mass = massData.mass;
+		let m = massData.localInertia;
+		this._localInertia00 = m.e00;
+		this._localInertia01 = m.e01;
+		this._localInertia02 = m.e02;
+		this._localInertia10 = m.e10;
+		this._localInertia11 = m.e11;
+		this._localInertia12 = m.e12;
+		this._localInertia20 = m.e20;
+		this._localInertia21 = m.e21;
+		this._localInertia22 = m.e22;
+		if(this._mass > 0 && this._localInertia00 * (this._localInertia11 * this._localInertia22 - this._localInertia12 * this._localInertia21) - this._localInertia01 * (this._localInertia10 * this._localInertia22 - this._localInertia12 * this._localInertia20) + this._localInertia02 * (this._localInertia10 * this._localInertia21 - this._localInertia11 * this._localInertia20) > 0 && this._type == 0) {
+			this._invMass = 1 / this._mass;
+			let d00 = this._localInertia11 * this._localInertia22 - this._localInertia12 * this._localInertia21;
+			let d01 = this._localInertia10 * this._localInertia22 - this._localInertia12 * this._localInertia20;
+			let d02 = this._localInertia10 * this._localInertia21 - this._localInertia11 * this._localInertia20;
+			let d = this._localInertia00 * d00 - this._localInertia01 * d01 + this._localInertia02 * d02;
+			if(d < -1e-32 || d > 1e-32) {
+				d = 1 / d;
+			}
+			this._invLocalInertia00 = d00 * d;
+			this._invLocalInertia01 = -(this._localInertia01 * this._localInertia22 - this._localInertia02 * this._localInertia21) * d;
+			this._invLocalInertia02 = (this._localInertia01 * this._localInertia12 - this._localInertia02 * this._localInertia11) * d;
+			this._invLocalInertia10 = -d01 * d;
+			this._invLocalInertia11 = (this._localInertia00 * this._localInertia22 - this._localInertia02 * this._localInertia20) * d;
+			this._invLocalInertia12 = -(this._localInertia00 * this._localInertia12 - this._localInertia02 * this._localInertia10) * d;
+			this._invLocalInertia20 = d02 * d;
+			this._invLocalInertia21 = -(this._localInertia00 * this._localInertia21 - this._localInertia01 * this._localInertia20) * d;
+			this._invLocalInertia22 = (this._localInertia00 * this._localInertia11 - this._localInertia01 * this._localInertia10) * d;
+			this._invLocalInertiaWithoutRotFactor00 = this._invLocalInertia00;
+			this._invLocalInertiaWithoutRotFactor01 = this._invLocalInertia01;
+			this._invLocalInertiaWithoutRotFactor02 = this._invLocalInertia02;
+			this._invLocalInertiaWithoutRotFactor10 = this._invLocalInertia10;
+			this._invLocalInertiaWithoutRotFactor11 = this._invLocalInertia11;
+			this._invLocalInertiaWithoutRotFactor12 = this._invLocalInertia12;
+			this._invLocalInertiaWithoutRotFactor20 = this._invLocalInertia20;
+			this._invLocalInertiaWithoutRotFactor21 = this._invLocalInertia21;
+			this._invLocalInertiaWithoutRotFactor22 = this._invLocalInertia22;
+			this._invLocalInertia00 = this._invLocalInertiaWithoutRotFactor00 * this._rotFactor.x;
+			this._invLocalInertia01 = this._invLocalInertiaWithoutRotFactor01 * this._rotFactor.x;
+			this._invLocalInertia02 = this._invLocalInertiaWithoutRotFactor02 * this._rotFactor.x;
+			this._invLocalInertia10 = this._invLocalInertiaWithoutRotFactor10 * this._rotFactor.y;
+			this._invLocalInertia11 = this._invLocalInertiaWithoutRotFactor11 * this._rotFactor.y;
+			this._invLocalInertia12 = this._invLocalInertiaWithoutRotFactor12 * this._rotFactor.y;
+			this._invLocalInertia20 = this._invLocalInertiaWithoutRotFactor20 * this._rotFactor.z;
+			this._invLocalInertia21 = this._invLocalInertiaWithoutRotFactor21 * this._rotFactor.z;
+			this._invLocalInertia22 = this._invLocalInertiaWithoutRotFactor22 * this._rotFactor.z;
+		} else {
+			this._invMass = 0;
+			this._invLocalInertia00 = 0;
+			this._invLocalInertia01 = 0;
+			this._invLocalInertia02 = 0;
+			this._invLocalInertia10 = 0;
+			this._invLocalInertia11 = 0;
+			this._invLocalInertia12 = 0;
+			this._invLocalInertia20 = 0;
+			this._invLocalInertia21 = 0;
+			this._invLocalInertia22 = 0;
+			this._invLocalInertiaWithoutRotFactor00 = 0;
+			this._invLocalInertiaWithoutRotFactor01 = 0;
+			this._invLocalInertiaWithoutRotFactor02 = 0;
+			this._invLocalInertiaWithoutRotFactor10 = 0;
+			this._invLocalInertiaWithoutRotFactor11 = 0;
+			this._invLocalInertiaWithoutRotFactor12 = 0;
+			this._invLocalInertiaWithoutRotFactor20 = 0;
+			this._invLocalInertiaWithoutRotFactor21 = 0;
+			this._invLocalInertiaWithoutRotFactor22 = 0;
+			if(this._type == 0) {
+				this._type = 1;
+			}
+		}
+		let __tmp__00;
+		let __tmp__01;
+		let __tmp__02;
+		let __tmp__10;
+		let __tmp__11;
+		let __tmp__12;
+		let __tmp__20;
+		let __tmp__21;
+		let __tmp__22;
+		__tmp__00 = this._transform._rotation00 * this._invLocalInertia00 + this._transform._rotation01 * this._invLocalInertia10 + this._transform._rotation02 * this._invLocalInertia20;
+		__tmp__01 = this._transform._rotation00 * this._invLocalInertia01 + this._transform._rotation01 * this._invLocalInertia11 + this._transform._rotation02 * this._invLocalInertia21;
+		__tmp__02 = this._transform._rotation00 * this._invLocalInertia02 + this._transform._rotation01 * this._invLocalInertia12 + this._transform._rotation02 * this._invLocalInertia22;
+		__tmp__10 = this._transform._rotation10 * this._invLocalInertia00 + this._transform._rotation11 * this._invLocalInertia10 + this._transform._rotation12 * this._invLocalInertia20;
+		__tmp__11 = this._transform._rotation10 * this._invLocalInertia01 + this._transform._rotation11 * this._invLocalInertia11 + this._transform._rotation12 * this._invLocalInertia21;
+		__tmp__12 = this._transform._rotation10 * this._invLocalInertia02 + this._transform._rotation11 * this._invLocalInertia12 + this._transform._rotation12 * this._invLocalInertia22;
+		__tmp__20 = this._transform._rotation20 * this._invLocalInertia00 + this._transform._rotation21 * this._invLocalInertia10 + this._transform._rotation22 * this._invLocalInertia20;
+		__tmp__21 = this._transform._rotation20 * this._invLocalInertia01 + this._transform._rotation21 * this._invLocalInertia11 + this._transform._rotation22 * this._invLocalInertia21;
+		__tmp__22 = this._transform._rotation20 * this._invLocalInertia02 + this._transform._rotation21 * this._invLocalInertia12 + this._transform._rotation22 * this._invLocalInertia22;
+		this._invInertia00 = __tmp__00;
+		this._invInertia01 = __tmp__01;
+		this._invInertia02 = __tmp__02;
+		this._invInertia10 = __tmp__10;
+		this._invInertia11 = __tmp__11;
+		this._invInertia12 = __tmp__12;
+		this._invInertia20 = __tmp__20;
+		this._invInertia21 = __tmp__21;
+		this._invInertia22 = __tmp__22;
+		let __tmp__001;
+		let __tmp__011;
+		let __tmp__021;
+		let __tmp__101;
+		let __tmp__111;
+		let __tmp__121;
+		let __tmp__201;
+		let __tmp__211;
+		let __tmp__221;
+		__tmp__001 = this._invInertia00 * this._transform._rotation00 + this._invInertia01 * this._transform._rotation01 + this._invInertia02 * this._transform._rotation02;
+		__tmp__011 = this._invInertia00 * this._transform._rotation10 + this._invInertia01 * this._transform._rotation11 + this._invInertia02 * this._transform._rotation12;
+		__tmp__021 = this._invInertia00 * this._transform._rotation20 + this._invInertia01 * this._transform._rotation21 + this._invInertia02 * this._transform._rotation22;
+		__tmp__101 = this._invInertia10 * this._transform._rotation00 + this._invInertia11 * this._transform._rotation01 + this._invInertia12 * this._transform._rotation02;
+		__tmp__111 = this._invInertia10 * this._transform._rotation10 + this._invInertia11 * this._transform._rotation11 + this._invInertia12 * this._transform._rotation12;
+		__tmp__121 = this._invInertia10 * this._transform._rotation20 + this._invInertia11 * this._transform._rotation21 + this._invInertia12 * this._transform._rotation22;
+		__tmp__201 = this._invInertia20 * this._transform._rotation00 + this._invInertia21 * this._transform._rotation01 + this._invInertia22 * this._transform._rotation02;
+		__tmp__211 = this._invInertia20 * this._transform._rotation10 + this._invInertia21 * this._transform._rotation11 + this._invInertia22 * this._transform._rotation12;
+		__tmp__221 = this._invInertia20 * this._transform._rotation20 + this._invInertia21 * this._transform._rotation21 + this._invInertia22 * this._transform._rotation22;
+		this._invInertia00 = __tmp__001;
+		this._invInertia01 = __tmp__011;
+		this._invInertia02 = __tmp__021;
+		this._invInertia10 = __tmp__101;
+		this._invInertia11 = __tmp__111;
+		this._invInertia12 = __tmp__121;
+		this._invInertia20 = __tmp__201;
+		this._invInertia21 = __tmp__211;
+		this._invInertia22 = __tmp__221;
+		this._invInertia00 *= this._rotFactor.x;
+		this._invInertia01 *= this._rotFactor.x;
+		this._invInertia02 *= this._rotFactor.x;
+		this._invInertia10 *= this._rotFactor.y;
+		this._invInertia11 *= this._rotFactor.y;
+		this._invInertia12 *= this._rotFactor.y;
+		this._invInertia20 *= this._rotFactor.z;
+		this._invInertia21 *= this._rotFactor.z;
+		this._invInertia22 *= this._rotFactor.z;
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	getRotationFactor() {
+		let _this = this._rotFactor;
+		return new oimo.common.Vec3(_this.x,_this.y,_this.z);
+	}
+	setRotationFactor(rotationFactor) {
+		let _this = this._rotFactor;
+		_this.x = rotationFactor.x;
+		_this.y = rotationFactor.y;
+		_this.z = rotationFactor.z;
+		let __tmp__00;
+		let __tmp__01;
+		let __tmp__02;
+		let __tmp__10;
+		let __tmp__11;
+		let __tmp__12;
+		let __tmp__20;
+		let __tmp__21;
+		let __tmp__22;
+		__tmp__00 = this._transform._rotation00 * this._invLocalInertia00 + this._transform._rotation01 * this._invLocalInertia10 + this._transform._rotation02 * this._invLocalInertia20;
+		__tmp__01 = this._transform._rotation00 * this._invLocalInertia01 + this._transform._rotation01 * this._invLocalInertia11 + this._transform._rotation02 * this._invLocalInertia21;
+		__tmp__02 = this._transform._rotation00 * this._invLocalInertia02 + this._transform._rotation01 * this._invLocalInertia12 + this._transform._rotation02 * this._invLocalInertia22;
+		__tmp__10 = this._transform._rotation10 * this._invLocalInertia00 + this._transform._rotation11 * this._invLocalInertia10 + this._transform._rotation12 * this._invLocalInertia20;
+		__tmp__11 = this._transform._rotation10 * this._invLocalInertia01 + this._transform._rotation11 * this._invLocalInertia11 + this._transform._rotation12 * this._invLocalInertia21;
+		__tmp__12 = this._transform._rotation10 * this._invLocalInertia02 + this._transform._rotation11 * this._invLocalInertia12 + this._transform._rotation12 * this._invLocalInertia22;
+		__tmp__20 = this._transform._rotation20 * this._invLocalInertia00 + this._transform._rotation21 * this._invLocalInertia10 + this._transform._rotation22 * this._invLocalInertia20;
+		__tmp__21 = this._transform._rotation20 * this._invLocalInertia01 + this._transform._rotation21 * this._invLocalInertia11 + this._transform._rotation22 * this._invLocalInertia21;
+		__tmp__22 = this._transform._rotation20 * this._invLocalInertia02 + this._transform._rotation21 * this._invLocalInertia12 + this._transform._rotation22 * this._invLocalInertia22;
+		this._invInertia00 = __tmp__00;
+		this._invInertia01 = __tmp__01;
+		this._invInertia02 = __tmp__02;
+		this._invInertia10 = __tmp__10;
+		this._invInertia11 = __tmp__11;
+		this._invInertia12 = __tmp__12;
+		this._invInertia20 = __tmp__20;
+		this._invInertia21 = __tmp__21;
+		this._invInertia22 = __tmp__22;
+		let __tmp__001;
+		let __tmp__011;
+		let __tmp__021;
+		let __tmp__101;
+		let __tmp__111;
+		let __tmp__121;
+		let __tmp__201;
+		let __tmp__211;
+		let __tmp__221;
+		__tmp__001 = this._invInertia00 * this._transform._rotation00 + this._invInertia01 * this._transform._rotation01 + this._invInertia02 * this._transform._rotation02;
+		__tmp__011 = this._invInertia00 * this._transform._rotation10 + this._invInertia01 * this._transform._rotation11 + this._invInertia02 * this._transform._rotation12;
+		__tmp__021 = this._invInertia00 * this._transform._rotation20 + this._invInertia01 * this._transform._rotation21 + this._invInertia02 * this._transform._rotation22;
+		__tmp__101 = this._invInertia10 * this._transform._rotation00 + this._invInertia11 * this._transform._rotation01 + this._invInertia12 * this._transform._rotation02;
+		__tmp__111 = this._invInertia10 * this._transform._rotation10 + this._invInertia11 * this._transform._rotation11 + this._invInertia12 * this._transform._rotation12;
+		__tmp__121 = this._invInertia10 * this._transform._rotation20 + this._invInertia11 * this._transform._rotation21 + this._invInertia12 * this._transform._rotation22;
+		__tmp__201 = this._invInertia20 * this._transform._rotation00 + this._invInertia21 * this._transform._rotation01 + this._invInertia22 * this._transform._rotation02;
+		__tmp__211 = this._invInertia20 * this._transform._rotation10 + this._invInertia21 * this._transform._rotation11 + this._invInertia22 * this._transform._rotation12;
+		__tmp__221 = this._invInertia20 * this._transform._rotation20 + this._invInertia21 * this._transform._rotation21 + this._invInertia22 * this._transform._rotation22;
+		this._invInertia00 = __tmp__001;
+		this._invInertia01 = __tmp__011;
+		this._invInertia02 = __tmp__021;
+		this._invInertia10 = __tmp__101;
+		this._invInertia11 = __tmp__111;
+		this._invInertia12 = __tmp__121;
+		this._invInertia20 = __tmp__201;
+		this._invInertia21 = __tmp__211;
+		this._invInertia22 = __tmp__221;
+		this._invInertia00 *= this._rotFactor.x;
+		this._invInertia01 *= this._rotFactor.x;
+		this._invInertia02 *= this._rotFactor.x;
+		this._invInertia10 *= this._rotFactor.y;
+		this._invInertia11 *= this._rotFactor.y;
+		this._invInertia12 *= this._rotFactor.y;
+		this._invInertia20 *= this._rotFactor.z;
+		this._invInertia21 *= this._rotFactor.z;
+		this._invInertia22 *= this._rotFactor.z;
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	getLinearVelocity() {
+		let v = new oimo.common.Vec3();
+		v.x = this._velX;
+		v.y = this._velY;
+		v.z = this._velZ;
+		return v;
+	}
+	getLinearVelocityTo(linearVelocity) {
+		linearVelocity.x = this._velX;
+		linearVelocity.y = this._velY;
+		linearVelocity.z = this._velZ;
+	}
+	setLinearVelocity(linearVelocity) {
+		if(this._type == 1) {
+			this._velX = 0;
+			this._velY = 0;
+			this._velZ = 0;
+		} else {
+			this._velX = linearVelocity.x;
+			this._velY = linearVelocity.y;
+			this._velZ = linearVelocity.z;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	getAngularVelocity() {
+		let v = new oimo.common.Vec3();
+		v.x = this._angVelX;
+		v.y = this._angVelY;
+		v.z = this._angVelZ;
+		return v;
+	}
+	getAngularVelocityTo(angularVelocity) {
+		angularVelocity.x = this._velX;
+		angularVelocity.y = this._velY;
+		angularVelocity.z = this._velZ;
+	}
+	setAngularVelocity(angularVelocity) {
+		if(this._type == 1) {
+			this._angVelX = 0;
+			this._angVelY = 0;
+			this._angVelZ = 0;
+		} else {
+			this._angVelX = angularVelocity.x;
+			this._angVelY = angularVelocity.y;
+			this._angVelZ = angularVelocity.z;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	addLinearVelocity(linearVelocityChange) {
+		if(this._type != 1) {
+			let dX;
+			let dY;
+			let dZ;
+			dX = linearVelocityChange.x;
+			dY = linearVelocityChange.y;
+			dZ = linearVelocityChange.z;
+			this._velX += dX;
+			this._velY += dY;
+			this._velZ += dZ;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	addAngularVelocity(angularVelocityChange) {
+		if(this._type != 1) {
+			let dX;
+			let dY;
+			let dZ;
+			dX = angularVelocityChange.x;
+			dY = angularVelocityChange.y;
+			dZ = angularVelocityChange.z;
+			this._angVelX += dX;
+			this._angVelY += dY;
+			this._angVelZ += dZ;
+		}
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	applyImpulse(impulse,positionInWorld) {
+		let impX;
+		let impY;
+		let impZ;
+		impX = impulse.x;
+		impY = impulse.y;
+		impZ = impulse.z;
+		this._velX += impX * this._invMass;
+		this._velY += impY * this._invMass;
+		this._velZ += impZ * this._invMass;
+		let aimpX;
+		let aimpY;
+		let aimpZ;
+		let posX;
+		let posY;
+		let posZ;
+		posX = positionInWorld.x;
+		posY = positionInWorld.y;
+		posZ = positionInWorld.z;
+		posX -= this._transform._positionX;
+		posY -= this._transform._positionY;
+		posZ -= this._transform._positionZ;
+		aimpX = posY * impZ - posZ * impY;
+		aimpY = posZ * impX - posX * impZ;
+		aimpZ = posX * impY - posY * impX;
+		let __tmp__X;
+		let __tmp__Y;
+		let __tmp__Z;
+		__tmp__X = this._invInertia00 * aimpX + this._invInertia01 * aimpY + this._invInertia02 * aimpZ;
+		__tmp__Y = this._invInertia10 * aimpX + this._invInertia11 * aimpY + this._invInertia12 * aimpZ;
+		__tmp__Z = this._invInertia20 * aimpX + this._invInertia21 * aimpY + this._invInertia22 * aimpZ;
+		aimpX = __tmp__X;
+		aimpY = __tmp__Y;
+		aimpZ = __tmp__Z;
+		this._angVelX += aimpX;
+		this._angVelY += aimpY;
+		this._angVelZ += aimpZ;
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	applyLinearImpulse(impulse) {
+		let impX;
+		let impY;
+		let impZ;
+		impX = impulse.x;
+		impY = impulse.y;
+		impZ = impulse.z;
+		this._velX += impX * this._invMass;
+		this._velY += impY * this._invMass;
+		this._velZ += impZ * this._invMass;
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	applyAngularImpulse(impulse) {
+		let impX;
+		let impY;
+		let impZ;
+		impX = impulse.x;
+		impY = impulse.y;
+		impZ = impulse.z;
+		let __tmp__X;
+		let __tmp__Y;
+		let __tmp__Z;
+		__tmp__X = this._invInertia00 * impX + this._invInertia01 * impY + this._invInertia02 * impZ;
+		__tmp__Y = this._invInertia10 * impX + this._invInertia11 * impY + this._invInertia12 * impZ;
+		__tmp__Z = this._invInertia20 * impX + this._invInertia21 * impY + this._invInertia22 * impZ;
+		impX = __tmp__X;
+		impY = __tmp__Y;
+		impZ = __tmp__Z;
+		this._angVelX += impX;
+		this._angVelY += impY;
+		this._angVelZ += impZ;
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	applyForce(force,positionInWorld) {
+		let iforceX;
+		let iforceY;
+		let iforceZ;
+		iforceX = force.x;
+		iforceY = force.y;
+		iforceZ = force.z;
+		this._forceX += iforceX;
+		this._forceY += iforceY;
+		this._forceZ += iforceZ;
+		let itorqueX;
+		let itorqueY;
+		let itorqueZ;
+		let posX;
+		let posY;
+		let posZ;
+		posX = positionInWorld.x;
+		posY = positionInWorld.y;
+		posZ = positionInWorld.z;
+		posX -= this._transform._positionX;
+		posY -= this._transform._positionY;
+		posZ -= this._transform._positionZ;
+		itorqueX = posY * iforceZ - posZ * iforceY;
+		itorqueY = posZ * iforceX - posX * iforceZ;
+		itorqueZ = posX * iforceY - posY * iforceX;
+		this._torqueX += itorqueX;
+		this._torqueY += itorqueY;
+		this._torqueZ += itorqueZ;
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	applyForceToCenter(force) {
+		let iforceX;
+		let iforceY;
+		let iforceZ;
+		iforceX = force.x;
+		iforceY = force.y;
+		iforceZ = force.z;
+		this._forceX += iforceX;
+		this._forceY += iforceY;
+		this._forceZ += iforceZ;
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	applyTorque(torque) {
+		let itorqueX;
+		let itorqueY;
+		let itorqueZ;
+		itorqueX = torque.x;
+		itorqueY = torque.y;
+		itorqueZ = torque.z;
+		this._torqueX += itorqueX;
+		this._torqueY += itorqueY;
+		this._torqueZ += itorqueZ;
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	getLinearContactImpulse() {
+		let res = new oimo.common.Vec3();
+		res.x = this._linearContactImpulseX;
+		res.y = this._linearContactImpulseY;
+		res.z = this._linearContactImpulseZ;
+		return res;
+	}
+	getLinearContactImpulseTo(linearContactImpulse) {
+		linearContactImpulse.x = this._linearContactImpulseX;
+		linearContactImpulse.y = this._linearContactImpulseY;
+		linearContactImpulse.z = this._linearContactImpulseZ;
+	}
+	getAngularContactImpulse() {
+		let res = new oimo.common.Vec3();
+		res.x = this._angularContactImpulseX;
+		res.y = this._angularContactImpulseY;
+		res.z = this._angularContactImpulseZ;
+		return res;
+	}
+	getAngularContactImpulseTo(angularContactImpulse) {
+		angularContactImpulse.x = this._angularContactImpulseX;
+		angularContactImpulse.y = this._angularContactImpulseY;
+		angularContactImpulse.z = this._angularContactImpulseZ;
+	}
+	getGravityScale() {
+		return this._gravityScale;
+	}
+	setGravityScale(gravityScale) {
+		this._gravityScale = gravityScale;
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	getLocalPoint(worldPoint) {
+		let vX;
+		let vY;
+		let vZ;
+		vX = worldPoint.x;
+		vY = worldPoint.y;
+		vZ = worldPoint.z;
+		vX -= this._transform._positionX;
+		vY -= this._transform._positionY;
+		vZ -= this._transform._positionZ;
+		let __tmp__X;
+		let __tmp__Y;
+		let __tmp__Z;
+		__tmp__X = this._transform._rotation00 * vX + this._transform._rotation10 * vY + this._transform._rotation20 * vZ;
+		__tmp__Y = this._transform._rotation01 * vX + this._transform._rotation11 * vY + this._transform._rotation21 * vZ;
+		__tmp__Z = this._transform._rotation02 * vX + this._transform._rotation12 * vY + this._transform._rotation22 * vZ;
+		vX = __tmp__X;
+		vY = __tmp__Y;
+		vZ = __tmp__Z;
+		let res = new oimo.common.Vec3();
+		res.x = vX;
+		res.y = vY;
+		res.z = vZ;
+		return res;
+	}
+	getLocalPointTo(worldPoint,localPoint) {
+		let vX;
+		let vY;
+		let vZ;
+		vX = worldPoint.x;
+		vY = worldPoint.y;
+		vZ = worldPoint.z;
+		vX -= this._transform._positionX;
+		vY -= this._transform._positionY;
+		vZ -= this._transform._positionZ;
+		let __tmp__X;
+		let __tmp__Y;
+		let __tmp__Z;
+		__tmp__X = this._transform._rotation00 * vX + this._transform._rotation10 * vY + this._transform._rotation20 * vZ;
+		__tmp__Y = this._transform._rotation01 * vX + this._transform._rotation11 * vY + this._transform._rotation21 * vZ;
+		__tmp__Z = this._transform._rotation02 * vX + this._transform._rotation12 * vY + this._transform._rotation22 * vZ;
+		vX = __tmp__X;
+		vY = __tmp__Y;
+		vZ = __tmp__Z;
+		localPoint.x = vX;
+		localPoint.y = vY;
+		localPoint.z = vZ;
+	}
+	getLocalVector(worldVector) {
+		let vX;
+		let vY;
+		let vZ;
+		vX = worldVector.x;
+		vY = worldVector.y;
+		vZ = worldVector.z;
+		let __tmp__X;
+		let __tmp__Y;
+		let __tmp__Z;
+		__tmp__X = this._transform._rotation00 * vX + this._transform._rotation10 * vY + this._transform._rotation20 * vZ;
+		__tmp__Y = this._transform._rotation01 * vX + this._transform._rotation11 * vY + this._transform._rotation21 * vZ;
+		__tmp__Z = this._transform._rotation02 * vX + this._transform._rotation12 * vY + this._transform._rotation22 * vZ;
+		vX = __tmp__X;
+		vY = __tmp__Y;
+		vZ = __tmp__Z;
+		let res = new oimo.common.Vec3();
+		res.x = vX;
+		res.y = vY;
+		res.z = vZ;
+		return res;
+	}
+	getLocalVectorTo(worldVector,localVector) {
+		let vX;
+		let vY;
+		let vZ;
+		vX = worldVector.x;
+		vY = worldVector.y;
+		vZ = worldVector.z;
+		let __tmp__X;
+		let __tmp__Y;
+		let __tmp__Z;
+		__tmp__X = this._transform._rotation00 * vX + this._transform._rotation10 * vY + this._transform._rotation20 * vZ;
+		__tmp__Y = this._transform._rotation01 * vX + this._transform._rotation11 * vY + this._transform._rotation21 * vZ;
+		__tmp__Z = this._transform._rotation02 * vX + this._transform._rotation12 * vY + this._transform._rotation22 * vZ;
+		vX = __tmp__X;
+		vY = __tmp__Y;
+		vZ = __tmp__Z;
+		localVector.x = vX;
+		localVector.y = vY;
+		localVector.z = vZ;
+	}
+	getWorldPoint(localPoint) {
+		let vX;
+		let vY;
+		let vZ;
+		vX = localPoint.x;
+		vY = localPoint.y;
+		vZ = localPoint.z;
+		let __tmp__X;
+		let __tmp__Y;
+		let __tmp__Z;
+		__tmp__X = this._transform._rotation00 * vX + this._transform._rotation01 * vY + this._transform._rotation02 * vZ;
+		__tmp__Y = this._transform._rotation10 * vX + this._transform._rotation11 * vY + this._transform._rotation12 * vZ;
+		__tmp__Z = this._transform._rotation20 * vX + this._transform._rotation21 * vY + this._transform._rotation22 * vZ;
+		vX = __tmp__X;
+		vY = __tmp__Y;
+		vZ = __tmp__Z;
+		vX += this._transform._positionX;
+		vY += this._transform._positionY;
+		vZ += this._transform._positionZ;
+		let res = new oimo.common.Vec3();
+		res.x = vX;
+		res.y = vY;
+		res.z = vZ;
+		return res;
+	}
+	getWorldPointTo(localPoint,worldPoint) {
+		let vX;
+		let vY;
+		let vZ;
+		vX = localPoint.x;
+		vY = localPoint.y;
+		vZ = localPoint.z;
+		let __tmp__X;
+		let __tmp__Y;
+		let __tmp__Z;
+		__tmp__X = this._transform._rotation00 * vX + this._transform._rotation01 * vY + this._transform._rotation02 * vZ;
+		__tmp__Y = this._transform._rotation10 * vX + this._transform._rotation11 * vY + this._transform._rotation12 * vZ;
+		__tmp__Z = this._transform._rotation20 * vX + this._transform._rotation21 * vY + this._transform._rotation22 * vZ;
+		vX = __tmp__X;
+		vY = __tmp__Y;
+		vZ = __tmp__Z;
+		vX += this._transform._positionX;
+		vY += this._transform._positionY;
+		vZ += this._transform._positionZ;
+		worldPoint.x = vX;
+		worldPoint.y = vY;
+		worldPoint.z = vZ;
+	}
+	getWorldVector(localVector) {
+		let vX;
+		let vY;
+		let vZ;
+		vX = localVector.x;
+		vY = localVector.y;
+		vZ = localVector.z;
+		let __tmp__X;
+		let __tmp__Y;
+		let __tmp__Z;
+		__tmp__X = this._transform._rotation00 * vX + this._transform._rotation01 * vY + this._transform._rotation02 * vZ;
+		__tmp__Y = this._transform._rotation10 * vX + this._transform._rotation11 * vY + this._transform._rotation12 * vZ;
+		__tmp__Z = this._transform._rotation20 * vX + this._transform._rotation21 * vY + this._transform._rotation22 * vZ;
+		vX = __tmp__X;
+		vY = __tmp__Y;
+		vZ = __tmp__Z;
+		let res = new oimo.common.Vec3();
+		res.x = vX;
+		res.y = vY;
+		res.z = vZ;
+		return res;
+	}
+	getWorldVectorTo(localVector,worldVector) {
+		let vX;
+		let vY;
+		let vZ;
+		vX = localVector.x;
+		vY = localVector.y;
+		vZ = localVector.z;
+		let __tmp__X;
+		let __tmp__Y;
+		let __tmp__Z;
+		__tmp__X = this._transform._rotation00 * vX + this._transform._rotation01 * vY + this._transform._rotation02 * vZ;
+		__tmp__Y = this._transform._rotation10 * vX + this._transform._rotation11 * vY + this._transform._rotation12 * vZ;
+		__tmp__Z = this._transform._rotation20 * vX + this._transform._rotation21 * vY + this._transform._rotation22 * vZ;
+		vX = __tmp__X;
+		vY = __tmp__Y;
+		vZ = __tmp__Z;
+		worldVector.x = vX;
+		worldVector.y = vY;
+		worldVector.z = vZ;
+	}
+	getNumShapes() {
+		return this._numShapes;
+	}
+	getShapeList() {
+		return this._shapeList;
+	}
+	getNumContectLinks() {
+		return this._numContactLinks;
+	}
+	getContactLinkList() {
+		return this._contactLinkList;
+	}
+	getNumJointLinks() {
+		return this._numJointLinks;
+	}
+	getJointLinkList() {
+		return this._jointLinkList;
+	}
+	addShape(shape) {
+		if(this._shapeList == null) {
+			this._shapeList = shape;
+			this._shapeListLast = shape;
+		} else {
+			this._shapeListLast._next = shape;
+			shape._prev = this._shapeListLast;
+			this._shapeListLast = shape;
+		}
+		this._numShapes++;
+		shape._rigidBody = this;
+		if(this._world != null) {
+			let _this = this._world;
+			shape._proxy = _this._broadPhase.createProxy(shape,shape._aabb);
+			shape._id = _this._shapeIdCount++;
+			_this._numShapes++;
+		}
+		this.updateMass();
+		let s = this._shapeList;
+		while(s != null) {
+			let n = s._next;
+			let tf1 = this._ptransform;
+			let tf2 = this._transform;
+			let dst = s._ptransform;
+			let src1 = s._localTransform;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+			__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+			__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+			__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+			__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+			__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+			__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+			__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+			__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+			dst._rotation00 = __tmp__00;
+			dst._rotation01 = __tmp__01;
+			dst._rotation02 = __tmp__02;
+			dst._rotation10 = __tmp__10;
+			dst._rotation11 = __tmp__11;
+			dst._rotation12 = __tmp__12;
+			dst._rotation20 = __tmp__20;
+			dst._rotation21 = __tmp__21;
+			dst._rotation22 = __tmp__22;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+			__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+			__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+			dst._positionX = __tmp__X;
+			dst._positionY = __tmp__Y;
+			dst._positionZ = __tmp__Z;
+			dst._positionX += tf1._positionX;
+			dst._positionY += tf1._positionY;
+			dst._positionZ += tf1._positionZ;
+			let dst1 = s._transform;
+			let src11 = s._localTransform;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+			__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+			__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+			__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+			__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+			__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+			__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+			__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+			__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+			dst1._rotation00 = __tmp__001;
+			dst1._rotation01 = __tmp__011;
+			dst1._rotation02 = __tmp__021;
+			dst1._rotation10 = __tmp__101;
+			dst1._rotation11 = __tmp__111;
+			dst1._rotation12 = __tmp__121;
+			dst1._rotation20 = __tmp__201;
+			dst1._rotation21 = __tmp__211;
+			dst1._rotation22 = __tmp__221;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+			__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+			__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+			dst1._positionX = __tmp__X1;
+			dst1._positionY = __tmp__Y1;
+			dst1._positionZ = __tmp__Z1;
+			dst1._positionX += tf2._positionX;
+			dst1._positionY += tf2._positionY;
+			dst1._positionZ += tf2._positionZ;
+			let minX;
+			let minY;
+			let minZ;
+			let maxX;
+			let maxY;
+			let maxZ;
+			s._geom._computeAabb(s._aabb,s._ptransform);
+			minX = s._aabb._minX;
+			minY = s._aabb._minY;
+			minZ = s._aabb._minZ;
+			maxX = s._aabb._maxX;
+			maxY = s._aabb._maxY;
+			maxZ = s._aabb._maxZ;
+			s._geom._computeAabb(s._aabb,s._transform);
+			s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+			s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+			s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+			s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+			s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+			s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+			if(s._proxy != null) {
+				let dX;
+				let dY;
+				let dZ;
+				dX = s._transform._positionX - s._ptransform._positionX;
+				dY = s._transform._positionY - s._ptransform._positionY;
+				dZ = s._transform._positionZ - s._ptransform._positionZ;
+				let v = s.displacement;
+				v.x = dX;
+				v.y = dY;
+				v.z = dZ;
+				s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+			}
+			s = n;
+		}
+	}
+	removeShape(shape) {
+		let prev = shape._prev;
+		let next = shape._next;
+		if(prev != null) {
+			prev._next = next;
+		}
+		if(next != null) {
+			next._prev = prev;
+		}
+		if(shape == this._shapeList) {
+			this._shapeList = this._shapeList._next;
+		}
+		if(shape == this._shapeListLast) {
+			this._shapeListLast = this._shapeListLast._prev;
+		}
+		shape._next = null;
+		shape._prev = null;
+		this._numShapes--;
+		shape._rigidBody = null;
+		if(this._world != null) {
+			let _this = this._world;
+			_this._broadPhase.destroyProxy(shape._proxy);
+			shape._proxy = null;
+			shape._id = -1;
+			let cl = shape._rigidBody._contactLinkList;
+			while(cl != null) {
+				let n = cl._next;
+				let c = cl._contact;
+				if(c._s1 == shape || c._s2 == shape) {
+					let _this1 = cl._other;
+					_this1._sleeping = false;
+					_this1._sleepTime = 0;
+					let _this2 = _this._contactManager;
+					let prev = c._prev;
+					let next = c._next;
+					if(prev != null) {
+						prev._next = next;
+					}
+					if(next != null) {
+						next._prev = prev;
+					}
+					if(c == _this2._contactList) {
+						_this2._contactList = _this2._contactList._next;
+					}
+					if(c == _this2._contactListLast) {
+						_this2._contactListLast = _this2._contactListLast._prev;
+					}
+					c._next = null;
+					c._prev = null;
+					if(c._touching) {
+						let cc1 = c._s1._contactCallback;
+						let cc2 = c._s2._contactCallback;
+						if(cc1 == cc2) {
+							cc2 = null;
+						}
+						if(cc1 != null) {
+							cc1.endContact(c);
+						}
+						if(cc2 != null) {
+							cc2.endContact(c);
+						}
+					}
+					let prev1 = c._link1._prev;
+					let next1 = c._link1._next;
+					if(prev1 != null) {
+						prev1._next = next1;
+					}
+					if(next1 != null) {
+						next1._prev = prev1;
+					}
+					if(c._link1 == c._b1._contactLinkList) {
+						c._b1._contactLinkList = c._b1._contactLinkList._next;
+					}
+					if(c._link1 == c._b1._contactLinkListLast) {
+						c._b1._contactLinkListLast = c._b1._contactLinkListLast._prev;
+					}
+					c._link1._next = null;
+					c._link1._prev = null;
+					let prev2 = c._link2._prev;
+					let next2 = c._link2._next;
+					if(prev2 != null) {
+						prev2._next = next2;
+					}
+					if(next2 != null) {
+						next2._prev = prev2;
+					}
+					if(c._link2 == c._b2._contactLinkList) {
+						c._b2._contactLinkList = c._b2._contactLinkList._next;
+					}
+					if(c._link2 == c._b2._contactLinkListLast) {
+						c._b2._contactLinkListLast = c._b2._contactLinkListLast._prev;
+					}
+					c._link2._next = null;
+					c._link2._prev = null;
+					c._b1._numContactLinks--;
+					c._b2._numContactLinks--;
+					c._link1._other = null;
+					c._link2._other = null;
+					c._link1._contact = null;
+					c._link2._contact = null;
+					c._s1 = null;
+					c._s2 = null;
+					c._b1 = null;
+					c._b2 = null;
+					c._touching = false;
+					c._cachedDetectorData._clear();
+					c._manifold._clear();
+					c._detector = null;
+					let _this3 = c._contactConstraint;
+					_this3._s1 = null;
+					_this3._s2 = null;
+					_this3._b1 = null;
+					_this3._b2 = null;
+					_this3._tf1 = null;
+					_this3._tf2 = null;
+					c._next = _this2._contactPool;
+					_this2._contactPool = c;
+					_this2._numContacts--;
+				}
+				cl = n;
+			}
+			_this._numShapes--;
+		}
+		this.updateMass();
+		let s = this._shapeList;
+		while(s != null) {
+			let n = s._next;
+			let tf1 = this._ptransform;
+			let tf2 = this._transform;
+			let dst = s._ptransform;
+			let src1 = s._localTransform;
+			let __tmp__00;
+			let __tmp__01;
+			let __tmp__02;
+			let __tmp__10;
+			let __tmp__11;
+			let __tmp__12;
+			let __tmp__20;
+			let __tmp__21;
+			let __tmp__22;
+			__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+			__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+			__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+			__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+			__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+			__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+			__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+			__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+			__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+			dst._rotation00 = __tmp__00;
+			dst._rotation01 = __tmp__01;
+			dst._rotation02 = __tmp__02;
+			dst._rotation10 = __tmp__10;
+			dst._rotation11 = __tmp__11;
+			dst._rotation12 = __tmp__12;
+			dst._rotation20 = __tmp__20;
+			dst._rotation21 = __tmp__21;
+			dst._rotation22 = __tmp__22;
+			let __tmp__X;
+			let __tmp__Y;
+			let __tmp__Z;
+			__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+			__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+			__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+			dst._positionX = __tmp__X;
+			dst._positionY = __tmp__Y;
+			dst._positionZ = __tmp__Z;
+			dst._positionX += tf1._positionX;
+			dst._positionY += tf1._positionY;
+			dst._positionZ += tf1._positionZ;
+			let dst1 = s._transform;
+			let src11 = s._localTransform;
+			let __tmp__001;
+			let __tmp__011;
+			let __tmp__021;
+			let __tmp__101;
+			let __tmp__111;
+			let __tmp__121;
+			let __tmp__201;
+			let __tmp__211;
+			let __tmp__221;
+			__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+			__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+			__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+			__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+			__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+			__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+			__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+			__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+			__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+			dst1._rotation00 = __tmp__001;
+			dst1._rotation01 = __tmp__011;
+			dst1._rotation02 = __tmp__021;
+			dst1._rotation10 = __tmp__101;
+			dst1._rotation11 = __tmp__111;
+			dst1._rotation12 = __tmp__121;
+			dst1._rotation20 = __tmp__201;
+			dst1._rotation21 = __tmp__211;
+			dst1._rotation22 = __tmp__221;
+			let __tmp__X1;
+			let __tmp__Y1;
+			let __tmp__Z1;
+			__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+			__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+			__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+			dst1._positionX = __tmp__X1;
+			dst1._positionY = __tmp__Y1;
+			dst1._positionZ = __tmp__Z1;
+			dst1._positionX += tf2._positionX;
+			dst1._positionY += tf2._positionY;
+			dst1._positionZ += tf2._positionZ;
+			let minX;
+			let minY;
+			let minZ;
+			let maxX;
+			let maxY;
+			let maxZ;
+			s._geom._computeAabb(s._aabb,s._ptransform);
+			minX = s._aabb._minX;
+			minY = s._aabb._minY;
+			minZ = s._aabb._minZ;
+			maxX = s._aabb._maxX;
+			maxY = s._aabb._maxY;
+			maxZ = s._aabb._maxZ;
+			s._geom._computeAabb(s._aabb,s._transform);
+			s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+			s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+			s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+			s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+			s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+			s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+			if(s._proxy != null) {
+				let dX;
+				let dY;
+				let dZ;
+				dX = s._transform._positionX - s._ptransform._positionX;
+				dY = s._transform._positionY - s._ptransform._positionY;
+				dZ = s._transform._positionZ - s._ptransform._positionZ;
+				let v = s.displacement;
+				v.x = dX;
+				v.y = dY;
+				v.z = dZ;
+				s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+			}
+			s = n;
+		}
+	}
+	getType() {
+		return this._type;
+	}
+	setType(type) {
+		this._type = type;
+		this.updateMass();
+	}
+	wakeUp() {
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	sleep() {
+		this._sleeping = true;
+		this._sleepTime = 0;
+	}
+	isSleeping() {
+		return this._sleeping;
+	}
+	getSleepTime() {
+		return this._sleepTime;
+	}
+	setAutoSleep(autoSleepEnabled) {
+		this._autoSleep = autoSleepEnabled;
+		this._sleeping = false;
+		this._sleepTime = 0;
+	}
+	getLinearDamping() {
+		return this._linearDamping;
+	}
+	setLinearDamping(damping) {
+		this._linearDamping = damping;
+	}
+	getAngularDamping() {
+		return this._angularDamping;
+	}
+	setAngularDamping(damping) {
+		this._angularDamping = damping;
+	}
+	getPrev() {
+		return this._prev;
+	}
+	getNext() {
+		return this._next;
+	}
+}
+oimo.dynamics.rigidbody.RigidBodyConfig = class oimo_dynamics_rigidbody_RigidBodyConfig {
+	constructor() {
+		this.position = new oimo.common.Vec3();
+		this.rotation = new oimo.common.Mat3();
+		this.linearVelocity = new oimo.common.Vec3();
+		this.angularVelocity = new oimo.common.Vec3();
+		this.type = 0;
+		this.autoSleep = true;
+		this.linearDamping = 0;
+		this.angularDamping = 0;
+	}
+}
+oimo.dynamics.rigidbody.RigidBodyType = class oimo_dynamics_rigidbody_RigidBodyType {
+}
+oimo.dynamics.rigidbody.Shape = class oimo_dynamics_rigidbody_Shape {
+	constructor(config) {
+		this._id = -1;
+		this._localTransform = new oimo.common.Transform();
+		this._ptransform = new oimo.common.Transform();
+		this._transform = new oimo.common.Transform();
+		let v = config.position;
+		this._localTransform._positionX = v.x;
+		this._localTransform._positionY = v.y;
+		this._localTransform._positionZ = v.z;
+		let m = config.rotation;
+		this._localTransform._rotation00 = m.e00;
+		this._localTransform._rotation01 = m.e01;
+		this._localTransform._rotation02 = m.e02;
+		this._localTransform._rotation10 = m.e10;
+		this._localTransform._rotation11 = m.e11;
+		this._localTransform._rotation12 = m.e12;
+		this._localTransform._rotation20 = m.e20;
+		this._localTransform._rotation21 = m.e21;
+		this._localTransform._rotation22 = m.e22;
+		let dst = this._ptransform;
+		let src = this._localTransform;
+		dst._positionX = src._positionX;
+		dst._positionY = src._positionY;
+		dst._positionZ = src._positionZ;
+		dst._rotation00 = src._rotation00;
+		dst._rotation01 = src._rotation01;
+		dst._rotation02 = src._rotation02;
+		dst._rotation10 = src._rotation10;
+		dst._rotation11 = src._rotation11;
+		dst._rotation12 = src._rotation12;
+		dst._rotation20 = src._rotation20;
+		dst._rotation21 = src._rotation21;
+		dst._rotation22 = src._rotation22;
+		let dst1 = this._transform;
+		let src1 = this._localTransform;
+		dst1._positionX = src1._positionX;
+		dst1._positionY = src1._positionY;
+		dst1._positionZ = src1._positionZ;
+		dst1._rotation00 = src1._rotation00;
+		dst1._rotation01 = src1._rotation01;
+		dst1._rotation02 = src1._rotation02;
+		dst1._rotation10 = src1._rotation10;
+		dst1._rotation11 = src1._rotation11;
+		dst1._rotation12 = src1._rotation12;
+		dst1._rotation20 = src1._rotation20;
+		dst1._rotation21 = src1._rotation21;
+		dst1._rotation22 = src1._rotation22;
+		this._restitution = config.restitution;
+		this._friction = config.friction;
+		this._density = config.density;
+		this._geom = config.geometry;
+		this._collisionGroup = config.collisionGroup;
+		this._collisionMask = config.collisionMask;
+		this._contactCallback = config.contactCallback;
+		this._aabb = new oimo.collision.geometry.Aabb();
+		this._proxy = null;
+		this.displacement = new oimo.common.Vec3();
+	}
+	getFriction() {
+		return this._friction;
+	}
+	setFriction(friction) {
+		this._friction = friction;
+	}
+	getRestitution() {
+		return this._restitution;
+	}
+	setRestitution(restitution) {
+		this._restitution = restitution;
+	}
+	getLocalTransform() {
+		let _this = this._localTransform;
+		let tf = new oimo.common.Transform();
+		tf._positionX = _this._positionX;
+		tf._positionY = _this._positionY;
+		tf._positionZ = _this._positionZ;
+		tf._rotation00 = _this._rotation00;
+		tf._rotation01 = _this._rotation01;
+		tf._rotation02 = _this._rotation02;
+		tf._rotation10 = _this._rotation10;
+		tf._rotation11 = _this._rotation11;
+		tf._rotation12 = _this._rotation12;
+		tf._rotation20 = _this._rotation20;
+		tf._rotation21 = _this._rotation21;
+		tf._rotation22 = _this._rotation22;
+		return tf;
+	}
+	getLocalTransformTo(transform) {
+		let transform1 = this._localTransform;
+		transform._positionX = transform1._positionX;
+		transform._positionY = transform1._positionY;
+		transform._positionZ = transform1._positionZ;
+		transform._rotation00 = transform1._rotation00;
+		transform._rotation01 = transform1._rotation01;
+		transform._rotation02 = transform1._rotation02;
+		transform._rotation10 = transform1._rotation10;
+		transform._rotation11 = transform1._rotation11;
+		transform._rotation12 = transform1._rotation12;
+		transform._rotation20 = transform1._rotation20;
+		transform._rotation21 = transform1._rotation21;
+		transform._rotation22 = transform1._rotation22;
+	}
+	getTransform() {
+		let _this = this._transform;
+		let tf = new oimo.common.Transform();
+		tf._positionX = _this._positionX;
+		tf._positionY = _this._positionY;
+		tf._positionZ = _this._positionZ;
+		tf._rotation00 = _this._rotation00;
+		tf._rotation01 = _this._rotation01;
+		tf._rotation02 = _this._rotation02;
+		tf._rotation10 = _this._rotation10;
+		tf._rotation11 = _this._rotation11;
+		tf._rotation12 = _this._rotation12;
+		tf._rotation20 = _this._rotation20;
+		tf._rotation21 = _this._rotation21;
+		tf._rotation22 = _this._rotation22;
+		return tf;
+	}
+	getTransformTo(transform) {
+		let transform1 = this._transform;
+		transform._positionX = transform1._positionX;
+		transform._positionY = transform1._positionY;
+		transform._positionZ = transform1._positionZ;
+		transform._rotation00 = transform1._rotation00;
+		transform._rotation01 = transform1._rotation01;
+		transform._rotation02 = transform1._rotation02;
+		transform._rotation10 = transform1._rotation10;
+		transform._rotation11 = transform1._rotation11;
+		transform._rotation12 = transform1._rotation12;
+		transform._rotation20 = transform1._rotation20;
+		transform._rotation21 = transform1._rotation21;
+		transform._rotation22 = transform1._rotation22;
+	}
+	setLocalTransform(transform) {
+		let _this = this._localTransform;
+		_this._positionX = transform._positionX;
+		_this._positionY = transform._positionY;
+		_this._positionZ = transform._positionZ;
+		_this._rotation00 = transform._rotation00;
+		_this._rotation01 = transform._rotation01;
+		_this._rotation02 = transform._rotation02;
+		_this._rotation10 = transform._rotation10;
+		_this._rotation11 = transform._rotation11;
+		_this._rotation12 = transform._rotation12;
+		_this._rotation20 = transform._rotation20;
+		_this._rotation21 = transform._rotation21;
+		_this._rotation22 = transform._rotation22;
+		if(this._rigidBody != null) {
+			let _this = this._rigidBody;
+			_this.updateMass();
+			let s = _this._shapeList;
+			while(s != null) {
+				let n = s._next;
+				let tf1 = _this._ptransform;
+				let tf2 = _this._transform;
+				let dst = s._ptransform;
+				let src1 = s._localTransform;
+				let __tmp__00;
+				let __tmp__01;
+				let __tmp__02;
+				let __tmp__10;
+				let __tmp__11;
+				let __tmp__12;
+				let __tmp__20;
+				let __tmp__21;
+				let __tmp__22;
+				__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+				__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+				__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+				__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+				__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+				__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+				__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+				__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+				__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+				dst._rotation00 = __tmp__00;
+				dst._rotation01 = __tmp__01;
+				dst._rotation02 = __tmp__02;
+				dst._rotation10 = __tmp__10;
+				dst._rotation11 = __tmp__11;
+				dst._rotation12 = __tmp__12;
+				dst._rotation20 = __tmp__20;
+				dst._rotation21 = __tmp__21;
+				dst._rotation22 = __tmp__22;
+				let __tmp__X;
+				let __tmp__Y;
+				let __tmp__Z;
+				__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+				__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+				__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+				dst._positionX = __tmp__X;
+				dst._positionY = __tmp__Y;
+				dst._positionZ = __tmp__Z;
+				dst._positionX += tf1._positionX;
+				dst._positionY += tf1._positionY;
+				dst._positionZ += tf1._positionZ;
+				let dst1 = s._transform;
+				let src11 = s._localTransform;
+				let __tmp__001;
+				let __tmp__011;
+				let __tmp__021;
+				let __tmp__101;
+				let __tmp__111;
+				let __tmp__121;
+				let __tmp__201;
+				let __tmp__211;
+				let __tmp__221;
+				__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+				__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+				__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+				__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+				__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+				__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+				__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+				__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+				__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+				dst1._rotation00 = __tmp__001;
+				dst1._rotation01 = __tmp__011;
+				dst1._rotation02 = __tmp__021;
+				dst1._rotation10 = __tmp__101;
+				dst1._rotation11 = __tmp__111;
+				dst1._rotation12 = __tmp__121;
+				dst1._rotation20 = __tmp__201;
+				dst1._rotation21 = __tmp__211;
+				dst1._rotation22 = __tmp__221;
+				let __tmp__X1;
+				let __tmp__Y1;
+				let __tmp__Z1;
+				__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+				__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+				__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+				dst1._positionX = __tmp__X1;
+				dst1._positionY = __tmp__Y1;
+				dst1._positionZ = __tmp__Z1;
+				dst1._positionX += tf2._positionX;
+				dst1._positionY += tf2._positionY;
+				dst1._positionZ += tf2._positionZ;
+				let minX;
+				let minY;
+				let minZ;
+				let maxX;
+				let maxY;
+				let maxZ;
+				s._geom._computeAabb(s._aabb,s._ptransform);
+				minX = s._aabb._minX;
+				minY = s._aabb._minY;
+				minZ = s._aabb._minZ;
+				maxX = s._aabb._maxX;
+				maxY = s._aabb._maxY;
+				maxZ = s._aabb._maxZ;
+				s._geom._computeAabb(s._aabb,s._transform);
+				s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+				s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+				s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+				s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+				s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+				s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+				if(s._proxy != null) {
+					let dX;
+					let dY;
+					let dZ;
+					dX = s._transform._positionX - s._ptransform._positionX;
+					dY = s._transform._positionY - s._ptransform._positionY;
+					dZ = s._transform._positionZ - s._ptransform._positionZ;
+					let v = s.displacement;
+					v.x = dX;
+					v.y = dY;
+					v.z = dZ;
+					s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+				}
+				s = n;
+			}
+		}
+	}
+	getDensity() {
+		return this._density;
+	}
+	setDensity(density) {
+		this._density = density;
+		if(this._rigidBody != null) {
+			let _this = this._rigidBody;
+			_this.updateMass();
+			let s = _this._shapeList;
+			while(s != null) {
+				let n = s._next;
+				let tf1 = _this._ptransform;
+				let tf2 = _this._transform;
+				let dst = s._ptransform;
+				let src1 = s._localTransform;
+				let __tmp__00;
+				let __tmp__01;
+				let __tmp__02;
+				let __tmp__10;
+				let __tmp__11;
+				let __tmp__12;
+				let __tmp__20;
+				let __tmp__21;
+				let __tmp__22;
+				__tmp__00 = tf1._rotation00 * src1._rotation00 + tf1._rotation01 * src1._rotation10 + tf1._rotation02 * src1._rotation20;
+				__tmp__01 = tf1._rotation00 * src1._rotation01 + tf1._rotation01 * src1._rotation11 + tf1._rotation02 * src1._rotation21;
+				__tmp__02 = tf1._rotation00 * src1._rotation02 + tf1._rotation01 * src1._rotation12 + tf1._rotation02 * src1._rotation22;
+				__tmp__10 = tf1._rotation10 * src1._rotation00 + tf1._rotation11 * src1._rotation10 + tf1._rotation12 * src1._rotation20;
+				__tmp__11 = tf1._rotation10 * src1._rotation01 + tf1._rotation11 * src1._rotation11 + tf1._rotation12 * src1._rotation21;
+				__tmp__12 = tf1._rotation10 * src1._rotation02 + tf1._rotation11 * src1._rotation12 + tf1._rotation12 * src1._rotation22;
+				__tmp__20 = tf1._rotation20 * src1._rotation00 + tf1._rotation21 * src1._rotation10 + tf1._rotation22 * src1._rotation20;
+				__tmp__21 = tf1._rotation20 * src1._rotation01 + tf1._rotation21 * src1._rotation11 + tf1._rotation22 * src1._rotation21;
+				__tmp__22 = tf1._rotation20 * src1._rotation02 + tf1._rotation21 * src1._rotation12 + tf1._rotation22 * src1._rotation22;
+				dst._rotation00 = __tmp__00;
+				dst._rotation01 = __tmp__01;
+				dst._rotation02 = __tmp__02;
+				dst._rotation10 = __tmp__10;
+				dst._rotation11 = __tmp__11;
+				dst._rotation12 = __tmp__12;
+				dst._rotation20 = __tmp__20;
+				dst._rotation21 = __tmp__21;
+				dst._rotation22 = __tmp__22;
+				let __tmp__X;
+				let __tmp__Y;
+				let __tmp__Z;
+				__tmp__X = tf1._rotation00 * src1._positionX + tf1._rotation01 * src1._positionY + tf1._rotation02 * src1._positionZ;
+				__tmp__Y = tf1._rotation10 * src1._positionX + tf1._rotation11 * src1._positionY + tf1._rotation12 * src1._positionZ;
+				__tmp__Z = tf1._rotation20 * src1._positionX + tf1._rotation21 * src1._positionY + tf1._rotation22 * src1._positionZ;
+				dst._positionX = __tmp__X;
+				dst._positionY = __tmp__Y;
+				dst._positionZ = __tmp__Z;
+				dst._positionX += tf1._positionX;
+				dst._positionY += tf1._positionY;
+				dst._positionZ += tf1._positionZ;
+				let dst1 = s._transform;
+				let src11 = s._localTransform;
+				let __tmp__001;
+				let __tmp__011;
+				let __tmp__021;
+				let __tmp__101;
+				let __tmp__111;
+				let __tmp__121;
+				let __tmp__201;
+				let __tmp__211;
+				let __tmp__221;
+				__tmp__001 = tf2._rotation00 * src11._rotation00 + tf2._rotation01 * src11._rotation10 + tf2._rotation02 * src11._rotation20;
+				__tmp__011 = tf2._rotation00 * src11._rotation01 + tf2._rotation01 * src11._rotation11 + tf2._rotation02 * src11._rotation21;
+				__tmp__021 = tf2._rotation00 * src11._rotation02 + tf2._rotation01 * src11._rotation12 + tf2._rotation02 * src11._rotation22;
+				__tmp__101 = tf2._rotation10 * src11._rotation00 + tf2._rotation11 * src11._rotation10 + tf2._rotation12 * src11._rotation20;
+				__tmp__111 = tf2._rotation10 * src11._rotation01 + tf2._rotation11 * src11._rotation11 + tf2._rotation12 * src11._rotation21;
+				__tmp__121 = tf2._rotation10 * src11._rotation02 + tf2._rotation11 * src11._rotation12 + tf2._rotation12 * src11._rotation22;
+				__tmp__201 = tf2._rotation20 * src11._rotation00 + tf2._rotation21 * src11._rotation10 + tf2._rotation22 * src11._rotation20;
+				__tmp__211 = tf2._rotation20 * src11._rotation01 + tf2._rotation21 * src11._rotation11 + tf2._rotation22 * src11._rotation21;
+				__tmp__221 = tf2._rotation20 * src11._rotation02 + tf2._rotation21 * src11._rotation12 + tf2._rotation22 * src11._rotation22;
+				dst1._rotation00 = __tmp__001;
+				dst1._rotation01 = __tmp__011;
+				dst1._rotation02 = __tmp__021;
+				dst1._rotation10 = __tmp__101;
+				dst1._rotation11 = __tmp__111;
+				dst1._rotation12 = __tmp__121;
+				dst1._rotation20 = __tmp__201;
+				dst1._rotation21 = __tmp__211;
+				dst1._rotation22 = __tmp__221;
+				let __tmp__X1;
+				let __tmp__Y1;
+				let __tmp__Z1;
+				__tmp__X1 = tf2._rotation00 * src11._positionX + tf2._rotation01 * src11._positionY + tf2._rotation02 * src11._positionZ;
+				__tmp__Y1 = tf2._rotation10 * src11._positionX + tf2._rotation11 * src11._positionY + tf2._rotation12 * src11._positionZ;
+				__tmp__Z1 = tf2._rotation20 * src11._positionX + tf2._rotation21 * src11._positionY + tf2._rotation22 * src11._positionZ;
+				dst1._positionX = __tmp__X1;
+				dst1._positionY = __tmp__Y1;
+				dst1._positionZ = __tmp__Z1;
+				dst1._positionX += tf2._positionX;
+				dst1._positionY += tf2._positionY;
+				dst1._positionZ += tf2._positionZ;
+				let minX;
+				let minY;
+				let minZ;
+				let maxX;
+				let maxY;
+				let maxZ;
+				s._geom._computeAabb(s._aabb,s._ptransform);
+				minX = s._aabb._minX;
+				minY = s._aabb._minY;
+				minZ = s._aabb._minZ;
+				maxX = s._aabb._maxX;
+				maxY = s._aabb._maxY;
+				maxZ = s._aabb._maxZ;
+				s._geom._computeAabb(s._aabb,s._transform);
+				s._aabb._minX = minX < s._aabb._minX ? minX : s._aabb._minX;
+				s._aabb._minY = minY < s._aabb._minY ? minY : s._aabb._minY;
+				s._aabb._minZ = minZ < s._aabb._minZ ? minZ : s._aabb._minZ;
+				s._aabb._maxX = maxX > s._aabb._maxX ? maxX : s._aabb._maxX;
+				s._aabb._maxY = maxY > s._aabb._maxY ? maxY : s._aabb._maxY;
+				s._aabb._maxZ = maxZ > s._aabb._maxZ ? maxZ : s._aabb._maxZ;
+				if(s._proxy != null) {
+					let dX;
+					let dY;
+					let dZ;
+					dX = s._transform._positionX - s._ptransform._positionX;
+					dY = s._transform._positionY - s._ptransform._positionY;
+					dZ = s._transform._positionZ - s._ptransform._positionZ;
+					let v = s.displacement;
+					v.x = dX;
+					v.y = dY;
+					v.z = dZ;
+					s._rigidBody._world._broadPhase.moveProxy(s._proxy,s._aabb,s.displacement);
+				}
+				s = n;
+			}
+		}
+	}
+	getAabb() {
+		return this._aabb.clone();
+	}
+	getAabbTo(aabb) {
+		aabb.copyFrom(this._aabb);
+	}
+	getGeometry() {
+		return this._geom;
+	}
+	getRigidBody() {
+		return this._rigidBody;
+	}
+	getCollisionGroup() {
+		return this._collisionGroup;
+	}
+	setCollisionGroup(collisionGroup) {
+		this._collisionGroup = collisionGroup;
+	}
+	getCollisionMask() {
+		return this._collisionMask;
+	}
+	setCollisionMask(collisionMask) {
+		this._collisionMask = collisionMask;
+	}
+	getContactCallback() {
+		return this._contactCallback;
+	}
+	setContactCallback(callback) {
+		this._contactCallback = callback;
+	}
+	getPrev() {
+		return this._prev;
+	}
+	getNext() {
+		return this._next;
+	}
+}
+oimo.dynamics.rigidbody.ShapeConfig = class oimo_dynamics_rigidbody_ShapeConfig {
+	constructor() {
+		this.position = new oimo.common.Vec3();
+		this.rotation = new oimo.common.Mat3();
+		this.friction = oimo.common.Setting.defaultFriction;
+		this.restitution = oimo.common.Setting.defaultRestitution;
+		this.density = oimo.common.Setting.defaultDensity;
+		this.collisionGroup = oimo.common.Setting.defaultCollisionGroup;
+		this.collisionMask = oimo.common.Setting.defaultCollisionMask;
+		this.geometry = null;
+		this.contactCallback = null;
+	}
+}
+if(!oimo.m) oimo.m = {};
+oimo.m.M = class oimo_m_M {
+}
+
+oimo.collision.broadphase.BroadPhaseType._BRUTE_FORCE = 1;
+oimo.collision.broadphase.BroadPhaseType._BVH = 2;
+oimo.collision.broadphase.BroadPhaseType.BRUTE_FORCE = 1;
+oimo.collision.broadphase.BroadPhaseType.BVH = 2;
+oimo.collision.broadphase.bvh.BvhInsertionStrategy.SIMPLE = 0;
+oimo.collision.broadphase.bvh.BvhInsertionStrategy.MINIMIZE_SURFACE_AREA = 1;
+oimo.collision.geometry.GeometryType._SPHERE = 0;
+oimo.collision.geometry.GeometryType._BOX = 1;
+oimo.collision.geometry.GeometryType._CYLINDER = 2;
+oimo.collision.geometry.GeometryType._CONE = 3;
+oimo.collision.geometry.GeometryType._CAPSULE = 4;
+oimo.collision.geometry.GeometryType._CONVEX_HULL = 5;
+oimo.collision.geometry.GeometryType._CONVEX_MIN = 0;
+oimo.collision.geometry.GeometryType._CONVEX_MAX = 5;
+oimo.collision.geometry.GeometryType.SPHERE = 0;
+oimo.collision.geometry.GeometryType.BOX = 1;
+oimo.collision.geometry.GeometryType.CYLINDER = 2;
+oimo.collision.geometry.GeometryType.CONE = 3;
+oimo.collision.geometry.GeometryType.CAPSULE = 4;
+oimo.collision.geometry.GeometryType.CONVEX_HULL = 5;
+oimo.collision.narrowphase.detector.BoxBoxDetector.EDGE_BIAS_MULT = 1.0;
+oimo.collision.narrowphase.detector.gjkepa.EpaPolyhedronState.OK = 0;
+oimo.collision.narrowphase.detector.gjkepa.EpaPolyhedronState.INVALID_TRIANGLE = 1;
+oimo.collision.narrowphase.detector.gjkepa.EpaPolyhedronState.NO_ADJACENT_PAIR_INDEX = 2;
+oimo.collision.narrowphase.detector.gjkepa.EpaPolyhedronState.NO_ADJACENT_TRIANGLE = 3;
+oimo.collision.narrowphase.detector.gjkepa.EpaPolyhedronState.EDGE_LOOP_BROKEN = 4;
+oimo.collision.narrowphase.detector.gjkepa.EpaPolyhedronState.NO_OUTER_TRIANGLE = 5;
+oimo.collision.narrowphase.detector.gjkepa.EpaPolyhedronState.TRIANGLE_INVISIBLE = 6;
+oimo.collision.narrowphase.detector.gjkepa.EpaTriangle.count = 0;
+oimo.common.Vec3.numCreations = 0;
+oimo.common.Setting.defaultFriction = 0.2;
+oimo.common.Setting.defaultRestitution = 0.2;
+oimo.common.Setting.defaultDensity = 1;
+oimo.common.Setting.defaultCollisionGroup = 1;
+oimo.common.Setting.defaultCollisionMask = 1;
+oimo.common.Setting.maxTranslationPerStep = 20;
+oimo.common.Setting.maxRotationPerStep = 3.14159265358979;
+oimo.common.Setting.bvhProxyPadding = 0.1;
+oimo.common.Setting.bvhIncrementalCollisionThreshold = 0.45;
+oimo.common.Setting.defaultGJKMargin = 0.05;
+oimo.common.Setting.enableGJKCaching = true;
+oimo.common.Setting.maxEPAVertices = 128;
+oimo.common.Setting.maxEPAPolyhedronFaces = 128;
+oimo.common.Setting.contactEnableBounceThreshold = 0.5;
+oimo.common.Setting.velocityBaumgarte = 0.2;
+oimo.common.Setting.positionSplitImpulseBaumgarte = 0.4;
+oimo.common.Setting.positionNgsBaumgarte = 1.0;
+oimo.common.Setting.contactUseAlternativePositionCorrectionAlgorithmDepthThreshold = 0.05;
+oimo.common.Setting.defaultContactPositionCorrectionAlgorithm = 0;
+oimo.common.Setting.alternativeContactPositionCorrectionAlgorithm = 1;
+oimo.common.Setting.contactPersistenceThreshold = 0.05;
+oimo.common.Setting.maxManifoldPoints = 4;
+oimo.common.Setting.defaultJointConstraintSolverType = 0;
+oimo.common.Setting.defaultJointPositionCorrectionAlgorithm = 0;
+oimo.common.Setting.jointWarmStartingFactorForBaungarte = 0.8;
+oimo.common.Setting.jointWarmStartingFactor = 0.95;
+oimo.common.Setting.minSpringDamperDampingRatio = 1e-6;
+oimo.common.Setting.minRagdollMaxSwingAngle = 1e-6;
+oimo.common.Setting.maxJacobianRows = 6;
+oimo.common.Setting.directMlcpSolverEps = 1e-9;
+oimo.common.Setting.islandInitialRigidBodyArraySize = 128;
+oimo.common.Setting.islandInitialConstraintArraySize = 128;
+oimo.common.Setting.sleepingVelocityThreshold = 0.2;
+oimo.common.Setting.sleepingAngularVelocityThreshold = 0.5;
+oimo.common.Setting.sleepingTimeThreshold = 1.0;
+oimo.common.Setting.disableSleeping = false;
+oimo.common.Setting.linearSlop = 0.005;
+oimo.common.Setting.angularSlop = 0.017453292519943278;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpa.instance = new oimo.collision.narrowphase.detector.gjkepa.GjkEpa();
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState._SUCCEEDED = 0;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState._GJK_FAILED_TO_MAKE_TETRAHEDRON = 1;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState._GJK_DID_NOT_CONVERGE = 2;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState._EPA_FAILED_TO_INIT = 257;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState._EPA_FAILED_TO_ADD_VERTEX = 258;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState._EPA_DID_NOT_CONVERGE = 259;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState.SUCCEEDED = 0;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState.GJK_FAILED_TO_MAKE_TETRAHEDRON = 1;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState.GJK_DID_NOT_CONVERGE = 2;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState.EPA_FAILED_TO_INIT = 257;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState.EPA_FAILED_TO_ADD_VERTEX = 258;
+oimo.collision.narrowphase.detector.gjkepa.GjkEpaResultState.EPA_DID_NOT_CONVERGE = 259;
+oimo.common.Mat3.numCreations = 0;
+oimo.common.Mat4.numCreations = 0;
+oimo.common.MathUtil.POSITIVE_INFINITY = 1e65536;
+oimo.common.MathUtil.NEGATIVE_INFINITY = -1e65536;
+oimo.common.MathUtil.PI = 3.14159265358979;
+oimo.common.MathUtil.TWO_PI = 6.28318530717958;
+oimo.common.MathUtil.HALF_PI = 1.570796326794895;
+oimo.common.MathUtil.TO_RADIANS = 0.017453292519943278;
+oimo.common.MathUtil.TO_DEGREES = 57.29577951308238;
+oimo.common.Quat.numCreations = 0;
+oimo.dynamics.common.DebugDraw.SPHERE_PHI_DIVISION = 8;
+oimo.dynamics.common.DebugDraw.SPHERE_THETA_DIVISION = 4;
+oimo.dynamics.common.DebugDraw.CIRCLE_THETA_DIVISION = 8;
+oimo.dynamics.common.Performance.broadPhaseCollisionTime = 0;
+oimo.dynamics.common.Performance.narrowPhaseCollisionTime = 0;
+oimo.dynamics.common.Performance.dynamicsTime = 0;
+oimo.dynamics.common.Performance.totalTime = 0;
+oimo.dynamics.constraint.PositionCorrectionAlgorithm._BAUMGARTE = 0;
+oimo.dynamics.constraint.PositionCorrectionAlgorithm._SPLIT_IMPULSE = 1;
+oimo.dynamics.constraint.PositionCorrectionAlgorithm._NGS = 2;
+oimo.dynamics.constraint.PositionCorrectionAlgorithm.BAUMGARTE = 0;
+oimo.dynamics.constraint.PositionCorrectionAlgorithm.SPLIT_IMPULSE = 1;
+oimo.dynamics.constraint.PositionCorrectionAlgorithm.NGS = 2;
+oimo.dynamics.constraint.info.JacobianRow.BIT_LINEAR_SET = 1;
+oimo.dynamics.constraint.info.JacobianRow.BIT_ANGULAR_SET = 2;
+oimo.dynamics.constraint.joint.JointType._SPHERICAL = 0;
+oimo.dynamics.constraint.joint.JointType._REVOLUTE = 1;
+oimo.dynamics.constraint.joint.JointType._CYLINDRICAL = 2;
+oimo.dynamics.constraint.joint.JointType._PRISMATIC = 3;
+oimo.dynamics.constraint.joint.JointType._UNIVERSAL = 4;
+oimo.dynamics.constraint.joint.JointType._RAGDOLL = 5;
+oimo.dynamics.constraint.joint.JointType._GENERIC = 6;
+oimo.dynamics.constraint.joint.JointType.SPHERICAL = 0;
+oimo.dynamics.constraint.joint.JointType.REVOLUTE = 1;
+oimo.dynamics.constraint.joint.JointType.CYLINDRICAL = 2;
+oimo.dynamics.constraint.joint.JointType.PRISMATIC = 3;
+oimo.dynamics.constraint.joint.JointType.UNIVERSAL = 4;
+oimo.dynamics.constraint.joint.JointType.RAGDOLL = 5;
+oimo.dynamics.constraint.joint.JointType.GENERIC = 6;
+oimo.dynamics.constraint.solver.ConstraintSolverType._ITERATIVE = 0;
+oimo.dynamics.constraint.solver.ConstraintSolverType._DIRECT = 1;
+oimo.dynamics.constraint.solver.ConstraintSolverType.ITERATIVE = 0;
+oimo.dynamics.constraint.solver.ConstraintSolverType.DIRECT = 1;
+oimo.dynamics.rigidbody.RigidBodyType._DYNAMIC = 0;
+oimo.dynamics.rigidbody.RigidBodyType._STATIC = 1;
+oimo.dynamics.rigidbody.RigidBodyType._KINEMATIC = 2;
+oimo.dynamics.rigidbody.RigidBodyType.DYNAMIC = 0;
+oimo.dynamics.rigidbody.RigidBodyType.STATIC = 1;
+oimo.dynamics.rigidbody.RigidBodyType.KINEMATIC = 2;
+export {oimo};
