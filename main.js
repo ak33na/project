@@ -28,3 +28,4 @@ console.log('MOL 1: \n', mol2k);
 // Print SMILES to builder div
 document.getElementById("mol built").innerHTML = smiles;
 
+
