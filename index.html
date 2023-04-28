@@ -11,6 +11,7 @@
         <script src="./node_modules/kekule/dist/kekule.min.js"></script>
         <script src="./raphael-2.3.0/raphael.min.js"></script>
         <script src="./three.js-master/build/three.js"></script>
+        <script type = "module" src="buildmolecule.js"></script>
     </head>
     <body>
       <div class="header">
@@ -25,13 +26,13 @@
 
       <div class="bank">
         <h3>Element bank</h3>
-        <button>C</button>
-        <button>O</button>
-        <button>N</button>
-        <button>X</button>
-        <button>/</button>
-        <button>⌬</button>
-        <button>R</button>
+        <input type="button" value="C" onclick="createCarbon()"/>
+        <input type="button" value="O" onclick=""/>
+        <input type="button" value="N" onclick=""/>
+        <input type="button" value="X" onclick=""/>
+        <input type="button" value="/" onclick=""/>
+        <input type="button" value="⌬" onclick=""/>
+        <input type="button" value="R" onclick=""/>
       </div>
 
       <div class="info">
