@@ -18,8 +18,10 @@ var formula = mol.calcFormula();
 console.log('Formula: ', formula.getText());
 
 // Output Simplified Molecular Input Line Entry System
-var smiles = Kekule.IO.saveFormatData(mol, 'smi');
+export var smiles = Kekule.IO.saveFormatData(mol, 'smi');
 console.log('SMILES: ', smiles);
+
+
 
 // Output MOL2k
 var mol2k = Kekule.IO.saveFormatData(mol, 'mol');
@@ -60,3 +62,10 @@ var glyph = new Kekule.Glyph.StraightLine('glyph1', 1, {
 var painter = new Kekule.Render.ChemObjPainter(Kekule.Render.RendererType.R2D, glyph);
 // draw the glyph at the center of context we previous created
 painter.draw(context, {'x': dim.width / 2, 'y': dim.height / 2});
+
+
+
+
+//Use the smiles variable to search for the chemical name for that structure
+
+
