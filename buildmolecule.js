@@ -14,28 +14,28 @@ function declareCarbon() {
     let k = 'C';
     console.log("Declare carbon works");
     carboni++;
-    eval('var ' + k + carboni + '= ' + 'C' + ';');
+    eval('var ' + k + carboni + '= ' + '"C"' + ';');
 }
 
 function declareOxygen() {
     let k = 'O';
     console.log("Declare oxygen works");
     oxyi++;
-    eval('var ' + k + oxyi + '= ' + 'O' + ';');
+    eval('var ' + k + oxyi + '= ' + '"O"' + ';');
 }
 
 function declareNitrogen() {
     let k = 'N';
     console.log("Declare nitrogen works");
     nitroi++;
-    eval('var ' + k + nitroi + '= ' + 'N' + ';');
+    eval('var ' + k + nitroi + '= ' + '"N"' + ';');
 }
 
 function declareHalogen() {
     let k = 'X';
     console.log("Declare halogen works");
     haloi++;
-    eval('var ' + k + haloi + '= ' + 'X' + ';');
+    eval('var ' + k + haloi + '= ' + '"X"' + ';');
 
 }
 
@@ -43,16 +43,22 @@ function declareBond() {
     let k = 'bond';
     console.log("Declare bond works");
     bondi++;
-    eval('var ' + k + bondi + '= ' + 'bond' + ';');
+    eval('var ' + k + bondi + '= ' + '"bond"' + ';');
 
 }
 
 function declareBenzene() {
+    let k = 'phen';
     console.log("Declare benzene works");
+    benzi++;
+    eval('var ' + k + benzi + '= ' + '"⌬"' + ';');
 }
 
 function declareR() {
+    let k = 'R';
     console.log("Declare R works");
+    ri++;
+    eval('var ' + k + ri + '= ' + '"R"' + ';');
 }
 var moleculeFormula = molecule.calcFormula();
 console.log('Formula: ', moleculeFormula.getText());
