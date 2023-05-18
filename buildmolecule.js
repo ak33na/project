@@ -1,3 +1,8 @@
+export function createMolecule(mol) {
+    var molecule = mol;
+    return molecule;
+  }
+  
 var molecule = new Kekule.Molecule();
 var C1 =molecule.appendAtom('C');
 
@@ -59,5 +64,26 @@ function declareR() {
     ri++;
     eval('var ' + k + ri + '= ' + '"R"' + ';');
 }
+
+function appendRecent() {
+    console.log("append recent works");
+}
+
+document.getElementById("carbonButton").addEventListener("click", declareCarbon); 
+
+document.getElementById("oxygenButton").addEventListener("click", declareOxygen); 
+
+document.getElementById("nitrogenButton").addEventListener("click", declareNitrogen); 
+
+document.getElementById("haloButton").addEventListener("click", declareHalogen); 
+
+document.getElementById("bondButton").addEventListener("click", declareBond); 
+
+document.getElementById("benzeneButton").addEventListener("click", declareBenzene); 
+
+document.getElementById("rButton").addEventListener("click", declareR); 
+
 var moleculeFormula = molecule.calcFormula();
 console.log('Formula: ', moleculeFormula.getText());
+
+  

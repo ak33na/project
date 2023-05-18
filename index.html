@@ -14,37 +14,59 @@
         <script type = "module" src="buildmolecule.js"></script>
         <script type = "module" src="database.js"></script>
         <script type = "module" src="paint.js"></script>
+        <!-- This code above is to declare which other files are called through this one.-->
 
     </head>
     <body>
+  
       <div class="header">
-        <h1>Header</h1>
+        <h1 style = 'top:900%;'>Header</h1>
+        <p> HAJHKJAJHAJ </p>
       </div> 
 
-      <div class="builder">
+      <div class="builder" onclick="appendRecent()">
         <h2>Builder</h2>
-        <p id="mol built">Test</p>
+        <canvas id="mol-built"></canvas>
         <script src="./node_modules/kekule/src/render/2d/kekule.render.renderer2D.js"></script>
       </div>
 
       <div class="bank">
         <h3>Element bank</h3>
-        <input type="button" value="C" onclick="createCarbon()"/>
-        <input type="button" value="O" onclick=""/>
-        <input type="button" value="N" onclick=""/>
-        <input type="button" value="X" onclick=""/>
-        <input type="button" value="/" onclick=""/>
-        <input type="button" value="⌬" onclick=""/>
-        <input type="button" value="R" onclick=""/>
+        <button id= carbonButton type="button">C</button> 
+        <button id= oxygenButton type="button">O</button> 
+        <button id= nitrogenButton type="button">N</button> 
+        <button id= haloButton type="button">X</button> 
+        <button id= bondButton type="button">/</button> 
+        <button id= benzeneButton type="button">⌬</button> 
+        <button id= rButton type="button">R</button> 
       </div>
 
       <div class="info">
         <h2>Info</h2>
+        <!-- The text for these paragraph tags are assigned in the database.js document -->
+        <h3 id="molName"> </h3>
+        <p id="meltingPoint"> </p>
+        <p id="boilingPoint"> </p>
+        <p id="solubility"> </p>
       </div>
 
       <div class="reactions">
-        <h2>Reactions</h2>
+        <script type = "text/javascript" src="reactions.js"></script>
+        <h2 style = "position:relative; top:-5%">Reactions</h2>
+        <input type="button", style = "height: 13%; width: 100%; position:relative; left:0%; top:-9%", value="Addition Reaction" onclick=" setAddition()"/>
+        <input type="button", style = "height: 13%; width:100%; position:relative; left:0%; top:-8%",  value="Substitution Reaction" onclick=" setSubstitution()"/>
+        <input type="button", style = "height:13%; width: 100%; position:relative; left:0%; top:-7%",  value="Elimination Reaction" onclick=" setElimination()"/>
+        <input type="button", style = "height:13%; width: 100%; position:relative; left:0%; top:-6%",  value="Hydrolysis Reaction" onclick=" setHydrolysis()"/>
+        <input type="button", style = "height:13%; width: 100%; position:relative; left:0%; top:-5%",  value="Redox Reaction" onclick=" setRedox()"/>
+        <input type="button", style = "height:13%; width: 100%; position:relative; left:0%; top:-4%",  value="Esterification Reaction" onclick=" setEsterification()"/> 
       </div>
+
+      <div id="reactionsInfo", class="reactions2">
+        
+      </div>
+
+      
+
 
       <div class="rxnDisplay">
         <h2>Reaction display</h2>
@@ -52,6 +74,9 @@
 
       <div class="help">
         <h2>Help</h2>
+
+
+
       </div>
     </body>
 </html>
