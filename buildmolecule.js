@@ -83,6 +83,8 @@ document.getElementById("benzeneButton").addEventListener("click", declareBenzen
 
 document.getElementById("rButton").addEventListener("click", declareR); 
 
+document.getElementById("builder").addEventListener("click", appendRecent);
+
 var moleculeFormula = molecule.calcFormula();
 console.log('Formula: ', moleculeFormula.getText());
 
