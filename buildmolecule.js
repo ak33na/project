@@ -15,6 +15,12 @@ export function getMolecule() {
   return molecule;
 }
 
+// SMILES array 
+const SMILES = [smilesPentane, smilesMethylbutane, smilesEthanol, smilesMethoxymethane];
+
+// Image arrays
+const IMAGES = [IMG_PENTANE_URL, IMG_METHYLBUTANE_URL, IMG_ETHANOL_URL, IMG_METHOXYMETHANE_URL];
+
 // Function to set the molecule and notify subscribers
 export function setMolecule(newMolecule) {
   molecule = newMolecule;
@@ -101,19 +107,19 @@ function appendRecent() {
 
 // Functions to set the image and fetch CID and properties for each molecule
 function setPentane(){
-    document.getElementById("builder").innerHTML = "<img src=" + IMG_PENTANE_URL + " style = 'height: 100%; width: 100%; position:relative;' >";
+    document.getElementById("builder").innerHTML = "<img src=" + IMAGES[0] + " style = 'height: 100%; width: 100%; position:relative;' >";
 }
 
 function setMethylbutane(){
-    document.getElementById("builder").innerHTML = "<img src=" + IMG_METHYLBUTANE_URL + " style = 'height: 100%; width: 100%; position:relative;' >";
+    document.getElementById("builder").innerHTML = "<img src=" + IMAGES[1] + " style = 'height: 100%; width: 100%; position:relative;' >";
 }
 
 function setEthanol(){
-    document.getElementById("builder").innerHTML = "<img src=" + IMG_ETHANOL_URL + " style = 'height: 100%; width: 100%; position:relative;' >";
+    document.getElementById("builder").innerHTML = "<img src=" + IMAGES[2] + " style = 'height: 100%; width: 100%; position:relative;' >";
 }
 
 function setDimethylEther(){
-    document.getElementById("builder").innerHTML = "<img src=" + IMG_METHOXYMETHANE_URL + " style = 'height: 100%; width: 100%; position:relative;' >";
+    document.getElementById("builder").innerHTML = "<img src=" + IMAGES[3] + " style = 'height: 100%; width: 100%; position:relative;' >";
 }
 
 // Function to fetch CID for a given SMILES string
@@ -240,7 +246,7 @@ async function getCID(smiles) {
 
 document.getElementById("pentaneB").addEventListener("click", function() {
     setPentane();
-    getCID(smilesPentane);
+    getCID(SMILES[0]);
     document.getElementById('isomers').innerHTML = "Structural isomers: 2-methylbutane, 2,2-dimethylpropane";
     document.getElementById('citation').innerHTML = "National Center for Biotechnology Information (2023). PubChem Compound Summary for CID 8003, Pentane";
 
@@ -248,13 +254,14 @@ document.getElementById("pentaneB").addEventListener("click", function() {
 
 document.getElementById("methylbutaneB").addEventListener("click", function() {
     setMethylbutane();
-    getCID(smilesMethylbutane);
+    getCID(SMILES[1]);
     document.getElementById('isomers').innerHTML = "Structural isomers: pentane, 2,2-dimethylpropane";
     document.getElementById('citation').innerHTML = "National Center for Biotechnology Information (2023). PubChem Compound Summary for CID 6556, Isopentane";
 
 
 });
 
+// Note: Error with getCID function corresponding to ethanol SMILES. For future maintenance and expansion, test the database thoroughly.
 document.getElementById("ethanolB").addEventListener("click", function() {
     setEthanol();
     document.getElementById('solubility').innerHTML = "Solubility: In water, miscible 1x10<sup>6</sup> mg/L at 25 °C";
@@ -270,7 +277,7 @@ document.getElementById("ethanolB").addEventListener("click", function() {
 
 document.getElementById("dimethylEtherB").addEventListener("click", function() {
     setDimethylEther();
-    getCID(smilesMethoxymethane);
+    getCID(SMILES[3]);
     document.getElementById('isomers').innerHTML = "Structural isomers: ethanol";
     document.getElementById('citation').innerHTML = "National Center for Biotechnology Information (2023). PubChem Compound Summary for CID 8254, Dimethyl Ether";
 
