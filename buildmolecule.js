@@ -1,103 +1,122 @@
-const subscribers = [];
-let molecule = new Kekule.Molecule();
+// buildmolecule.js
 
+// Import required modules
+import { smilesPentane, smilesMethylbutane, smilesEthanol, smilesMethoxymethane } from './main.js';
+
+// Declare global variables
+const SUBSCRIBERS = [];
+let molecule = new Kekule.Molecule();
+const IMG_PENTANE_URL = 'https://upload.wikimedia.org/wikipedia/commons/5/52/N-Pentan.png';
+const IMG_METHYLBUTANE_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Isopentane.svg/2560px-Isopentane.svg.png';
+const IMG_ETHANOL_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Ethanol-2D-flat.png/640px-Ethanol-2D-flat.png';
+const IMG_METHOXYMETHANE_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Dimethyl_ether_Structural_Formulae.svg/1280px-Dimethyl_ether_Structural_Formulae.svg.png';
+// Function to get the current molecule
 export function getMolecule() {
   return molecule;
 }
 
+// Function to set the molecule and notify subscribers
 export function setMolecule(newMolecule) {
   molecule = newMolecule;
   notifySubscribers();
 }
 
+// Function to subscribe to molecule updates
 export function subscribe(callback) {
-    subscribers.push(callback);
+    SUBSCRIBERS.push(callback);
 }
 
-
+// Function to unsubscribe from molecule updates
 export function unsubscribe(callback) {
-    const index = subscribers.indexOf(callback);
+    const index = SUBSCRIBERS.indexOf(callback);
     if (index !== -1) {
-      subscribers.splice(index, 1);
+      SUBSCRIBERS.splice(index, 1);
     }
 }
 
-import {smilesPentane} from './main.js';
-import {smilesMethylbutane} from './main.js';
-
+// Function to notify subscribers about molecule updates
 function notifySubscribers() {
-    subscribers.forEach(callback => callback(molecule));
+    SUBSCRIBERS.forEach(callback => callback(molecule));
 }
 
-var atom= 'C';
+// Define atom types
+var atom= 'C'; // Default atom type is carbon
+
+// Append atom to the molecule
 molecule.appendAtom(atom);
 
+// Counter variables for bonds, benzene rings, and R groups
 let bondi = 0;
 let benzi = 0;
 let ri = 0;
 
+
+// Function to declare Carbon atom type
 function declareCarbon() {
-    atom = 'C';
+  atom = 'C';
 }
 
+// Function to declare Oxygen atom type
 function declareOxygen() {
-    atom = 'O';
+  atom = 'O';
 }
 
+// Function to declare Nitrogen atom type
 function declareNitrogen() {
-    atom = 'N';
+  atom = 'N';
 }
 
+// Function to declare Halogen atom type
 function declareHalogen() {
-    atom = 'X';
-
+  atom = 'X';
 }
 
+// Function to declare a bond
 function declareBond() {
-    let k = 'bond';
-    console.log("Declare bond works");
-    bondi++;
-    eval('var ' + k + bondi + '= ' + '"bond"' + ';');
-
+  let k = 'bond';
+  bondi++;
+  eval('var ' + k + bondi + '= ' + '"bond"' + ';');
 }
 
+// Function to declare a benzene ring
 function declareBenzene() {
-    let k = 'phen';
-    console.log("Declare benzene works");
-    benzi++;
-    eval('var ' + k + benzi + '= ' + '"⌬"' + ';');
+  let k = 'phen';
+  benzi++;
+  eval('var ' + k + benzi + '= ' + '"⌬"' + ';');
 }
 
+// Function to declare an R group
 function declareR() {
-    let k = 'R';
-    console.log("Declare R works");
-    ri++;
-    eval('var ' + k + ri + '= ' + '"R"' + ';');
+  let k = 'R';
+  ri++;
+  eval('var ' + k + ri + '= ' + '"R"' + ';');
 }
 
+// Function to append the recent atom to the molecule
 function appendRecent() {
-    console.log("append recent works");
-    molecule.appendAtom(atom);
-    var formula = molecule.calcFormula();
-    console.log('Formula of molecule: ', formula.getText());
+  molecule.appendAtom(atom);
+  var formula = molecule.calcFormula();
+  console.log('Formula of molecule: ', formula.getText());
 }
 
+// Functions to set the image and fetch CID and properties for each molecule
 function setPentane(){
-    document.getElementById("builder").innerHTML = "<img src='https://upload.wikimedia.org/wikipedia/commons/5/52/N-Pentan.png', style = 'height: 100%; width: 100%; position:relative;' >";
+    document.getElementById("builder").innerHTML = "<img src=" + IMG_PENTANE_URL + " style = 'height: 100%; width: 100%; position:relative;' >";
 }
 
 function setMethylbutane(){
-    document.getElementById("builder").innerHTML = "<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Isopentane.svg/2560px-Isopentane.svg.png', style = 'height: 100%; width: 100%; position:relative;' >";
+    document.getElementById("builder").innerHTML = "<img src=" + IMG_METHYLBUTANE_URL + " style = 'height: 100%; width: 100%; position:relative;' >";
 }
 
 function setEthanol(){
-    document.getElementById("builder").innerHTML = "<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Ethanol-2D-flat.png/640px-Ethanol-2D-flat.png', style = 'height: 100%; width: 100%; position:relative;' >";
+    document.getElementById("builder").innerHTML = "<img src=" + IMG_ETHANOL_URL + " style = 'height: 100%; width: 100%; position:relative;' >";
 }
 
 function setDimethylEther(){
-    document.getElementById("builder").innerHTML = "<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Dimethyl_ether_Structural_Formulae.svg/1280px-Dimethyl_ether_Structural_Formulae.svg.png', style = 'height: 100%; width: 100%; position:relative;' >";
+    document.getElementById("builder").innerHTML = "<img src=" + IMG_METHOXYMETHANE_URL + " style = 'height: 100%; width: 100%; position:relative;' >";
 }
 
+// Function to fetch CID for a given SMILES string
 async function getCID(smiles) {
   
     //The Delay function that contains the async code
@@ -110,6 +129,8 @@ async function getCID(smiles) {
         .then(result => result.json())
         .then((data) => { //process the returned data 
           var CID = (data["PropertyTable"].Properties[0].CID); //get the value for the key CID  
+          var MolecularFormula = (data["PropertyTable"].Properties[0].MolecularFormula);
+          document.getElementById('formula').innerHTML = "Molecular formula: " + MolecularFormula;
           console.log(CID);
   
           // Only `delay` is able to resolve or reject the promise
@@ -117,7 +138,7 @@ async function getCID(smiles) {
   
   //INSIDE THE SETTIMEOUT FUNCTION, THE CID IS USED TO GET THE PROPERTIES.
   
-  
+  // Function to fetch properties using CID
   function delayBeforeProperties(CID){
     return new Promise(function(resolve, reject) {
   
@@ -197,34 +218,62 @@ async function getCID(smiles) {
     });  
   }
 
-document.getElementById("carbonButton").addEventListener("click", declareCarbon); 
 
-document.getElementById("oxygenButton").addEventListener("click", declareOxygen); 
 
-document.getElementById("nitrogenButton").addEventListener("click", declareNitrogen); 
 
-document.getElementById("haloButton").addEventListener("click", declareHalogen); 
+  
+// document.getElementById("carbonButton").addEventListener("click", declareCarbon); 
 
-document.getElementById("bondButton").addEventListener("click", declareBond); 
+// document.getElementById("oxygenButton").addEventListener("click", declareOxygen); 
 
-document.getElementById("benzeneButton").addEventListener("click", declareBenzene); 
+// document.getElementById("nitrogenButton").addEventListener("click", declareNitrogen); 
 
-document.getElementById("rButton").addEventListener("click", declareR); 
+// document.getElementById("haloButton").addEventListener("click", declareHalogen); 
 
-document.getElementById("builder").addEventListener("click", appendRecent, setMolecule);
+// document.getElementById("bondButton").addEventListener("click", declareBond); 
+
+// document.getElementById("benzeneButton").addEventListener("click", declareBenzene); 
+
+// document.getElementById("rButton").addEventListener("click", declareR); 
+
+// document.getElementById("builder").addEventListener("click", appendRecent, setMolecule);
 
 document.getElementById("pentaneB").addEventListener("click", function() {
     setPentane();
     getCID(smilesPentane);
+    document.getElementById('isomers').innerHTML = "Structural isomers: 2-methylbutane, 2,2-dimethylpropane";
+    document.getElementById('citation').innerHTML = "National Center for Biotechnology Information (2023). PubChem Compound Summary for CID 8003, Pentane";
+
   });
 
 document.getElementById("methylbutaneB").addEventListener("click", function() {
     setMethylbutane();
     getCID(smilesMethylbutane);
+    document.getElementById('isomers').innerHTML = "Structural isomers: pentane, 2,2-dimethylpropane";
+    document.getElementById('citation').innerHTML = "National Center for Biotechnology Information (2023). PubChem Compound Summary for CID 6556, Isopentane";
+
+
 });
 
-document.getElementById("ethanolB").addEventListener("click", setEthanol);
+document.getElementById("ethanolB").addEventListener("click", function() {
+    setEthanol();
+    document.getElementById('solubility').innerHTML = "Solubility: In water, miscible 1x10<sup>6</sup> mg/L at 25 °C";
+    document.getElementById('boilingPoint').innerHTML = "Boiling point: 78.24 °C";
+    document.getElementById('meltingPoint').innerHTML = "Melting point: -129.67 °C";
+    document.getElementById('molName').innerHTML = "Name: Ethanol";
+    document.getElementById('isomers').innerHTML = "Structural isomers: methoxymethane";
+    document.getElementById('formula').innerHTML = "Molecular formula: C2H6O";
+    document.getElementById('citation').innerHTML = "National Center for Biotechnology Information. PubChem Compound Summary for CID 702, Ethanol";
 
-document.getElementById("dimethylEtherB").addEventListener("click", setDimethylEther);
+
+});
+
+document.getElementById("dimethylEtherB").addEventListener("click", function() {
+    setDimethylEther();
+    getCID(smilesMethoxymethane);
+    document.getElementById('isomers').innerHTML = "Structural isomers: ethanol";
+    document.getElementById('citation').innerHTML = "National Center for Biotechnology Information (2023). PubChem Compound Summary for CID 8254, Dimethyl Ether";
+
+});
 
   

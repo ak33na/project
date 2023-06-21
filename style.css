@@ -1,37 +1,50 @@
 /* CSS */ 
 
-body {
-    background-color: whitesmoke;
+
+
+body,html {
+    background-color: rgb(255, 255, 255);
+    overflow-y: scroll;
+    overflow-x: hidden;
+    min-height: 170%;
+    font-family: "Copperplate", "Helvetica", cursive;
+    
   }
 
   .header {
     overflow:hidden;
-    padding-left: 1%;
-    text-align: left;
+    padding-left: 1%; 
+    top:0;
+    right:0;
+    left:0;
+    position: absolute;
     background: pink;
-    color: pink;
-    font-size: 15px;
+    text-size-adjust: 80;
+    height: 14%;
+    
   }
 
   /* Builder div */
   .builder {
-    height: 45%;
-    width: 50%;
-    position: fixed;
+    height: 60%;
+    width: 58%;
+    position: absolute;
     z-index: 1;
-    top: 15%;
+    top: 16%;
     overflow-x: hidden;
     padding: 1%;
     background: pink;
+    left:0;
+    
   }
 
   /* Bank div */
   .bank {
     height: 13%;
-    width: 45%;
+    width: 38%;
     position: absolute;
     right: 0;
-    top: 15%;
+    top: 16%;
     overflow: hidden;
     padding-left: 1%;
     background: pink;
@@ -40,11 +53,11 @@ body {
 
   /* Info div */
   .info {
-    height: 30%;
-    width: 44%;
+    height: 45%;
+    width: 37%;
     position: absolute;
     right: 0;
-    top: 30%;
+    top: 31%;
     overflow: hidden;
     padding: 1%;
     background: pink;
@@ -53,12 +66,51 @@ body {
 
   /* Reactions div */
   .reactions {
-    height: 25%;
-    width: 50%;
-    position: fixed;
-    z-index: 1;
-    top: 68%;
+    height: 50%;
+    width: 20%;
+    position: absolute;
+   
+    left: 0;
+    z-index: 2;
+    top:82%;
+    overflow: hidden;
+    padding: 1%;
+    background: pink;
+  }
+
+  /* Reactions div 2 */
+  .reactions2 {
+    height: 50%;
+    width: 75%;
+    position: absolute;
+
+
+    left: 23%;
+    top: 82%;
     overflow-x: hidden;
     padding: 1%;
     background: pink;
   }
+
+  /* Help div */
+  .help {
+    height: 40%;
+    width: 100%;
+    position: absolute;
+    z-index: 1;
+    top: 138%;
+    left: 0;
+    right:0;
+    padding: 1%;
+    font-family: sans-serif;
+    background:pink;
+  }
+
+  /* .FAQ {
+    height: 90%;
+    width:48%;
+    right:0;
+    padding: 1%;
+    top:138%;
+    background:pink;
+   } */

@@ -1,58 +1,57 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!--Temporarily prevents error message saying error:404 no icon, remove when we actually make one.-->
-        <link rel="icon" type="image/x-icon" href="data:image/x-icon;,">
         <link rel="stylesheet" href="style.css">
         <title>Test server</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-        <script type = "module" src="main.js"></script>
-        <script src="./node_modules/kekule/dist/kekule.min.js"></script>
-        <script src="./raphael-2.3.0/raphael.min.js"></script>
-        <script src="./three.js-master/build/three.js"></script>
-        <script type = "module" src="buildmolecule.js"></script>
-        <script type = "module" src="database.js"></script>
-        <script type = "module" src="paint.js"></script>
         <!-- This code above is to declare which other files are called through this one.-->
 
     </head>
     <body>
   
       <div class="header">
-        <h1 style = 'top:900%;'>Header</h1>
-        
+        <h1>⌬ Organic molecule builder</h1>
+        <!-- Website header -->
       </div> 
 
+      <!-- Imgs replace this section upon click of molecule buttons-->
       <div id= builder class="builder">
         <h2>Builder</h2>
         <canvas id="mol-built"></canvas>
+        <!-- Canvas for molecule ; for future development -->
         <script src="./node_modules/kekule/src/render/2d/kekule.render.renderer2D.js"></script>
+        <script src="./node_modules/kekule/src/render/kekule.render.base.js"></script> 
+        <!-- Kekule rendering scripts -->       
+        <script type = "module" src="paint.js"></script>
+        <!-- Script for painting molecules on the canvas -->
       </div>
 
       <div class="bank">
-        <h3>Element bank</h3>
-        <button id= carbonButton type="button">C</button> 
-        <button id= oxygenButton type="button">O</button> 
-        <button id= nitrogenButton type="button">N</button> 
-        <button id= haloButton type="button">X</button> 
-        <button id= bondButton type="button">/</button> 
-        <button id= benzeneButton type="button">⌬</button> 
-        <button id= rButton type="button">R</button> 
+        <h3>Common molecule bank</h3>
+        <!-- Molecule buttons -->
+        <button id= pentaneB type="button" aria-label="Select n-pentane">n-pentane</button>
+        <button id= methylbutaneB type="button" aria-label="Select methylbutane">2-methylbutane</button>
+        <button id= ethanolB type="button" aria-label="Select ethanol">ethanol</button>
+        <button id= dimethylEtherB type="button" aria-label="Select methoxymethane">methoxymethane</button>
       </div>
 
       <div class="info">
         <h2>Info</h2>
-        <!-- The text for these paragraph tags are assigned in the database.js document -->
+        <!-- Text for these paragraph tags are assigned in the database.js document -->
         <h3 id="molName"> </h3>
         <p id="meltingPoint"> </p>
         <p id="boilingPoint"> </p>
         <p id="solubility"> </p>
+        <p id="formula"> </p>
+        <p id="isomers"> </p>
+        <p id="citation"></p>
       </div>
 
       <div class="reactions">
         <script type = "text/javascript" src="reactions.js"></script>
         <h2 style = "position:relative; top:-5%">Reactions</h2>
+        <!-- Reaction buttons -->
         <input type="button", style = "height: 13%; width: 100%; position:relative; left:0%; top:-9%", value="Addition Reaction" onclick=" setAddition()"/>
         <input type="button", style = "height: 13%; width:100%; position:relative; left:0%; top:-8%",  value="Substitution Reaction" onclick=" setSubstitution()"/>
         <input type="button", style = "height:13%; width: 100%; position:relative; left:0%; top:-7%",  value="Elimination Reaction" onclick=" setElimination()"/>
@@ -62,21 +61,30 @@
       </div>
 
       <div id="reactionsInfo", class="reactions2">
-        
+      <!-- Placeholder for reactions information -->
       </div>
-
-      
-
 
       <div class="rxnDisplay">
         <h2>Reaction display</h2>
+        <!-- Placeholder for displaying reactions -->
       </div>
 
       <div class="help">
-        <h2>Help</h2>
+        <!-- Help instructions -->
+        <h2>Help! Don't know where to begin? Have questions on the website's functionality?</h2>
+        <h3> Refer to either the step-by-step instructions listed below! </h3>
+        <h3> Step-by-step instructions: </h4>
+        <p> Step 1: Click on one of the molecules in the molecule bank section. This should automatically create a molecule structure. </p>
 
+        <p> Step 2: To see its properties, refer to the "Info" section. To see the organic reactions that it can undergo, refer to the "reactions" section. There, a general reaction of many types are listed which depict the way in which your molecule would react.</p>
 
-
-      </div>
+        </div>
+        
+        <script type = "module" src="main.js"></script>
+        <script src="./node_modules/kekule/dist/kekule.min.js"></script>
+        <script src="./raphael-2.3.0/raphael.min.js"></script>
+        <script type = "module" src="buildmolecule.js"></script>
+        <script type = "module" src="database.js"></script>
+        <!-- Other JavaScript scripts for the website functionality -->
     </body>
 </html>

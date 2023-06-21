@@ -3,6 +3,7 @@
     "esbuild": "^0.17.15"
   },
   "dependencies": {
+    "bootstrap": "^5.3.0",
     "kekule": "^1.0.0"
   }
 }
